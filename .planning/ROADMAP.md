@@ -28,7 +28,13 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Ingredients rows appear in `ingredients` and junction rows in `recipe_ingredients` linked to the recipe
   4. Submitting the same Instagram URL twice does not create duplicate rows (upsert deduplication works)
   5. Submitting a URL with no post caption returns a meaningful error response (not a 500)
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Express server scaffold with CORS, PORT, and env wiring
+- [ ] 01-02-PLAN.md — Apify Instagram scraper and Moonshot AI recipe extraction services
+- [ ] 01-03-PLAN.md — Supabase persistence layer (recipe upsert, ingredient upsert, junction insert)
+- [ ] 01-04-PLAN.md — POST /api/process-recipe route wiring and end-to-end verification
 
 ### Phase 2: Deployment Packaging
 **Goal**: The server can be built into a Docker image and deployed to Koyeb with documented environment variables
@@ -58,6 +64,6 @@ Phases execute in numeric order: 1 → 2 → 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Backend Pipeline | 0/TBD | Not started | - |
+| 1. Backend Pipeline | 0/4 | Not started | - |
 | 2. Deployment Packaging | 0/TBD | Not started | - |
 | 3. Frontend | 0/TBD | Not started | - |
