@@ -19,9 +19,9 @@
 
 ### Backend — Infrastructure
 
-- [ ] **INFRA-01**: Express server starts on configurable PORT from environment variable
-- [ ] **INFRA-02**: CORS configured to allow frontend origin
-- [ ] **INFRA-03**: Environment variables for APIFY_TOKEN, MOONSHOT_API_KEY, SUPABASE_URL, SUPABASE_KEY
+- [x] **INFRA-01**: Express server starts on configurable PORT from environment variable
+- [x] **INFRA-02**: CORS configured to allow frontend origin
+- [x] **INFRA-03**: Environment variables for APIFY_TOKEN, MOONSHOT_API_KEY, SUPABASE_URL, SUPABASE_KEY
 - [ ] **INFRA-04**: Dockerfile builds a runnable Node.js image suitable for Koyeb deployment
 - [ ] **INFRA-05**: `.env.example` documents all required environment variables
 
@@ -76,9 +76,9 @@
 | BACK-07 | Phase 1 | Pending |
 | BACK-08 | Phase 1 | Pending |
 | BACK-09 | Phase 1 | Pending |
-| INFRA-01 | Phase 1 | Pending |
-| INFRA-02 | Phase 1 | Pending |
-| INFRA-03 | Phase 1 | Pending |
+| INFRA-01 | Phase 1 | Complete |
+| INFRA-02 | Phase 1 | Complete |
+| INFRA-03 | Phase 1 | Complete |
 | INFRA-04 | Phase 2 | Pending |
 | INFRA-05 | Phase 2 | Pending |
 | FE-01 | Phase 3 | Pending |
