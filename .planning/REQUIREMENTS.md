@@ -13,9 +13,9 @@
 - [x] **BACK-04**: If Apify returns no caption, endpoint returns a meaningful error response
 - [x] **BACK-05**: Endpoint sends caption to Moonshot AI (`moonshot-v1-8k`) with the Hebrew system prompt to extract `{ title, main_category, difficulty, ingredients[] }`
 - [x] **BACK-06**: AI response is parsed with regex fallback to handle markdown-wrapped JSON
-- [ ] **BACK-07**: Recipe is upserted to Supabase `recipes` table with `resolution=merge-duplicates`
-- [ ] **BACK-08**: Each ingredient is upserted to `ingredients` table (lowercase+trimmed name) with deduplication
-- [ ] **BACK-09**: Junction records are inserted into `recipe_ingredients` table linking recipe to ingredients
+- [x] **BACK-07**: Recipe is upserted to Supabase `recipes` table with `resolution=merge-duplicates`
+- [x] **BACK-08**: Each ingredient is upserted to `ingredients` table (lowercase+trimmed name) with deduplication
+- [x] **BACK-09**: Junction records are inserted into `recipe_ingredients` table linking recipe to ingredients
 
 ### Backend — Infrastructure
 
@@ -73,9 +73,9 @@
 | BACK-04 | Phase 1 | Complete |
 | BACK-05 | Phase 1 | Complete |
 | BACK-06 | Phase 1 | Complete |
-| BACK-07 | Phase 1 | Pending |
-| BACK-08 | Phase 1 | Pending |
-| BACK-09 | Phase 1 | Pending |
+| BACK-07 | Phase 1 | Complete |
+| BACK-08 | Phase 1 | Complete |
+| BACK-09 | Phase 1 | Complete |
 | INFRA-01 | Phase 1 | Complete |
 | INFRA-02 | Phase 1 | Complete |
 | INFRA-03 | Phase 1 | Complete |
