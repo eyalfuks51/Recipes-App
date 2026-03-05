@@ -58,7 +58,12 @@ Plans:
   3. On backend error, the UI shows a readable error message (not a blank screen or raw stack trace)
   4. The gallery displays existing recipes from Supabase on page load, each card showing title, category, and difficulty
   5. The Vite project deploys to Vercel with no server-side config — backend URL and Supabase credentials come from environment variables
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — Vite/React project scaffold with SCSS, env wiring, and Vercel SPA config
+- [ ] 03-02-PLAN.md — URL submission form with loading/success/error states
+- [ ] 03-03-PLAN.md — Recipe gallery with Supabase direct reads and post-submit refresh
 
 ## Progress
 
@@ -69,4 +74,4 @@ Phases execute in numeric order: 1 → 2 → 3
 |-------|----------------|--------|-----------|
 | 1. Backend Pipeline | 4/4 | In Progress (checkpoint) | - |
 | 2. Deployment Packaging | 0/1 | Planned | - |
-| 3. Frontend | 0/TBD | Not started | - |
+| 3. Frontend | 0/3 | Planned | - |
