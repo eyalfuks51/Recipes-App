@@ -43,7 +43,10 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. `docker build` completes without errors and the container starts the Express server
   2. `.env.example` lists every required variable (APIFY_TOKEN, MOONSHOT_API_KEY, SUPABASE_URL, SUPABASE_KEY, PORT)
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 02-01-PLAN.md — Dockerfile, .dockerignore, and sanitized .env.example with placeholders
 
 ### Phase 3: Frontend
 **Goal**: Users can submit an Instagram URL through a browser and immediately see new and existing recipes in a gallery
@@ -65,5 +68,5 @@ Phases execute in numeric order: 1 → 2 → 3
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Backend Pipeline | 4/4 | In Progress (checkpoint) | - |
-| 2. Deployment Packaging | 0/TBD | Not started | - |
+| 2. Deployment Packaging | 0/1 | Planned | - |
 | 3. Frontend | 0/TBD | Not started | - |
