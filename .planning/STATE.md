@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 01-backend-pipeline/01-01-PLAN.md
-last_updated: "2026-03-05T19:44:07.818Z"
+stopped_at: Completed 01-backend-pipeline/01-02-PLAN.md
+last_updated: "2026-03-05T19:50:24.624Z"
 last_activity: 2026-03-05 — Roadmap created
 progress:
   total_phases: 3
   completed_phases: 0
   total_plans: 4
-  completed_plans: 1
+  completed_plans: 2
   percent: 25
 ---
 
@@ -51,6 +51,7 @@ Progress: [███░░░░░░░] 25%
 
 *Updated after each plan completion*
 | Phase 01-backend-pipeline P01 | 5 | 2 tasks | 5 files |
+| Phase 01-backend-pipeline P02 | 15 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -64,6 +65,8 @@ Recent decisions affecting current work:
 - No auth for v1 — personal tool, complexity not justified
 - [Phase 01-backend-pipeline]: ES module type (type=module) in package.json — consistent ESM syntax throughout server codebase
 - [Phase 01-backend-pipeline]: CORS wildcard (app.use(cors())) — personal tool, no auth for v1
+- [Phase 01-backend-pipeline]: global.__mockOpenAICreate test hook in moonshot.js — enables ES module testing without jest/vitest mock infrastructure
+- [Phase 01-backend-pipeline]: createClient() exported from moonshot.js — separates client construction from business logic for testability
 
 ### Pending Todos
 
@@ -75,6 +78,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-05T19:44:07.816Z
-Stopped at: Completed 01-backend-pipeline/01-01-PLAN.md
+Last session: 2026-03-05T19:50:24.622Z
+Stopped at: Completed 01-backend-pipeline/01-02-PLAN.md
 Resume file: None

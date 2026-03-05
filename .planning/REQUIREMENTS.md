@@ -8,11 +8,11 @@
 ### Backend — Recipe Processing
 
 - [ ] **BACK-01**: POST /api/process-recipe accepts `{ instagram_url }` and returns `{ success, recipe_id, title, ingredients_count }`
-- [ ] **BACK-02**: Endpoint normalizes Instagram URL to include `www.` prefix before calling Apify
-- [ ] **BACK-03**: Endpoint calls Apify `apify~instagram-scraper` actor to scrape post caption
-- [ ] **BACK-04**: If Apify returns no caption, endpoint returns a meaningful error response
-- [ ] **BACK-05**: Endpoint sends caption to Moonshot AI (`moonshot-v1-8k`) with the Hebrew system prompt to extract `{ title, main_category, difficulty, ingredients[] }`
-- [ ] **BACK-06**: AI response is parsed with regex fallback to handle markdown-wrapped JSON
+- [x] **BACK-02**: Endpoint normalizes Instagram URL to include `www.` prefix before calling Apify
+- [x] **BACK-03**: Endpoint calls Apify `apify~instagram-scraper` actor to scrape post caption
+- [x] **BACK-04**: If Apify returns no caption, endpoint returns a meaningful error response
+- [x] **BACK-05**: Endpoint sends caption to Moonshot AI (`moonshot-v1-8k`) with the Hebrew system prompt to extract `{ title, main_category, difficulty, ingredients[] }`
+- [x] **BACK-06**: AI response is parsed with regex fallback to handle markdown-wrapped JSON
 - [ ] **BACK-07**: Recipe is upserted to Supabase `recipes` table with `resolution=merge-duplicates`
 - [ ] **BACK-08**: Each ingredient is upserted to `ingredients` table (lowercase+trimmed name) with deduplication
 - [ ] **BACK-09**: Junction records are inserted into `recipe_ingredients` table linking recipe to ingredients
@@ -68,11 +68,11 @@
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | BACK-01 | Phase 1 | Pending |
-| BACK-02 | Phase 1 | Pending |
-| BACK-03 | Phase 1 | Pending |
-| BACK-04 | Phase 1 | Pending |
-| BACK-05 | Phase 1 | Pending |
-| BACK-06 | Phase 1 | Pending |
+| BACK-02 | Phase 1 | Complete |
+| BACK-03 | Phase 1 | Complete |
+| BACK-04 | Phase 1 | Complete |
+| BACK-05 | Phase 1 | Complete |
+| BACK-06 | Phase 1 | Complete |
 | BACK-07 | Phase 1 | Pending |
 | BACK-08 | Phase 1 | Pending |
 | BACK-09 | Phase 1 | Pending |
