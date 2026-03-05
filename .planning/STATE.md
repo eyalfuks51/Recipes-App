@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Checkpoint in 01-backend-pipeline/01-04-PLAN.md (Task 1 complete, awaiting human-verify)
-last_updated: "2026-03-05T20:02:10.393Z"
+stopped_at: Checkpoint in 02-deployment-packaging/02-01-PLAN.md (Tasks 1-2 complete, awaiting human-verify)
+last_updated: "2026-03-05T22:14:30.430Z"
 last_activity: 2026-03-05 — Roadmap created
 progress:
   total_phases: 3
-  completed_phases: 1
-  total_plans: 4
-  completed_plans: 4
+  completed_phases: 2
+  total_plans: 5
+  completed_plans: 5
   percent: 25
 ---
 
@@ -53,6 +53,7 @@ Progress: [███░░░░░░░] 25%
 | Phase 01-backend-pipeline P01 | 5 | 2 tasks | 5 files |
 | Phase 01-backend-pipeline P02 | 15 | 2 tasks | 4 files |
 | Phase 01-backend-pipeline P03 | 3 | 1 tasks | 2 files |
+| Phase 02-deployment-packaging P01 | 5 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -70,6 +71,8 @@ Recent decisions affecting current work:
 - [Phase 01-backend-pipeline]: createClient() exported from moonshot.js — separates client construction from business logic for testability
 - [Phase 01-backend-pipeline]: Proxy-based lazy Supabase client — defers createClient() to first call, module importable without env vars
 - [Phase 01-backend-pipeline]: Junction rows use upsert with composite onConflict recipe_id,ingredient_id — prevents duplicates on resubmit
+- [Phase 02-deployment-packaging]: node:20-alpine Dockerfile with npm ci --omit=dev for lean Koyeb-ready production image
+- [Phase 02-deployment-packaging]: .env.example sanitized — real credentials replaced with descriptive placeholders for safe git commit
 
 ### Pending Todos
 
@@ -81,6 +84,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-05T20:02:10.391Z
-Stopped at: Checkpoint in 01-backend-pipeline/01-04-PLAN.md (Task 1 complete, awaiting human-verify)
+Last session: 2026-03-05T22:14:27.537Z
+Stopped at: Checkpoint in 02-deployment-packaging/02-01-PLAN.md (Tasks 1-2 complete, awaiting human-verify)
 Resume file: None
