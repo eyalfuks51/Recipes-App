@@ -86,7 +86,7 @@ Phases execute in numeric order: 1 → 2 → 3
   3. Pre-save Edit UI: form to edit/verify the AI-extracted recipe before saving to Supabase (SAAS-03)
   4. AI Restrictions: Moonshot AI forced to use only predefined categories (SAAS-04)
   5. Full Recipe View: display instructions text and stateful ingredient checkboxes that sync with the workspace (SAAS-05)
-**Plans:** 5 plans
+**Plans:** 5/5 plans complete
 
 Plans:
 - [ ] 04-01-PLAN.md — Google Auth via Supabase OAuth: AuthProvider context, AuthGate login wall, sign-in/sign-out
