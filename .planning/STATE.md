@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 04-multi-tenant-saas-and-ecosystems/04-02-PLAN.md
-last_updated: "2026-03-06T16:00:31.339Z"
+stopped_at: Completed 04-multi-tenant-saas-and-ecosystems/04-01-PLAN.md
+last_updated: "2026-03-06T16:01:37.224Z"
 last_activity: 2026-03-05 — Roadmap created
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 13
-  completed_plans: 10
+  completed_plans: 11
   percent: 25
 ---
 
@@ -56,6 +56,7 @@ Progress: [███░░░░░░░] 25%
 | Phase 02-deployment-packaging P01 | 5 | 2 tasks | 3 files |
 | Phase 04-multi-tenant-saas-and-ecosystems P04-03 | 2min | 1 tasks | 1 files |
 | Phase 04-multi-tenant-saas-and-ecosystems P04-02 | 5 | 2 tasks | 4 files |
+| Phase 04-multi-tenant-saas-and-ecosystems P04-01 | 2 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -79,6 +80,8 @@ Recent decisions affecting current work:
 - [Phase 04-multi-tenant-saas-and-ecosystems]: Post-parse normalization maps unknown AI categories to 'אחר' — defense-in-depth in case AI ignores prompt constraint
 - [Phase 04-multi-tenant-saas-and-ecosystems]: workspace_id stored as nullable FK — backward-compatible, existing recipes unaffected
 - [Phase 04-multi-tenant-saas-and-ecosystems]: Optional spread pattern for workspace_id avoids persisting null on upsert
+- [Phase 04-multi-tenant-saas-and-ecosystems]: auth.jsx not auth.js — Vite requires .jsx extension for JSX syntax
+- [Phase 04-multi-tenant-saas-and-ecosystems]: AppContent inner component extracts logic so useAuth() is called inside AuthProvider tree
 
 ### Roadmap Evolution
 
@@ -94,6 +97,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-06T16:00:31.337Z
-Stopped at: Completed 04-multi-tenant-saas-and-ecosystems/04-02-PLAN.md
+Last session: 2026-03-06T16:01:37.222Z
+Stopped at: Completed 04-multi-tenant-saas-and-ecosystems/04-01-PLAN.md
 Resume file: None
