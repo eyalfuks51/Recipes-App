@@ -1,0 +1,156 @@
+import { useRef, useState } from 'react';
+import './SubmitForm.scss';
+import { RecipeEditForm } from './RecipeEditForm.jsx';
+
+// ─── Icons ────────────────────────────────────────────────────────────────────
+function IconInstagram() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+function IconCheck() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  );
+}
+
+function IconAlert() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="8" x2="12" y2="12" />
+      <line x1="12" y1="16" x2="12.01" y2="16" />
+    </svg>
+  );
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
+export function SubmitForm({ onSuccess }) {
+  const [url, setUrl] = useState('');
+  const [status, setStatus] = useState('idle'); // 'idle' | 'loading' | 'preview' | 'success' | 'error'
+  const [result, setResult] = useState(null);
+  const [extractedRecipe, setExtractedRecipe] = useState(null);
+  const submittingRef = useRef(false);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (submittingRef.current) return;
+    submittingRef.current = true;
+    setStatus('loading');
+    setResult(null);
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/extract-recipe`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ instagram_url: url }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setStatus('preview');
+        setExtractedRecipe(data);
+        // Do NOT call onSuccess yet — wait for user confirmation
+      } else {
+        setStatus('error');
+        setResult({ error: data.error || 'Something went wrong. Please try again.' });
+      }
+    } catch (err) {
+      setStatus('error');
+      setResult({ error: err.message || 'Network error — check your connection.' });
+    } finally {
+      submittingRef.current = false;
+    }
+  }
+
+  function handleRecipeSaved(data) {
+    onSuccess(data);
+    setStatus('idle');
+    setExtractedRecipe(null);
+    setUrl('');
+  }
+
+  function handleDiscard() {
+    setStatus('idle');
+    setExtractedRecipe(null);
+  }
+
+  if (status === 'preview' && extractedRecipe) {
+    return (
+      <RecipeEditForm
+        extractedRecipe={extractedRecipe}
+        instagramUrl={url}
+        onSaved={handleRecipeSaved}
+        onDiscard={handleDiscard}
+      />
+    );
+  }
+
+  return (
+    <div className="submit-form">
+      <form onSubmit={handleSubmit} noValidate>
+        <div className="form-row">
+          <div className="input-wrapper">
+            <span className="input-icon" aria-hidden="true">
+              <IconInstagram />
+            </span>
+            <input
+              type="url"
+              placeholder="https://www.instagram.com/p/..."
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              required
+              disabled={status === 'loading'}
+              aria-label="Instagram post URL"
+              autoComplete="off"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={status === 'loading'}
+            className={status === 'loading' ? 'btn-primary loading' : 'btn-primary'}
+          >
+            {status === 'loading' ? (
+              <>
+                <span className="spinner" aria-hidden="true" />
+                Processing…
+              </>
+            ) : (
+              'Extract Recipe'
+            )}
+          </button>
+        </div>
+
+        {(status === 'success' || status === 'error') && (
+          <div className="form-feedback">
+            {status === 'success' && (
+              <p className="success-msg">
+                <span className="feedback-icon feedback-icon--success"><IconCheck /></span>
+                <span>
+                  <strong>{result.title}</strong> saved — {result.ingredients_count} ingredient{result.ingredients_count !== 1 ? 's' : ''} extracted
+                </span>
+              </p>
+            )}
+            {status === 'error' && (
+              <p className="error-msg">
+                <span className="feedback-icon feedback-icon--error"><IconAlert /></span>
+                <span>{result.error}</span>
+              </p>
+            )}
+          </div>
+        )}
+      </form>
+    </div>
+  );
+}
