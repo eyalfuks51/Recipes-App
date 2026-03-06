@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Checkpoint in 02-deployment-packaging/02-01-PLAN.md (Tasks 1-2 complete, awaiting human-verify)
-last_updated: "2026-03-05T22:27:24.786Z"
+stopped_at: Completed 04-multi-tenant-saas-and-ecosystems/04-03-PLAN.md
+last_updated: "2026-03-06T16:00:05.757Z"
 last_activity: 2026-03-05 — Roadmap created
 progress:
-  total_phases: 3
-  completed_phases: 2
-  total_plans: 5
-  completed_plans: 5
+  total_phases: 4
+  completed_phases: 3
+  total_plans: 13
+  completed_plans: 9
   percent: 25
 ---
 
@@ -54,6 +54,7 @@ Progress: [███░░░░░░░] 25%
 | Phase 01-backend-pipeline P02 | 15 | 2 tasks | 4 files |
 | Phase 01-backend-pipeline P03 | 3 | 1 tasks | 2 files |
 | Phase 02-deployment-packaging P01 | 5 | 2 tasks | 3 files |
+| Phase 04-multi-tenant-saas-and-ecosystems P04-03 | 2min | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -73,6 +74,12 @@ Recent decisions affecting current work:
 - [Phase 01-backend-pipeline]: Junction rows use upsert with composite onConflict recipe_id,ingredient_id — prevents duplicates on resubmit
 - [Phase 02-deployment-packaging]: node:20-alpine Dockerfile with npm ci --omit=dev for lean Koyeb-ready production image
 - [Phase 02-deployment-packaging]: .env.example sanitized — real credentials replaced with descriptive placeholders for safe git commit
+- [Phase 04-multi-tenant-saas-and-ecosystems]: ALLOWED_CATEGORIES exported from moonshot.js as single source of truth for recipe category enum — used by AI prompt and server-side normalization
+- [Phase 04-multi-tenant-saas-and-ecosystems]: Post-parse normalization maps unknown AI categories to 'אחר' — defense-in-depth in case AI ignores prompt constraint
+
+### Roadmap Evolution
+
+- Phase 4 added: Multi-tenant SaaS and Ecosystems (Google Auth, workspaces, pre-save edit UI, AI category restrictions, full recipe view)
 
 ### Pending Todos
 
@@ -84,6 +91,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-05T22:14:27.537Z
-Stopped at: Checkpoint in 02-deployment-packaging/02-01-PLAN.md (Tasks 1-2 complete, awaiting human-verify)
+Last session: 2026-03-06T16:00:05.755Z
+Stopped at: Completed 04-multi-tenant-saas-and-ecosystems/04-03-PLAN.md
 Resume file: None
