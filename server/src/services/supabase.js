@@ -51,19 +51,28 @@ export const supabase = new Proxy(
  * @param {string} recipeData.main_category
  * @param {string} recipeData.difficulty
  * @param {string[]} recipeData.ingredients - Array of ingredient name strings
- * @returns {Promise<{recipe_id: string, title: string, ingredients_count: number}>}
+ * @param {string} [recipeData.workspace_id] - Optional workspace UUID for multi-tenant scoping
+ * @returns {Promise<{recipe_id: string, title: string, ingredients_count: number, workspace_id: string|null}>}
  */
-export async function saveRecipe({ instagram_url, title, main_category, difficulty, ingredients }) {
+export async function saveRecipe({ instagram_url, title, main_category, difficulty, ingredients, workspace_id }) {
   const client = getClient();
 
   // Step 1: Upsert recipe row (deduplicates by instagram_url)
+  const recipeData = {
+    instagram_url,
+    title,
+    main_category,
+    difficulty,
+    ...(workspace_id ? { workspace_id } : {}),
+  };
+
   const { data: recipeRows, error: recipeError } = await client
     .from('recipes')
     .upsert(
-      { instagram_url, title, main_category, difficulty },
+      recipeData,
       { onConflict: 'instagram_url' }
     )
-    .select('id, title');
+    .select('id, title, workspace_id');
 
   if (recipeError) throw new Error(`Recipe upsert failed: ${recipeError.message}`);
 
@@ -97,5 +106,6 @@ export async function saveRecipe({ instagram_url, title, main_category, difficul
     recipe_id: recipe.id,
     title: recipe.title,
     ingredients_count: ingredientRows.length,
+    workspace_id: recipe.workspace_id ?? null,
   };
 }
