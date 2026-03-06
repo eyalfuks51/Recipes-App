@@ -75,3 +75,22 @@ Phases execute in numeric order: 1 → 2 → 3
 | 1. Backend Pipeline | 4/4 | In Progress (checkpoint) | - |
 | 2. Deployment Packaging | 0/1 | Planned | - |
 | 3. Frontend | 0/3 | Planned | - |
+
+### Phase 4: Multi-tenant SaaS and Ecosystems
+
+**Goal:** Users can log in with Google, belong to shared workspaces (ecosystems), and manage recipes scoped to their workspace with a full review-before-save flow and rich recipe detail view
+**Depends on:** Phase 3
+**Requirements:**
+  1. Google Auth login via Supabase (SAAS-01)
+  2. Ecosystems (Workspaces): `workspaces` and `workspace_users` tables; recipes linked to workspaces instead of being global (SAAS-02)
+  3. Pre-save Edit UI: form to edit/verify the AI-extracted recipe before saving to Supabase (SAAS-03)
+  4. AI Restrictions: Moonshot AI forced to use only predefined categories (SAAS-04)
+  5. Full Recipe View: display instructions text and stateful ingredient checkboxes that sync with the workspace (SAAS-05)
+**Plans:** 5 plans
+
+Plans:
+- [ ] 04-01-PLAN.md — Google Auth via Supabase OAuth: AuthProvider context, AuthGate login wall, sign-in/sign-out
+- [ ] 04-02-PLAN.md — Workspace DB schema (workspaces, workspace_users, workspace_ingredient_checks) + server recipe scoping
+- [ ] 04-03-PLAN.md — AI category restrictions: ALLOWED_CATEGORIES constant + updated Moonshot system prompt
+- [ ] 04-04-PLAN.md — Pre-save Edit UI: /api/extract-recipe + /api/confirm-recipe + RecipeEditForm component
+- [ ] 04-05-PLAN.md — Full Recipe View: instructions display + stateful ingredient checkboxes synced to Supabase
