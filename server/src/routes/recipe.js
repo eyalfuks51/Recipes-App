@@ -100,6 +100,9 @@ recipeRouter.post('/confirm-recipe', async (req, res) => {
   if (!Array.isArray(ingredients)) {
     return res.status(400).json({ success: false, error: 'ingredients must be an array' });
   }
+  if (!workspace_id) {
+    return res.status(400).json({ success: false, error: 'workspace_id is required' });
+  }
 
   try {
     const saved = await saveRecipe({
