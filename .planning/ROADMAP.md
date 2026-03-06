@@ -94,3 +94,16 @@ Plans:
 - [ ] 04-03-PLAN.md — AI category restrictions: ALLOWED_CATEGORIES constant + updated Moonshot system prompt
 - [ ] 04-04-PLAN.md — Pre-save Edit UI: /api/extract-recipe + /api/confirm-recipe + RecipeEditForm component
 - [ ] 04-05-PLAN.md — Full Recipe View: instructions display + stateful ingredient checkboxes synced to Supabase
+
+### Phase 5: Ecosystem Onboarding and Strict Data Isolation
+
+**Goal:** Users are onboarded into workspaces explicitly, can switch between workspaces, and all recipe data is isolated at the database level via Supabase RLS policies
+**Depends on:** Phase 4
+**Requirements:** SAAS-WS-01, SAAS-WS-02, SAAS-WS-03, SAAS-WS-04, SAAS-WS-05, SAAS-WS-06, SAAS-WS-07
+**Plans:** 4 plans
+
+Plans:
+- [ ] 05-01-PLAN.md — WorkspaceProvider context + localStorage persistence + workspace switcher dropdown in header
+- [ ] 05-02-PLAN.md — Workspace onboarding screen (create or join via invite code)
+- [ ] 05-03-PLAN.md — Supabase RLS policies migration + client-side query scoping to active workspace
+- [ ] 05-04-PLAN.md — Orphaned data migration SQL script + server-side workspace_id validation hardening
