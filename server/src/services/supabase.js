@@ -52,9 +52,10 @@ export const supabase = new Proxy(
  * @param {string} recipeData.difficulty
  * @param {string[]} recipeData.ingredients - Array of ingredient name strings
  * @param {string} [recipeData.workspace_id] - Optional workspace UUID for multi-tenant scoping
+ * @param {string} [recipeData.instructions] - Optional cooking instructions text
  * @returns {Promise<{recipe_id: string, title: string, ingredients_count: number, workspace_id: string|null}>}
  */
-export async function saveRecipe({ instagram_url, title, main_category, difficulty, ingredients, workspace_id }) {
+export async function saveRecipe({ instagram_url, title, main_category, difficulty, ingredients, workspace_id, instructions }) {
   const client = getClient();
 
   // Step 1: Upsert recipe row (deduplicates by instagram_url)
@@ -64,6 +65,7 @@ export async function saveRecipe({ instagram_url, title, main_category, difficul
     main_category,
     difficulty,
     ...(workspace_id ? { workspace_id } : {}),
+    ...(instructions ? { instructions } : {}),
   };
 
   const { data: recipeRows, error: recipeError } = await client

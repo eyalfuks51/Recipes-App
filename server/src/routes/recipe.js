@@ -88,7 +88,7 @@ recipeRouter.post('/extract-recipe', async (req, res) => {
 
 // POST /api/confirm-recipe — accepts user-edited recipe data and saves to DB (step 2 of 2-step flow)
 recipeRouter.post('/confirm-recipe', async (req, res) => {
-  const { instagram_url, title, main_category, difficulty, ingredients, workspace_id } = req.body;
+  const { instagram_url, title, main_category, difficulty, ingredients, workspace_id, instructions } = req.body;
 
   // Validation
   if (!instagram_url) {
@@ -109,6 +109,7 @@ recipeRouter.post('/confirm-recipe', async (req, res) => {
       difficulty,
       ingredients,
       workspace_id,
+      instructions,
     });
 
     return res.json({

@@ -28,6 +28,7 @@ export function RecipeEditForm({ extractedRecipe, instagramUrl, onSaved, onDisca
       ? extractedRecipe.ingredients.join('\n')
       : ''
   );
+  const [instructions, setInstructions] = useState(extractedRecipe.instructions ?? '');
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
 
@@ -54,6 +55,7 @@ export function RecipeEditForm({ extractedRecipe, instagramUrl, onSaved, onDisca
             main_category: category,
             difficulty,
             ingredients,
+            instructions,
           }),
         }
       );
@@ -112,6 +114,18 @@ export function RecipeEditForm({ extractedRecipe, instagramUrl, onSaved, onDisca
             value={ingredientsText}
             onChange={(e) => setIngredientsText(e.target.value)}
             rows={8}
+          />
+        </label>
+
+        <label>
+          Instructions (optional)
+          <textarea
+            className="instructions-textarea"
+            value={instructions}
+            onChange={(e) => setInstructions(e.target.value)}
+            rows={6}
+            placeholder="Preparation steps, cooking times, tips..."
+            dir="auto"
           />
         </label>
 
