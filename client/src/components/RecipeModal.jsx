@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/auth.jsx';
+import { useWorkspace } from '../lib/workspace.jsx';
 import './RecipeModal.scss';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -73,30 +74,28 @@ export function RecipeModal({ recipe, ingredients, ingredientsLoading, onClose }
   const diff = getDifficulty(recipe.difficulty);
 
   const { user } = useAuth();
+  const { activeWorkspaceId } = useWorkspace();
   const [checkedIds, setCheckedIds] = useState(new Set());
   const [checksLoading, setChecksLoading] = useState(false);
 
-  // Effective workspace key: use recipe.workspace_id if set, else user.id (personal mode)
-  const workspaceKey = recipe.workspace_id ?? user?.id ?? null;
-
   // Load existing checkbox state when ingredients are ready
   useEffect(() => {
-    if (!workspaceKey || ingredients.length === 0 || ingredientsLoading) return;
+    if (!activeWorkspaceId || ingredients.length === 0 || ingredientsLoading) return;
     setChecksLoading(true);
     supabase
       .from('workspace_ingredient_checks')
       .select('ingredient_id')
-      .eq('workspace_id', workspaceKey)
+      .eq('workspace_id', activeWorkspaceId)
       .eq('recipe_id', recipe.id)
       .eq('checked', true)
       .then(({ data }) => {
         if (data) setCheckedIds(new Set(data.map((r) => r.ingredient_id)));
         setChecksLoading(false);
       });
-  }, [ingredients, workspaceKey, ingredientsLoading, recipe.id]);
+  }, [ingredients, activeWorkspaceId, ingredientsLoading, recipe.id]);
 
   async function handleToggle(ingredientId) {
-    if (!workspaceKey) return;
+    if (!activeWorkspaceId) return;
     const nowChecked = !checkedIds.has(ingredientId);
     // Optimistic update
     setCheckedIds((prev) => {
@@ -106,7 +105,7 @@ export function RecipeModal({ recipe, ingredients, ingredientsLoading, onClose }
     });
     // Persist to Supabase (upsert)
     await supabase.from('workspace_ingredient_checks').upsert({
-      workspace_id: workspaceKey,
+      workspace_id: activeWorkspaceId,
       recipe_id: recipe.id,
       ingredient_id: ingredientId,
       checked: nowChecked,

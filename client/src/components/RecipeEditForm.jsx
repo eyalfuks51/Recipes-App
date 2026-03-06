@@ -19,7 +19,7 @@ const ALLOWED_CATEGORIES = [
   'אחר',
 ];
 
-export function RecipeEditForm({ extractedRecipe, instagramUrl, onSaved, onDiscard }) {
+export function RecipeEditForm({ extractedRecipe, instagramUrl, workspaceId, onSaved, onDiscard }) {
   const [title, setTitle] = useState(extractedRecipe.title ?? '');
   const [category, setCategory] = useState(extractedRecipe.main_category ?? '');
   const [difficulty, setDifficulty] = useState(extractedRecipe.difficulty ?? '');
@@ -56,6 +56,7 @@ export function RecipeEditForm({ extractedRecipe, instagramUrl, onSaved, onDisca
             difficulty,
             ingredients,
             instructions,
+            workspace_id: workspaceId,
           }),
         }
       );

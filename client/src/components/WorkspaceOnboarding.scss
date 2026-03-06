@@ -1,0 +1,80 @@
+.onboarding-card {
+  max-width: 420px;
+
+  h1 {
+    margin-bottom: 8px;
+  }
+
+  p {
+    margin-bottom: 20px;
+    color: #64748b;
+    font-size: 0.9rem;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  .btn-google {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+.onboarding-tabs {
+  display: flex;
+  border-bottom: 1px solid #e2e8f0;
+  gap: 0;
+}
+
+.onboarding-tab-btn {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #64748b;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+
+  &:hover {
+    color: #1a202c;
+  }
+
+  &--active {
+    color: #2563eb;
+    border-bottom-color: #2563eb;
+  }
+}
+
+.onboarding-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #cbd5e0;
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
+
+  &:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
+
+  &::placeholder {
+    color: #a0aec0;
+  }
+}
+
+.onboarding-error {
+  color: #dc2626;
+  font-size: 0.8125rem;
+  margin: 0;
+}

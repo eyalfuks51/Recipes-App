@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { useWorkspace } from '../lib/workspace.jsx';
 import { RecipeModal } from './RecipeModal';
 import './RecipeGallery.scss';
 
@@ -76,14 +77,23 @@ export function RecipeGallery({ refreshTrigger = 0 }) {
   const [modalIngredients, setModalIngredients] = useState([]);
   const [ingredientsLoading, setIngredientsLoading] = useState(false);
 
+  const { activeWorkspaceId } = useWorkspace();
+
   useEffect(() => {
     async function fetchRecipes() {
+      if (!activeWorkspaceId) {
+        setRecipes([]);
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
       setError(null);
 
       const { data, error: sbError } = await supabase
         .from('recipes')
         .select('id, title, main_category, difficulty, instagram_url, instructions, workspace_id')
+        .eq('workspace_id', activeWorkspaceId)
         .order('created_at', { ascending: false });
 
       if (sbError) {
@@ -96,7 +106,7 @@ export function RecipeGallery({ refreshTrigger = 0 }) {
     }
 
     fetchRecipes();
-  }, [refreshTrigger]);
+  }, [refreshTrigger, activeWorkspaceId]);
 
   async function handleCardClick(recipe) {
     // Show modal immediately with card data; load ingredients in background

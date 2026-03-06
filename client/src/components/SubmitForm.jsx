@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import './SubmitForm.scss';
+import { useWorkspace } from '../lib/workspace.jsx';
 import { RecipeEditForm } from './RecipeEditForm.jsx';
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
@@ -33,6 +34,7 @@ function IconAlert() {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 export function SubmitForm({ onSuccess }) {
+  const { activeWorkspaceId } = useWorkspace();
   const [url, setUrl] = useState('');
   const [status, setStatus] = useState('idle'); // 'idle' | 'loading' | 'preview' | 'success' | 'error'
   const [result, setResult] = useState(null);
@@ -91,6 +93,7 @@ export function SubmitForm({ onSuccess }) {
       <RecipeEditForm
         extractedRecipe={extractedRecipe}
         instagramUrl={url}
+        workspaceId={activeWorkspaceId}
         onSaved={handleRecipeSaved}
         onDiscard={handleDiscard}
       />
