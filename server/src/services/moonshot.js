@@ -1,7 +1,27 @@
 import OpenAI from 'openai';
 
+export const ALLOWED_CATEGORIES = [
+  'פסטה',
+  'סלט',
+  'קינוח',
+  'מרק',
+  'בשר',
+  'עוף',
+  'דגים',
+  'אורז',
+  'ירקות',
+  'ביצים',
+  'מאפה',
+  'שתייה',
+  'ארוחת בוקר',
+  'אחר',
+];
+
 const HEBREW_SYSTEM_PROMPT =
-  'אתה עוזר לניתוח מתכונים. קרא את כיתוב האינסטגרם וחזור רק ב-JSON תקני בעברית עם השדות הבאים: {"title": string, "main_category": string (לדוגמה: פסטה, סלט, קינוח, מרק), "difficulty": string (אחד מ: קל, בינוני, קשה), "ingredients": [מערך של שמות מרכיבים]}. אל תוסיף טקסט מחוץ ל-JSON.';
+  `אתה עוזר לניתוח מתכונים. קרא את כיתוב האינסטגרם וחזור רק ב-JSON תקני בעברית עם השדות הבאים: ` +
+  `{"title": string, "main_category": string (חייב להיות אחד בדיוק מהרשימה: ${ALLOWED_CATEGORIES.join(', ')}), ` +
+  `"difficulty": string (אחד מ: קל, בינוני, קשה), "ingredients": [מערך של שמות מרכיבים]}. ` +
+  `אם הקטגוריה אינה מתאימה לאף אחת מהאפשרויות, השתמש ב"אחר". אל תוסיף טקסט מחוץ ל-JSON.`;
 
 /**
  * Creates an OpenAI client configured for Moonshot AI.
@@ -10,7 +30,7 @@ const HEBREW_SYSTEM_PROMPT =
 export function createClient() {
   return new OpenAI({
     apiKey: process.env.MOONSHOT_API_KEY,
-    baseURL: 'https://api.moonshot.cn/v1',
+    baseURL: 'https://api.moonshot.ai/v1',
   });
 }
 
@@ -55,6 +75,11 @@ export async function extractRecipeFromCaption(caption) {
 
   if (!recipe.title || !Array.isArray(recipe.ingredients)) {
     throw new Error('AI response missing required recipe fields');
+  }
+
+  // Normalize category to allowed list; fallback to 'אחר'
+  if (recipe.main_category && !ALLOWED_CATEGORIES.includes(recipe.main_category)) {
+    recipe.main_category = 'אחר';
   }
 
   return recipe;
