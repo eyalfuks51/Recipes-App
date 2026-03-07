@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Functional Enhancements
-status: planning
-stopped_at: Phases 7-9 added to roadmap — planning Phase 7
-last_updated: "2026-03-07T20:30:00.000Z"
-last_activity: "2026-03-07 - v1.1 phases defined, planning Phase 7"
+status: in-progress
+stopped_at: "Completed 07-01 — DELETE and PUT recipe backend endpoints"
+last_updated: "2026-03-07T20:31:30.000Z"
+last_activity: "2026-03-07 - Completed Phase 7 Plan 01 (backend delete/update endpoints)"
 progress:
   total_phases: 3
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_plans: 9
+  completed_plans: 1
+  percent: 11
 ---
 
 # Project State
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-03-07)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-03-07 — Milestone v1.1 started
+Phase: 07-recipe-management
+Plan: 01 of 03 complete
+Status: In progress
+Last activity: 2026-03-07 — Completed Plan 01 (backend DELETE and PUT endpoints)
 
 ## Accumulated Context
 
@@ -41,6 +41,10 @@ Key architectural decisions from v1.0:
 - ALLOWED_* constants as single source of truth in moonshot.js
 - Workspace/ecosystem model with Supabase RLS for data isolation
 - RecipeReviewScreen split-screen as core human-in-the-loop UX
+
+v1.1 decisions:
+- updateRecipe uses insert (not upsert) for junction rows after delete, since no conflict key exists post-deletion
+- updateRecipe skips ingredients processing when no ingredients array provided (sparse update)
 
 ### Roadmap Evolution
 
@@ -59,5 +63,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-07
-Stopped at: v1.1 milestone requirements definition
+Stopped at: Completed 07-01 — DELETE /api/recipes/:id and PUT /api/recipes/:id backend routes
 Resume file: None
