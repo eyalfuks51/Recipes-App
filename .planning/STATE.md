@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Phase 6 context gathered
-last_updated: "2026-03-07T08:44:24.184Z"
+stopped_at: Completed 06-02-PLAN.md — recipe dimensions migration
+last_updated: "2026-03-07T08:57:10.177Z"
 last_activity: 2026-03-05 — Roadmap created
 progress:
   total_phases: 6
   completed_phases: 5
-  total_plans: 17
-  completed_plans: 17
+  total_plans: 20
+  completed_plans: 18
   percent: 25
 ---
 
@@ -59,6 +59,7 @@ Progress: [███░░░░░░░] 25%
 | Phase 04-multi-tenant-saas-and-ecosystems P04-01 | 2 | 2 tasks | 5 files |
 | Phase 04-multi-tenant-saas-and-ecosystems P04-04 | 2 | 2 tasks | 4 files |
 | Phase 04-multi-tenant-saas-and-ecosystems P04-05 | 4 | 2 tasks | 6 files |
+| Phase 06-human-in-the-loop-review-multi-dimensional-ai P02 | 5 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -88,6 +89,8 @@ Recent decisions affecting current work:
 - [Phase 04-multi-tenant-saas-and-ecosystems]: ALLOWED_CATEGORIES duplicated in RecipeEditForm.jsx as client-side constant — browser cannot import server modules, comment notes to keep in sync with moonshot.js
 - [Phase 04-multi-tenant-saas-and-ecosystems]: workspaceKey fallback: recipe.workspace_id ?? user.id — personal recipes use user.id as workspace key for checkbox state
 - [Phase 04-multi-tenant-saas-and-ecosystems]: Optimistic UI update on checkbox toggle — checkedIds updated immediately, upsert fires async
+- [Phase 06-human-in-the-loop-review-multi-dimensional-ai]: All 7 new recipe columns nullable — backward-compatible, existing rows retain NULL for new fields
+- [Phase 06-human-in-the-loop-review-multi-dimensional-ai]: JSONB chosen for equipment_needed and dietary_tags — stores Hebrew string arrays without junction tables
 
 ### Roadmap Evolution
 
@@ -105,6 +108,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-07T08:44:24.182Z
-Stopped at: Phase 6 context gathered
-Resume file: .planning/phases/06-human-in-the-loop-review-multi-dimensional-ai/06-CONTEXT.md
+Last session: 2026-03-07T08:57:10.175Z
+Stopped at: Completed 06-02-PLAN.md — recipe dimensions migration
+Resume file: None
