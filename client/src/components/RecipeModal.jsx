@@ -151,24 +151,34 @@ export function RecipeModal({ recipe, ingredients, ingredientsLoading, onClose }
         </button>
 
         <div className="modal-body">
-          {/* ── Left: Instagram iframe ─────────────────────────────────── */}
+          {/* ── Left: Instagram embed ─────────────────────────────────── */}
           <div className="modal-left">
-            {embedUrl ? (
-              <iframe
-                className="modal-iframe"
-                src={embedUrl}
-                title={`Instagram post: ${recipe.title}`}
-                frameBorder="0"
-                scrolling="no"
-                allowTransparency="true"
-                loading="lazy"
-              />
-            ) : (
-              <div className="modal-iframe-fallback">
-                <IconInstagram />
-                <span>Preview unavailable</span>
-              </div>
-            )}
+            <div className="modal-media-container">
+              {recipe.thumbnail_url ? (
+                <a
+                  href={recipe.instagram_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="modal-thumbnail-link"
+                  aria-label="View on Instagram"
+                >
+                  <img src={recipe.thumbnail_url} alt={recipe.title} className="modal-thumbnail-img" />
+                  <div className="modal-play-btn" aria-hidden="true">
+                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                      <circle cx="24" cy="24" r="24" fill="rgba(255,255,255,0.9)" />
+                      <polygon points="19,15 36,24 19,33" fill="#0f0f0f" />
+                    </svg>
+                  </div>
+                </a>
+              ) : embedUrl ? (
+                <iframe className="modal-iframe" src={embedUrl} title={`Instagram post: ${recipe.title}`} frameBorder="0" scrolling="no" allowTransparency="true" loading="lazy" />
+              ) : (
+                <div className="modal-iframe-fallback">
+                  <IconInstagram />
+                  <span>Preview unavailable</span>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* ── Right: Recipe details ──────────────────────────────────── */}
@@ -229,12 +239,24 @@ export function RecipeModal({ recipe, ingredients, ingredientsLoading, onClose }
               </section>
 
               {/* Instructions */}
-              {recipe.instructions && (
-                <section className="modal-instructions">
-                  <h3 className="modal-section-heading">Instructions</h3>
-                  <p className="modal-instructions-text" dir="auto">{recipe.instructions}</p>
-                </section>
-              )}
+              {Array.isArray(recipe.instructions)
+                ? recipe.instructions.length > 0 && (
+                    <section className="modal-instructions">
+                      <h3 className="modal-section-heading">הוראות הכנה</h3>
+                      <ol className="modal-instructions-list" dir="rtl">
+                        {recipe.instructions.map((step, i) => (
+                          <li key={i} className="modal-instruction-step">{step}</li>
+                        ))}
+                      </ol>
+                    </section>
+                  )
+                : !!recipe.instructions && (
+                    <section className="modal-instructions">
+                      <h3 className="modal-section-heading">הוראות הכנה</h3>
+                      <p className="modal-instructions-text" dir="auto">{recipe.instructions}</p>
+                    </section>
+                  )
+              }
 
               {/* Instagram link */}
               {recipe.instagram_url && (
