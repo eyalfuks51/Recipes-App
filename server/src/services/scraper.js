@@ -64,7 +64,14 @@ async function scrapeWithRapidAPI(instagramUrl) {
 
   if (!caption) throw new Error('No caption found in RapidAPI response');
 
-  return caption;
+  // Extract thumbnail from the API response payload
+  const thumbnailUrl =
+    data?.thumbnail_url ||
+    data?.display_url ||
+    data?.image_versions2?.candidates?.[0]?.url ||
+    null;
+
+  return { caption, thumbnailUrl };
 }
 
 /**
@@ -75,13 +82,17 @@ async function scrapeWithRapidAPI(instagramUrl) {
  */
 export async function scrapeInstagramCaption(instagramUrl) {
   let caption;
+  let rapidApiThumbnail = null;
   try {
-    caption = await scrapeWithRapidAPI(instagramUrl);
+    const result = await scrapeWithRapidAPI(instagramUrl);
+    caption = result.caption;
+    rapidApiThumbnail = result.thumbnailUrl;
     console.log('[scraper] RapidAPI succeeded');
   } catch (err) {
     console.warn('[scraper] RapidAPI failed, falling back to Apify:', err.message);
     caption = await scrapeWithApify(instagramUrl);
   }
-  const thumbnailUrl = await fetchOgImage(instagramUrl);
+  // Use thumbnail from RapidAPI payload if available, fall back to og:image scraping
+  const thumbnailUrl = rapidApiThumbnail ?? await fetchOgImage(instagramUrl);
   return { caption, thumbnailUrl };
 }

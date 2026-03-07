@@ -1,7 +1,10 @@
 .review-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  background: #fff;
 }
 
 // ─── Tab Switcher (mobile only) ───────────────────────────────────────────────
@@ -16,24 +19,20 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0;
-  height: calc(100vh - 120px);
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 // ─── Left Panel: Instagram Embed ──────────────────────────────────────────────
 
 .review-left {
-  position: sticky;
-  top: 0;
-  height: 100vh;
   overflow: hidden;
   background: #f7fafc;
   border-right: 1px solid #e2e8f0;
-
-  iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-  }
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
 }
 
 .review-media-container {
@@ -91,11 +90,32 @@
 
 .review-left-fallback {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100%;
+  gap: 10px;
   color: #718096;
   font-size: 0.9rem;
+  text-align: center;
+  padding: 24px;
+}
+
+.review-fallback-link {
+  font-size: 0.85rem;
+  color: #667eea;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.steps-empty-msg {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #a0aec0;
+  padding: 4px 0 8px;
 }
 
 // ─── Right Panel: Edit Form ────────────────────────────────────────────────────
@@ -103,7 +123,7 @@
 .review-right {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  min-width: 0;
   overflow: hidden;
 }
 
@@ -380,7 +400,8 @@ textarea.field-input {
   }
 
   .review-body {
-    display: block;
+    display: flex;
+    flex-direction: column;
   }
 
   .review-left--hidden-mobile {
@@ -392,12 +413,8 @@ textarea.field-input {
   }
 
   .review-left {
-    position: static;
-    height: auto;
-
-    iframe {
-      height: 500px;
-    }
+    flex: 1;
+    min-height: 0;
   }
 
   .review-form {

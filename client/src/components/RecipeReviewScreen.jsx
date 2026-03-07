@@ -41,11 +41,6 @@ const ALLOWED_DIETARY_TAGS = ['עתיר חלבון', 'דל פחמימה', 'מו�
 // Must stay in sync with server/src/services/moonshot.js ALLOWED_MEAL_TYPES
 const ALLOWED_MEAL_TYPES = ['ארוחת בוקר', 'ארוחת צהריים/ערב'];
 
-function extractShortcode(url) {
-  const match = url?.match(/instagram\.com\/(?:p|reel|tv)\/([A-Za-z0-9_-]+)/);
-  return match?.[1] ?? null;
-}
-
 export function RecipeReviewScreen({
   extractedRecipe,
   instagramUrl,
@@ -82,8 +77,6 @@ export function RecipeReviewScreen({
   const [saveError, setSaveError] = useState(null);
   const [activeTab, setActiveTab] = useState('post');
 
-  const shortcode = extractShortcode(instagramUrl);
-  const embedUrl = shortcode ? `https://www.instagram.com/p/${shortcode}/embed/` : null;
 
   function handleStepChange(index, value) {
     setSteps((prev) => prev.map((s, i) => (i === index ? value : s)));
@@ -194,11 +187,10 @@ export function RecipeReviewScreen({
                   </svg>
                 </div>
               </a>
-            ) : embedUrl ? (
-              <iframe src={embedUrl} frameBorder="0" scrolling="no" allowTransparency="true" loading="lazy" title="Instagram post" />
             ) : (
               <div className="review-left-fallback">
-                <p>לא ניתן לטעון את הפוסט</p>
+                <p>לא ניתן לטעון תצוגה מקדימה</p>
+                <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="review-fallback-link">פתח ב-Instagram</a>
               </div>
             )}
           </div>
@@ -223,6 +215,9 @@ export function RecipeReviewScreen({
             {/* Instructions */}
             <div className="section-heading">הוראות הכנה</div>
             <div className="steps-list">
+              {steps.length === 0 && (
+                <p className="steps-empty-msg">אין שלבי הכנה — לחץ להוספה</p>
+              )}
               {steps.map((step, index) => (
                 <div key={index} className="step-row">
                   <span className="step-number">{index + 1}</span>

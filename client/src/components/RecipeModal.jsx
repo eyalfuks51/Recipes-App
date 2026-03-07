@@ -239,24 +239,23 @@ export function RecipeModal({ recipe, ingredients, ingredientsLoading, onClose }
               </section>
 
               {/* Instructions */}
-              {Array.isArray(recipe.instructions)
-                ? recipe.instructions.length > 0 && (
-                    <section className="modal-instructions">
-                      <h3 className="modal-section-heading">הוראות הכנה</h3>
-                      <ol className="modal-instructions-list" dir="rtl">
-                        {recipe.instructions.map((step, i) => (
-                          <li key={i} className="modal-instruction-step">{step}</li>
-                        ))}
-                      </ol>
-                    </section>
-                  )
-                : !!recipe.instructions && (
-                    <section className="modal-instructions">
-                      <h3 className="modal-section-heading">הוראות הכנה</h3>
-                      <p className="modal-instructions-text" dir="auto">{recipe.instructions}</p>
-                    </section>
-                  )
-              }
+              {(() => {
+                let steps = recipe.instructions;
+                if (typeof steps === 'string') {
+                  try { steps = JSON.parse(steps); } catch { steps = steps ? [steps] : []; }
+                }
+                if (!Array.isArray(steps) || steps.length === 0) return null;
+                return (
+                  <section className="modal-instructions">
+                    <h3 className="modal-section-heading">הוראות הכנה</h3>
+                    <ol className="modal-instructions-list" dir="rtl">
+                      {steps.map((step, i) => (
+                        <li key={i} className="modal-instruction-step">{step}</li>
+                      ))}
+                    </ol>
+                  </section>
+                );
+              })()}
 
               {/* Instagram link */}
               {recipe.instagram_url && (
