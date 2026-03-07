@@ -50,6 +50,7 @@ export function RecipeReviewScreen({
   extractedRecipe,
   instagramUrl,
   workspaceId,
+  thumbnailUrl,
   onSaved,
   onDiscard,
 }) {
@@ -193,7 +194,7 @@ export function RecipeReviewScreen({
 
         {/* Right panel: edit form */}
         <div className={`review-right ${activeTab === 'post' ? 'review-right--hidden-mobile' : ''}`}>
-          <form onSubmit={handleSave}>
+          <form id="review-form" onSubmit={handleSave} className="review-form">
 
             {/* Title */}
             <label className="field-label">
@@ -353,16 +354,17 @@ export function RecipeReviewScreen({
             {/* Error message */}
             {saveError && <p className="review-error">{saveError}</p>}
 
-            {/* Actions */}
-            <div className="review-actions">
-              <button type="button" className="btn-secondary" onClick={onDiscard}>
-                ביטול
-              </button>
-              <button type="submit" className="btn-primary" disabled={saving}>
-                {saving ? 'שומר...' : 'אישור ושמירה'}
-              </button>
-            </div>
           </form>
+
+          {/* Sticky footer OUTSIDE the form */}
+          <div className="review-actions">
+            <button type="button" className="btn-secondary" onClick={onDiscard}>
+              ביטול
+            </button>
+            <button type="submit" form="review-form" className="btn-primary" disabled={saving}>
+              {saving ? 'שומר...' : 'אישור ושמירה'}
+            </button>
+          </div>
         </div>
       </div>
     </div>
