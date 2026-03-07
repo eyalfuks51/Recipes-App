@@ -36,6 +36,59 @@
   }
 }
 
+.review-media-container {
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  background: #0f0f0f;
+  overflow: hidden;
+  position: relative;
+
+  iframe,
+  .review-left-fallback,
+  .review-thumbnail-link {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.review-thumbnail-link {
+  display: block;
+  text-decoration: none;
+  position: relative;
+}
+
+.review-thumbnail-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.review-play-btn {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.15);
+  transition: background 0.2s;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.3);
+  }
+
+  svg {
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.4));
+    transition: transform 0.15s;
+  }
+}
+
+.review-thumbnail-link:hover .review-play-btn svg {
+  transform: scale(1.08);
+}
+
 .review-left-fallback {
   display: flex;
   align-items: center;

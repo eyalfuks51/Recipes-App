@@ -135,6 +135,7 @@ export function RecipeReviewScreen({
             main_ingredient: mainIngredient,
             prep_time: parsedPrepTime,
             dietary_tags: dietaryTags,
+            thumbnail_url: thumbnailUrl ?? null,
           }),
         }
       );
@@ -176,20 +177,31 @@ export function RecipeReviewScreen({
       <div className="review-body">
         {/* Left panel: Instagram embed */}
         <div className={`review-left ${activeTab === 'edit' ? 'review-left--hidden-mobile' : ''}`}>
-          {embedUrl ? (
-            <iframe
-              src={embedUrl}
-              frameBorder="0"
-              scrolling="no"
-              allowTransparency="true"
-              loading="lazy"
-              title="Instagram post"
-            />
-          ) : (
-            <div className="review-left-fallback">
-              <p>לא ניתן לטעון את הפוסט</p>
-            </div>
-          )}
+          <div className="review-media-container">
+            {thumbnailUrl ? (
+              <a
+                href={instagramUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="review-thumbnail-link"
+                aria-label="פתח פוסט ב-Instagram"
+              >
+                <img src={thumbnailUrl} alt="תצוגה מקדימה" className="review-thumbnail-img" />
+                <div className="review-play-btn" aria-hidden="true">
+                  <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                    <circle cx="20" cy="20" r="20" fill="rgba(255,255,255,0.9)" />
+                    <polygon points="16,13 30,20 16,27" fill="#0f0f0f" />
+                  </svg>
+                </div>
+              </a>
+            ) : embedUrl ? (
+              <iframe src={embedUrl} frameBorder="0" scrolling="no" allowTransparency="true" loading="lazy" title="Instagram post" />
+            ) : (
+              <div className="review-left-fallback">
+                <p>לא ניתן לטעון את הפוסט</p>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Right panel: edit form */}

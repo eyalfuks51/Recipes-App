@@ -94,6 +94,7 @@ export function SubmitForm({ onSuccess }) {
         extractedRecipe={extractedRecipe}
         instagramUrl={url}
         workspaceId={activeWorkspaceId}
+        thumbnailUrl={extractedRecipe.thumbnail_url ?? null}
         onSaved={handleRecipeSaved}
         onDiscard={handleDiscard}
       />
