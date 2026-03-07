@@ -30,18 +30,19 @@ Full archive: `.planning/milestones/v1.0-ROADMAP.md`
 | 4. Multi-tenant SaaS and Ecosystems | v1.0 | 5/5 | Complete | 2026-03-06 |
 | 5. Ecosystem Onboarding and Strict Data Isolation | v1.0 | 4/4 | Complete | 2026-03-07 |
 | 6. Human-in-the-Loop Review & Multi-Dimensional AI | v1.0 | 3/3 | Complete | 2026-03-07 |
+| 7. Recipe Management | v1.1 | 3/3 | Complete | 2026-03-07 |
 
-### Phase 7: Recipe Management
+### Phase 7: Recipe Management — COMPLETE 2026-03-07
 
 **Goal:** Enable users to edit and delete saved recipes — API endpoints, Supabase queries, React state. No CSS/styling.
 **Requirements**: delete recipes from workspace; edit saved recipes via RecipeReviewScreen (post-save edit mode)
 **Depends on:** Phase 6
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans executed
 
 Plans:
-- [ ] 07-01-PLAN.md — Backend: deleteRecipe + updateRecipe Supabase functions + DELETE/PUT API routes
-- [ ] 07-02-PLAN.md — Frontend delete: RecipeModal delete button + RecipeGallery optimistic removal
-- [ ] 07-03-PLAN.md — Frontend edit: RecipeReviewScreen editMode + RecipeGallery edit state wiring
+- [x] 07-01-PLAN.md — Backend: deleteRecipe + updateRecipe Supabase functions + DELETE/PUT API routes
+- [x] 07-02-PLAN.md — Frontend delete: RecipeModal delete button + RecipeGallery optimistic removal
+- [x] 07-03-PLAN.md — Frontend edit: RecipeReviewScreen editMode + RecipeGallery edit state wiring
 
 ### Phase 8: Workspace Switching
 
