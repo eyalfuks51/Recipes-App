@@ -248,3 +248,208 @@ describe('saveRecipe', () => {
     );
   });
 });
+
+describe('deleteRecipe', () => {
+  it('returns { deleted: true } when recipe exists', async () => {
+    const mockClient = {
+      from: mock.fn((table) => {
+        if (table === 'recipes') {
+          return {
+            delete: mock.fn(() => ({
+              eq: mock.fn(() => ({
+                select: mock.fn(() => Promise.resolve({ data: [{ id: 'uuid-1' }], error: null })),
+              })),
+            })),
+          };
+        }
+      }),
+    };
+
+    global.__mockSupabaseClient = mockClient;
+
+    const mod = await import('../services/supabase.js?t=' + Date.now());
+    const result = await mod.deleteRecipe('uuid-1');
+
+    assert.deepEqual(result, { deleted: true });
+  });
+
+  it('throws "Recipe not found" when Supabase returns empty data array', async () => {
+    const mockClient = {
+      from: mock.fn((table) => {
+        if (table === 'recipes') {
+          return {
+            delete: mock.fn(() => ({
+              eq: mock.fn(() => ({
+                select: mock.fn(() => Promise.resolve({ data: [], error: null })),
+              })),
+            })),
+          };
+        }
+      }),
+    };
+
+    global.__mockSupabaseClient = mockClient;
+
+    const mod = await import('../services/supabase.js?t=' + Date.now());
+    await assert.rejects(
+      () => mod.deleteRecipe('nonexistent-id'),
+      /Recipe not found/
+    );
+  });
+
+  it('throws when Supabase returns an error', async () => {
+    const mockClient = {
+      from: mock.fn((table) => {
+        if (table === 'recipes') {
+          return {
+            delete: mock.fn(() => ({
+              eq: mock.fn(() => ({
+                select: mock.fn(() => Promise.resolve({ data: null, error: { message: 'DB error' } })),
+              })),
+            })),
+          };
+        }
+      }),
+    };
+
+    global.__mockSupabaseClient = mockClient;
+
+    const mod = await import('../services/supabase.js?t=' + Date.now());
+    await assert.rejects(
+      () => mod.deleteRecipe('uuid-1'),
+      /Recipe delete failed: DB error/
+    );
+  });
+});
+
+describe('updateRecipe', () => {
+  it('returns { recipe_id, title, workspace_id } on successful update without ingredients', async () => {
+    const recipeRow = { id: 'uuid-recipe-1', title: 'Updated Title', workspace_id: 'ws-1' };
+
+    const mockClient = {
+      from: mock.fn((table) => {
+        if (table === 'recipes') {
+          return {
+            update: mock.fn(() => ({
+              eq: mock.fn(() => ({
+                select: mock.fn(() => Promise.resolve({ data: [recipeRow], error: null })),
+              })),
+            })),
+          };
+        }
+      }),
+    };
+
+    global.__mockSupabaseClient = mockClient;
+
+    const mod = await import('../services/supabase.js?t=' + Date.now());
+    const result = await mod.updateRecipe('uuid-recipe-1', { title: 'Updated Title', workspace_id: 'ws-1' });
+
+    assert.equal(result.recipe_id, 'uuid-recipe-1');
+    assert.equal(result.title, 'Updated Title');
+    assert.equal(result.workspace_id, 'ws-1');
+  });
+
+  it('throws "Recipe not found" when Supabase returns empty data array', async () => {
+    const mockClient = {
+      from: mock.fn((table) => {
+        if (table === 'recipes') {
+          return {
+            update: mock.fn(() => ({
+              eq: mock.fn(() => ({
+                select: mock.fn(() => Promise.resolve({ data: [], error: null })),
+              })),
+            })),
+          };
+        }
+      }),
+    };
+
+    global.__mockSupabaseClient = mockClient;
+
+    const mod = await import('../services/supabase.js?t=' + Date.now());
+    await assert.rejects(
+      () => mod.updateRecipe('nonexistent-id', { title: 'Test' }),
+      /Recipe not found/
+    );
+  });
+
+  it('throws when Supabase returns an error on update', async () => {
+    const mockClient = {
+      from: mock.fn((table) => {
+        if (table === 'recipes') {
+          return {
+            update: mock.fn(() => ({
+              eq: mock.fn(() => ({
+                select: mock.fn(() => Promise.resolve({ data: null, error: { message: 'Update failed' } })),
+              })),
+            })),
+          };
+        }
+      }),
+    };
+
+    global.__mockSupabaseClient = mockClient;
+
+    const mod = await import('../services/supabase.js?t=' + Date.now());
+    await assert.rejects(
+      () => mod.updateRecipe('uuid-1', { title: 'Test' }),
+      /Recipe update failed: Update failed/
+    );
+  });
+
+  it('updates ingredients when ingredients array is provided', async () => {
+    const recipeRow = { id: 'uuid-recipe-2', title: 'With Ingredients', workspace_id: null };
+    const ingredientRows = [{ id: 'ing-1' }, { id: 'ing-2' }];
+
+    let deleteCalled = false;
+    let insertCalled = false;
+
+    const mockClient = {
+      from: mock.fn((table) => {
+        if (table === 'recipes') {
+          return {
+            update: mock.fn(() => ({
+              eq: mock.fn(() => ({
+                select: mock.fn(() => Promise.resolve({ data: [recipeRow], error: null })),
+              })),
+            })),
+          };
+        }
+        if (table === 'ingredients') {
+          return {
+            upsert: mock.fn(() => ({
+              select: mock.fn(() => Promise.resolve({ data: ingredientRows, error: null })),
+            })),
+          };
+        }
+        if (table === 'recipe_ingredients') {
+          return {
+            delete: mock.fn(() => ({
+              eq: mock.fn(() => {
+                deleteCalled = true;
+                return Promise.resolve({ data: [], error: null });
+              }),
+            })),
+            insert: mock.fn(() => {
+              insertCalled = true;
+              return Promise.resolve({ data: [], error: null });
+            }),
+          };
+        }
+      }),
+    };
+
+    global.__mockSupabaseClient = mockClient;
+
+    const mod = await import('../services/supabase.js?t=' + Date.now());
+    const result = await mod.updateRecipe('uuid-recipe-2', {
+      title: 'With Ingredients',
+      ingredients: ['tomato', 'garlic'],
+    });
+
+    assert.equal(result.recipe_id, 'uuid-recipe-2');
+    assert.ok(deleteCalled, 'Should have deleted old junction rows');
+    assert.ok(insertCalled, 'Should have inserted new junction rows');
+  });
+});
