@@ -133,6 +133,13 @@ export function RecipeGallery({ refreshTrigger = 0 }) {
     setModalIngredients([]);
   }
 
+  function handleDelete(recipeId) {
+    // Optimistic removal: remove recipe from list immediately
+    setRecipes((prev) => prev.filter((r) => r.id !== recipeId));
+    setSelectedRecipe(null);
+    setModalIngredients([]);
+  }
+
   return (
     <div className="recipe-gallery">
       <div className="gallery-header">
@@ -185,6 +192,7 @@ export function RecipeGallery({ refreshTrigger = 0 }) {
           ingredients={modalIngredients}
           ingredientsLoading={ingredientsLoading}
           onClose={handleModalClose}
+          onDelete={handleDelete}
         />
       )}
     </div>
