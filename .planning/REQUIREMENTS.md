@@ -45,6 +45,28 @@
 - [ ] **FE-10**: SCSS used for styling (not CSS-in-JS)
 - [ ] **FE-11**: Backend URL and Supabase credentials read from environment variables (`.env`)
 
+## Phase 6 Requirements — Human-in-the-Loop Review & Multi-Dimensional AI
+
+### AI Schema
+
+- [x] **AI-SCHEMA-01**: `ALLOWED_CUISINES` (12 values) and `ALLOWED_DIETARY_TAGS` (4 values) exported from `moonshot.js`
+- [x] **AI-SCHEMA-02**: `extractRecipeFromCaption()` normalizes cuisine, dietary_tags, meal_type, and instructions to valid values
+- [x] **AI-SCHEMA-03**: Hebrew-only AI prompt requests multi-dimensional recipe fields: title, main_category, difficulty, ingredients, meal_type (strict enum), cuisine, main_ingredient, prep_time, dietary_tags, instructions
+
+### Server
+
+- [x] **SERVER-PASSTHROUGH-01**: `/api/extract-recipe` returns new AI fields; `/api/confirm-recipe` accepts and forwards them to `saveRecipe()`
+
+### Database
+
+- [x] **DB-MIGRATION-01**: Supabase migration adds 5 nullable columns to `recipes` table: cuisine, meal_type, main_ingredient, prep_time, dietary_tags (cook_time and equipment_needed excluded per approved scope reduction)
+
+### UI Review Screen
+
+- [x] **UI-REVIEW-01**: `RecipeReviewScreen` — split-screen desktop layout (Instagram iframe left, editable form right); tab switcher on mobile ("פוסט" / "עריכה")
+- [x] **UI-REVIEW-02**: All AI-extracted fields editable in review form: title, instructions (numbered steps), ingredients, category, cuisine, meal type toggle, main ingredient, difficulty, prep time, dietary tag checkboxes
+- [x] **UI-REVIEW-03**: Explicit save action only — "אישור ושמירה" button required; nothing persists until user clicks it
+
 ## v2 Requirements
 
 ### Features
@@ -93,11 +115,21 @@
 | FE-10 | Phase 3 | Pending |
 | FE-11 | Phase 3 | Pending |
 
+| AI-SCHEMA-01 | Phase 6 | Complete |
+| AI-SCHEMA-02 | Phase 6 | Complete |
+| AI-SCHEMA-03 | Phase 6 | Complete |
+| SERVER-PASSTHROUGH-01 | Phase 6 | Complete |
+| DB-MIGRATION-01 | Phase 6 | Complete |
+| UI-REVIEW-01 | Phase 6 | Complete |
+| UI-REVIEW-02 | Phase 6 | Complete |
+| UI-REVIEW-03 | Phase 6 | Complete |
+
 **Coverage:**
 - v1 requirements: 25 total
-- Mapped to phases: 25
+- Phase 6 requirements: 8 total
+- Mapped to phases: 33
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-05*
-*Last updated: 2026-03-05 after initial definition*
+*Last updated: 2026-03-07 — added phase 6 requirement IDs*
