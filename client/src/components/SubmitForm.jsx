@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import './SubmitForm.scss';
 import { useWorkspace } from '../lib/workspace.jsx';
-import { RecipeEditForm } from './RecipeEditForm.jsx';
+import { RecipeReviewScreen } from './RecipeReviewScreen.jsx';
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 function IconInstagram() {
@@ -90,7 +90,7 @@ export function SubmitForm({ onSuccess }) {
 
   if (status === 'preview' && extractedRecipe) {
     return (
-      <RecipeEditForm
+      <RecipeReviewScreen
         extractedRecipe={extractedRecipe}
         instagramUrl={url}
         workspaceId={activeWorkspaceId}
