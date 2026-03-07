@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 06-02-PLAN.md — recipe dimensions migration
-last_updated: "2026-03-07T08:57:10.177Z"
+stopped_at: Completed 06-01-PLAN.md
+last_updated: "2026-03-07T08:57:48.186Z"
 last_activity: 2026-03-05 — Roadmap created
 progress:
   total_phases: 6
   completed_phases: 5
   total_plans: 20
-  completed_plans: 18
+  completed_plans: 19
   percent: 25
 ---
 
@@ -60,6 +60,7 @@ Progress: [███░░░░░░░] 25%
 | Phase 04-multi-tenant-saas-and-ecosystems P04-04 | 2 | 2 tasks | 4 files |
 | Phase 04-multi-tenant-saas-and-ecosystems P04-05 | 4 | 2 tasks | 6 files |
 | Phase 06-human-in-the-loop-review-multi-dimensional-ai P02 | 5 | 1 tasks | 1 files |
+| Phase 06-human-in-the-loop-review-multi-dimensional-ai P06-01 | 2min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -91,6 +92,8 @@ Recent decisions affecting current work:
 - [Phase 04-multi-tenant-saas-and-ecosystems]: Optimistic UI update on checkbox toggle — checkedIds updated immediately, upsert fires async
 - [Phase 06-human-in-the-loop-review-multi-dimensional-ai]: All 7 new recipe columns nullable — backward-compatible, existing rows retain NULL for new fields
 - [Phase 06-human-in-the-loop-review-multi-dimensional-ai]: JSONB chosen for equipment_needed and dietary_tags — stores Hebrew string arrays without junction tables
+- [Phase 06-human-in-the-loop-review-multi-dimensional-ai]: ALLOWED_CUISINES and ALLOWED_DIETARY_TAGS exported from moonshot.js as single source of truth for new enum fields
+- [Phase 06-human-in-the-loop-review-multi-dimensional-ai]: Optional-spread pattern extended to 7 new fields in saveRecipe() for backward-compatible DB upserts
 
 ### Roadmap Evolution
 
@@ -108,6 +111,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-07T08:57:10.175Z
-Stopped at: Completed 06-02-PLAN.md — recipe dimensions migration
+Last session: 2026-03-07T08:57:48.183Z
+Stopped at: Completed 06-01-PLAN.md
 Resume file: None

@@ -113,7 +113,7 @@ Plans:
 **Goal:** AI extraction returns a rich multi-dimensional schema (meal type, cuisine, main ingredient, equipment, prep/cook time, dietary tags, instructions) and users validate the output on a premium split-screen review screen before explicitly approving and saving
 **Requirements**: AI-SCHEMA-01, AI-SCHEMA-02, AI-SCHEMA-03, SERVER-PASSTHROUGH-01, DB-MIGRATION-01, UI-REVIEW-01, UI-REVIEW-02, UI-REVIEW-03
 **Depends on:** Phase 5
-**Plans:** 1/3 plans executed
+**Plans:** 2/3 plans executed
 
 Plans:
 - [ ] 06-01-PLAN.md — Moonshot AI schema expansion: new fields, ALLOWED_CUISINES/DIETARY_TAGS enums, Hebrew prompt, server-side normalization, routes + saveRecipe() passthrough
