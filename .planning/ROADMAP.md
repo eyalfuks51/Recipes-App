@@ -98,7 +98,7 @@ Plans:
 ### Phase 5: Ecosystem Onboarding and Strict Data Isolation
 
 **Goal:** Users are onboarded into workspaces explicitly, can switch between workspaces, and all recipe data is isolated at the database level via Supabase RLS policies
-**Depends on:** Phase 4
+**Depends on:** Phase 5
 **Requirements:** SAAS-WS-01, SAAS-WS-02, SAAS-WS-03, SAAS-WS-04, SAAS-WS-05, SAAS-WS-06, SAAS-WS-07
 **Plans:** 4 plans
 
@@ -107,3 +107,15 @@ Plans:
 - [ ] 05-02-PLAN.md — Workspace onboarding screen (create or join via invite code)
 - [ ] 05-03-PLAN.md — Supabase RLS policies migration + client-side query scoping to active workspace
 - [ ] 05-04-PLAN.md — Orphaned data migration SQL script + server-side workspace_id validation hardening
+
+### Phase 6: Human-in-the-Loop Review & Multi-Dimensional AI
+
+**Goal:** AI extraction returns a rich multi-dimensional schema (meal type, cuisine, main ingredient, equipment, prep/cook time, dietary tags, instructions) and users validate the output on a premium split-screen review screen before explicitly approving and saving
+**Requirements**: AI-SCHEMA-01, AI-SCHEMA-02, AI-SCHEMA-03, SERVER-PASSTHROUGH-01, DB-MIGRATION-01, UI-REVIEW-01, UI-REVIEW-02, UI-REVIEW-03
+**Depends on:** Phase 5
+**Plans:** 3 plans
+
+Plans:
+- [ ] 06-01-PLAN.md — Moonshot AI schema expansion: new fields, ALLOWED_CUISINES/DIETARY_TAGS enums, Hebrew prompt, server-side normalization, routes + saveRecipe() passthrough
+- [ ] 06-02-PLAN.md — Supabase migration: add 7 nullable columns to recipes table (cuisine, meal_type, main_ingredient, equipment_needed, prep_time, cook_time, dietary_tags)
+- [ ] 06-03-PLAN.md — RecipeReviewScreen: split-screen desktop / tab-switcher mobile, all fields editable, explicit אישור ושמירה save
