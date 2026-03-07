@@ -1,8 +1,8 @@
 ---
 plan: 06-03
 phase: 06-human-in-the-loop-review-multi-dimensional-ai
-status: checkpoint
-completed_tasks: 2
+status: complete
+completed_tasks: 3
 total_tasks: 3
 self_check: PASSED
 ---
@@ -29,9 +29,10 @@ A premium split-screen review component replacing RecipeEditForm as the human-in
 ## Decisions Made
 - ALLOWED_CUISINES and ALLOWED_DIETARY_TAGS duplicated client-side (in sync with moonshot.js server constants)
 - Steps stored as string[] (no number prefix in value); numbers are display-only
-- Equipment rendered as pill tags with x-remove + text input add pattern
+- meal_type changed to strict 2-option toggle (ארוחת בוקר / ארוחת צהריים/ערב) per UX review
+- cook_time and equipment_needed removed from schema, AI prompt, routes, and UI per user feedback
 - Mobile: single-column tabs (not both panels stacked) for clean UX on small screens
-- prepTime/cookTime parsed via `parseInt(val) || null` for clean null on empty
+- prepTime parsed via `parseInt(val) || null` for clean null on empty
 
 ## Status
-Awaiting human verification checkpoint (Task 3). UI is built and committed. User must test the full extract → review → save flow before plan is marked complete.
+Complete — human verified and approved.
