@@ -72,6 +72,14 @@ recipeRouter.post('/extract-recipe', async (req, res) => {
       main_category: recipe.main_category,
       difficulty: recipe.difficulty,
       ingredients: recipe.ingredients,
+      meal_type: recipe.meal_type ?? null,
+      cuisine: recipe.cuisine ?? 'אחר',
+      main_ingredient: recipe.main_ingredient ?? null,
+      equipment_needed: recipe.equipment_needed ?? [],
+      prep_time: recipe.prep_time ?? null,
+      cook_time: recipe.cook_time ?? null,
+      dietary_tags: recipe.dietary_tags ?? [],
+      instructions: recipe.instructions ?? [],
     });
   } catch (err) {
     const isAbort = err?.name === 'AbortError' || err?.name === 'TimeoutError';
@@ -88,7 +96,11 @@ recipeRouter.post('/extract-recipe', async (req, res) => {
 
 // POST /api/confirm-recipe — accepts user-edited recipe data and saves to DB (step 2 of 2-step flow)
 recipeRouter.post('/confirm-recipe', async (req, res) => {
-  const { instagram_url, title, main_category, difficulty, ingredients, workspace_id, instructions } = req.body;
+  const {
+    instagram_url, title, main_category, difficulty, ingredients, workspace_id,
+    instructions, meal_type, cuisine, main_ingredient, equipment_needed,
+    prep_time, cook_time, dietary_tags
+  } = req.body;
 
   // Validation
   if (!instagram_url) {
@@ -113,6 +125,13 @@ recipeRouter.post('/confirm-recipe', async (req, res) => {
       ingredients,
       workspace_id,
       instructions,
+      meal_type,
+      cuisine,
+      main_ingredient,
+      equipment_needed,
+      prep_time,
+      cook_time,
+      dietary_tags,
     });
 
     return res.json({
