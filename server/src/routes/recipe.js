@@ -14,7 +14,7 @@ recipeRouter.post('/process-recipe', async (req, res) => {
 
   try {
     // Step 1: Scrape caption from Instagram post
-    const caption = await scrapeInstagramCaption(instagram_url);
+    const { caption } = await scrapeInstagramCaption(instagram_url);
 
     // Step 2: Extract structured recipe from caption via Moonshot AI
     const recipe = await extractRecipeFromCaption(caption);
@@ -59,7 +59,7 @@ recipeRouter.post('/extract-recipe', async (req, res) => {
 
   try {
     // Step 1: Scrape caption from Instagram post
-    const caption = await scrapeInstagramCaption(instagram_url);
+    const { caption, thumbnailUrl } = await scrapeInstagramCaption(instagram_url);
 
     // Step 2: Extract structured recipe from caption via Moonshot AI
     const recipe = await extractRecipeFromCaption(caption);
@@ -78,6 +78,7 @@ recipeRouter.post('/extract-recipe', async (req, res) => {
       prep_time: recipe.prep_time ?? null,
       dietary_tags: recipe.dietary_tags ?? [],
       instructions: recipe.instructions ?? [],
+      thumbnail_url: thumbnailUrl ?? null,
     });
   } catch (err) {
     const isAbort = err?.name === 'AbortError' || err?.name === 'TimeoutError';
@@ -97,7 +98,7 @@ recipeRouter.post('/confirm-recipe', async (req, res) => {
   const {
     instagram_url, title, main_category, difficulty, ingredients, workspace_id,
     instructions, meal_type, cuisine, main_ingredient,
-    prep_time, dietary_tags
+    prep_time, dietary_tags, thumbnail_url
   } = req.body;
 
   // Validation
@@ -128,6 +129,7 @@ recipeRouter.post('/confirm-recipe', async (req, res) => {
       main_ingredient,
       prep_time,
       dietary_tags,
+      thumbnail_url,
     });
 
     return res.json({
