@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: MVP
-status: complete
-stopped_at: Milestone complete
-last_updated: "2026-03-07T18:30:00.000Z"
-last_activity: "2026-03-07 - v1.0 milestone archived"
+milestone: v1.1
+milestone_name: Functional Enhancements
+status: defining_requirements
+stopped_at: Milestone started — defining requirements
+last_updated: "2026-03-07T20:00:00.000Z"
+last_activity: "2026-03-07 - Milestone v1.1 started"
 progress:
-  total_phases: 6
-  completed_phases: 6
-  total_plans: 20
-  completed_plans: 20
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -21,16 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-07)
 
 **Core value:** Any Instagram recipe URL becomes a browsable, structured recipe card in one click.
-**Current focus:** v1.0 complete — start `/gsd:new-milestone` for v1.1
+**Current focus:** v1.1 — Functional Enhancements (delete, edit, workspace switching, filters)
 
 ## Current Position
 
-Milestone: v1.0 MVP — SHIPPED 2026-03-07
-Phase: All 6 phases complete
-Plan: All 20 plans complete
-Status: Complete
-
-Progress: [██████████] 100%
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-07 — Milestone v1.1 started
 
 ## Accumulated Context
 
@@ -44,19 +42,6 @@ Key architectural decisions from v1.0:
 - Workspace/ecosystem model with Supabase RLS for data isolation
 - RecipeReviewScreen split-screen as core human-in-the-loop UX
 
-### Roadmap Evolution
-
-v1.0 shipped with 6 phases (originally planned as 3). Phases 4-6 added during development:
-- Phase 4: Multi-tenant SaaS and Ecosystems (Google Auth, workspaces, recipe review flow)
-- Phase 5: Ecosystem Onboarding and Strict Data Isolation
-- Phase 6: Human-in-the-Loop Review & Multi-Dimensional AI
-
-### Quick Tasks Completed
-
-| # | Description | Date | Commit | Directory |
-|---|-------------|------|--------|-----------|
-| 1 | Fix Phase 6 visual regressions: CSS layout cutoff, sticky footer buttons, empty instructions bug, 9:16 iframe aspect ratio, og:image thumbnail fallback | 2026-03-07 | a887271 | [1-fix-phase-6-visual-regressions-css-layou](.planning/quick/1-fix-phase-6-visual-regressions-css-layou/) |
-
 ### Pending Todos
 
 None.
@@ -68,5 +53,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-07
-Stopped at: v1.0 milestone complete
+Stopped at: v1.1 milestone requirements definition
 Resume file: None
