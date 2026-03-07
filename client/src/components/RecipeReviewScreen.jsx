@@ -38,6 +38,9 @@ const ALLOWED_CUISINES = [
 // Must stay in sync with server/src/services/moonshot.js ALLOWED_DIETARY_TAGS
 const ALLOWED_DIETARY_TAGS = ['עתיר חלבון', 'דל פחמימה', 'מושחת', 'קליל'];
 
+// Must stay in sync with server/src/services/moonshot.js ALLOWED_MEAL_TYPES
+const ALLOWED_MEAL_TYPES = ['ארוחת בוקר', 'ארוחת צהריים/ערב'];
+
 function extractShortcode(url) {
   const match = url?.match(/instagram\.com\/(?:p|reel|tv)\/([A-Za-z0-9_-]+)/);
   return match?.[1] ?? null;
@@ -61,17 +64,15 @@ export function RecipeReviewScreen({
   const [steps, setSteps] = useState(
     Array.isArray(extractedRecipe.instructions) ? extractedRecipe.instructions : []
   );
-  const [mealType, setMealType] = useState(extractedRecipe.meal_type ?? '');
+  const [mealType, setMealType] = useState(
+    ALLOWED_MEAL_TYPES.includes(extractedRecipe.meal_type)
+      ? extractedRecipe.meal_type
+      : 'ארוחת צהריים/ערב'
+  );
   const [cuisine, setCuisine] = useState(extractedRecipe.cuisine ?? '');
   const [mainIngredient, setMainIngredient] = useState(extractedRecipe.main_ingredient ?? '');
-  const [equipment, setEquipment] = useState(
-    Array.isArray(extractedRecipe.equipment_needed) ? extractedRecipe.equipment_needed : []
-  );
   const [prepTime, setPrepTime] = useState(
     extractedRecipe.prep_time != null ? String(extractedRecipe.prep_time) : ''
-  );
-  const [cookTime, setCookTime] = useState(
-    extractedRecipe.cook_time != null ? String(extractedRecipe.cook_time) : ''
   );
   const [dietaryTags, setDietaryTags] = useState(
     Array.isArray(extractedRecipe.dietary_tags) ? extractedRecipe.dietary_tags : []
@@ -79,7 +80,6 @@ export function RecipeReviewScreen({
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
   const [activeTab, setActiveTab] = useState('post');
-  const [newEquipment, setNewEquipment] = useState('');
 
   const shortcode = extractShortcode(instagramUrl);
   const embedUrl = shortcode ? `https://www.instagram.com/p/${shortcode}/embed/` : null;
@@ -102,24 +102,6 @@ export function RecipeReviewScreen({
     );
   }
 
-  function handleEquipmentRemove(index) {
-    setEquipment((prev) => prev.filter((_, i) => i !== index));
-  }
-
-  function handleEquipmentAdd() {
-    const trimmed = newEquipment.trim();
-    if (!trimmed) return;
-    setEquipment((prev) => [...prev, trimmed]);
-    setNewEquipment('');
-  }
-
-  function handleEquipmentKeyDown(e) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleEquipmentAdd();
-    }
-  }
-
   async function handleSave(e) {
     e.preventDefault();
     if (saving) return;
@@ -132,7 +114,6 @@ export function RecipeReviewScreen({
       .filter(Boolean);
 
     const parsedPrepTime = parseInt(prepTime) || null;
-    const parsedCookTime = parseInt(cookTime) || null;
 
     try {
       const response = await fetch(
@@ -151,9 +132,7 @@ export function RecipeReviewScreen({
             meal_type: mealType,
             cuisine,
             main_ingredient: mainIngredient,
-            equipment_needed: equipment,
             prep_time: parsedPrepTime,
-            cook_time: parsedCookTime,
             dietary_tags: dietaryTags,
           }),
         }
@@ -303,17 +282,21 @@ export function RecipeReviewScreen({
               </select>
             </label>
 
-            <label className="field-label">
+            <div className="field-label">
               סוג ארוחה
-              <input
-                type="text"
-                value={mealType}
-                onChange={(e) => setMealType(e.target.value)}
-                className="field-input"
-                placeholder="ארוחת בוקר, ארוחת ערב, חטיף..."
-                dir="rtl"
-              />
-            </label>
+              <div className="meal-type-toggle">
+                {ALLOWED_MEAL_TYPES.map((type) => (
+                  <button
+                    key={type}
+                    type="button"
+                    className={`meal-type-btn${mealType === type ? ' meal-type-btn--active' : ''}`}
+                    onClick={() => setMealType(type)}
+                  >
+                    {type}
+                  </button>
+                ))}
+              </div>
+            </div>
 
             <label className="field-label">
               מרכיב עיקרי
@@ -340,30 +323,17 @@ export function RecipeReviewScreen({
               </select>
             </label>
 
-            <div className="time-row">
-              <label className="field-label time-field">
-                זמן הכנה (דקות)
-                <input
-                  type="number"
-                  min="0"
-                  value={prepTime}
-                  onChange={(e) => setPrepTime(e.target.value)}
-                  className="field-input"
-                  placeholder="0"
-                />
-              </label>
-              <label className="field-label time-field">
-                זמן בישול (דקות)
-                <input
-                  type="number"
-                  min="0"
-                  value={cookTime}
-                  onChange={(e) => setCookTime(e.target.value)}
-                  className="field-input"
-                  placeholder="0"
-                />
-              </label>
-            </div>
+            <label className="field-label">
+              זמן הכנה (דקות)
+              <input
+                type="number"
+                min="0"
+                value={prepTime}
+                onChange={(e) => setPrepTime(e.target.value)}
+                className="field-input"
+                placeholder="0"
+              />
+            </label>
 
             {/* Dietary tags */}
             <div className="section-heading" style={{ marginTop: '16px' }}>תגיות תזונה</div>
@@ -378,37 +348,6 @@ export function RecipeReviewScreen({
                   <span>{tag}</span>
                 </label>
               ))}
-            </div>
-
-            {/* Equipment needed */}
-            <div className="section-heading">ציוד נדרש</div>
-            <div className="equipment-tags">
-              {equipment.map((item, index) => (
-                <span key={index} className="equipment-tag">
-                  {item}
-                  <button
-                    type="button"
-                    onClick={() => handleEquipmentRemove(index)}
-                    aria-label={`הסר ${item}`}
-                  >
-                    ×
-                  </button>
-                </span>
-              ))}
-            </div>
-            <div className="equipment-add-row">
-              <input
-                type="text"
-                value={newEquipment}
-                onChange={(e) => setNewEquipment(e.target.value)}
-                onKeyDown={handleEquipmentKeyDown}
-                className="field-input equipment-input"
-                placeholder="הוסף ציוד..."
-                dir="rtl"
-              />
-              <button type="button" className="btn-add-equipment" onClick={handleEquipmentAdd}>
-                הוסף
-              </button>
             </div>
 
             {/* Error message */}

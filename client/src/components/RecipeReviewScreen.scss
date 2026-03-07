@@ -172,15 +172,41 @@ textarea.field-input {
   }
 }
 
-// ─── Time Fields ──────────────────────────────────────────────────────────────
+// ─── Meal Type Toggle ─────────────────────────────────────────────────────────
 
-.time-row {
+.meal-type-toggle {
   display: flex;
-  gap: 16px;
+  gap: 0;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-sm, 6px);
+  overflow: hidden;
+  margin-top: 6px;
 }
 
-.time-field {
+.meal-type-btn {
   flex: 1;
+  padding: 9px 12px;
+  background: #fff;
+  border: none;
+  border-right: 1px solid #e2e8f0;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #4a5568;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+
+  &:last-child {
+    border-right: none;
+  }
+
+  &--active {
+    background: #667eea;
+    color: #fff;
+  }
+
+  &:not(&--active):hover {
+    background: #f7fafc;
+  }
 }
 
 // ─── Dietary Tags ─────────────────────────────────────────────────────────────
@@ -205,68 +231,6 @@ textarea.field-input {
     width: 16px;
     height: 16px;
     cursor: pointer;
-  }
-}
-
-// ─── Equipment Tags ───────────────────────────────────────────────────────────
-
-.equipment-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 8px;
-}
-
-.equipment-tag {
-  display: inline-flex;
-  align-items: center;
-  background: #eef2ff;
-  color: #667eea;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 0.875rem;
-
-  button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: #667eea;
-    margin-left: 4px;
-    font-size: 1rem;
-    line-height: 1;
-    padding: 0 2px;
-    transition: color 0.15s;
-
-    &:hover {
-      color: #c53030;
-    }
-  }
-}
-
-.equipment-add-row {
-  display: flex;
-  gap: 8px;
-  align-items: flex-start;
-}
-
-.equipment-input {
-  flex: 1;
-}
-
-.btn-add-equipment {
-  padding: 8px 14px;
-  background: #667eea;
-  border: none;
-  border-radius: var(--radius-sm, 6px);
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #fff;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.15s;
-
-  &:hover {
-    background: #5a67d8;
   }
 }
 
@@ -381,10 +345,5 @@ textarea.field-input {
   .review-right {
     max-width: 100%;
     padding: 20px 16px;
-  }
-
-  .time-row {
-    flex-direction: column;
-    gap: 0;
   }
 }

@@ -72,12 +72,10 @@ recipeRouter.post('/extract-recipe', async (req, res) => {
       main_category: recipe.main_category,
       difficulty: recipe.difficulty,
       ingredients: recipe.ingredients,
-      meal_type: recipe.meal_type ?? null,
+      meal_type: recipe.meal_type ?? 'ארוחת צהריים/ערב',
       cuisine: recipe.cuisine ?? 'אחר',
       main_ingredient: recipe.main_ingredient ?? null,
-      equipment_needed: recipe.equipment_needed ?? [],
       prep_time: recipe.prep_time ?? null,
-      cook_time: recipe.cook_time ?? null,
       dietary_tags: recipe.dietary_tags ?? [],
       instructions: recipe.instructions ?? [],
     });
@@ -98,8 +96,8 @@ recipeRouter.post('/extract-recipe', async (req, res) => {
 recipeRouter.post('/confirm-recipe', async (req, res) => {
   const {
     instagram_url, title, main_category, difficulty, ingredients, workspace_id,
-    instructions, meal_type, cuisine, main_ingredient, equipment_needed,
-    prep_time, cook_time, dietary_tags
+    instructions, meal_type, cuisine, main_ingredient,
+    prep_time, dietary_tags
   } = req.body;
 
   // Validation
@@ -128,9 +126,7 @@ recipeRouter.post('/confirm-recipe', async (req, res) => {
       meal_type,
       cuisine,
       main_ingredient,
-      equipment_needed,
       prep_time,
-      cook_time,
       dietary_tags,
     });
 

@@ -53,16 +53,14 @@ export const supabase = new Proxy(
  * @param {string[]} recipeData.ingredients - Array of ingredient name strings
  * @param {string} [recipeData.workspace_id] - Optional workspace UUID for multi-tenant scoping
  * @param {string[]} [recipeData.instructions] - Optional cooking instructions steps array
- * @param {string} [recipeData.meal_type] - Optional meal type (free-form Hebrew)
+ * @param {string} [recipeData.meal_type] - Optional meal type ('ארוחת בוקר' or 'ארוחת צהריים/ערב')
  * @param {string} [recipeData.cuisine] - Optional cuisine type (one of ALLOWED_CUISINES)
  * @param {string} [recipeData.main_ingredient] - Optional primary ingredient
- * @param {string[]} [recipeData.equipment_needed] - Optional equipment list
  * @param {number} [recipeData.prep_time] - Optional prep time in minutes
- * @param {number} [recipeData.cook_time] - Optional cook time in minutes
  * @param {string[]} [recipeData.dietary_tags] - Optional dietary tags (subset of ALLOWED_DIETARY_TAGS)
  * @returns {Promise<{recipe_id: string, title: string, ingredients_count: number, workspace_id: string|null}>}
  */
-export async function saveRecipe({ instagram_url, title, main_category, difficulty, ingredients, workspace_id, instructions, meal_type, cuisine, main_ingredient, equipment_needed, prep_time, cook_time, dietary_tags }) {
+export async function saveRecipe({ instagram_url, title, main_category, difficulty, ingredients, workspace_id, instructions, meal_type, cuisine, main_ingredient, prep_time, dietary_tags }) {
   const client = getClient();
 
   // Step 1: Upsert recipe row (deduplicates by instagram_url)
@@ -76,9 +74,7 @@ export async function saveRecipe({ instagram_url, title, main_category, difficul
     ...(meal_type != null ? { meal_type } : {}),
     ...(cuisine != null ? { cuisine } : {}),
     ...(main_ingredient != null ? { main_ingredient } : {}),
-    ...(Array.isArray(equipment_needed) && equipment_needed.length ? { equipment_needed } : {}),
     ...(prep_time != null ? { prep_time } : {}),
-    ...(cook_time != null ? { cook_time } : {}),
     ...(Array.isArray(dietary_tags) && dietary_tags.length ? { dietary_tags } : {}),
   };
 
