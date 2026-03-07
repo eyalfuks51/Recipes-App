@@ -1,17 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.1
-milestone_name: Functional Enhancements
-status: in-progress
-stopped_at: "Completed 07-01 — DELETE and PUT recipe backend endpoints"
-last_updated: "2026-03-07T20:31:30.000Z"
-last_activity: "2026-03-07 - Completed Phase 7 Plan 01 (backend delete/update endpoints)"
+milestone: v1.0
+milestone_name: milestone
+status: executing
+stopped_at: Completed 07-02 — Delete recipe UI (RecipeModal Delete button + RecipeGallery optimistic removal)
+last_updated: "2026-03-07T20:28:17.934Z"
+last_activity: 2026-03-07 — Completed Plan 01 (backend DELETE and PUT endpoints)
 progress:
   total_phases: 3
   completed_phases: 0
-  total_plans: 9
-  completed_plans: 1
-  percent: 11
+  total_plans: 3
+  completed_plans: 2
 ---
 
 # Project State
@@ -26,9 +25,9 @@ See: .planning/PROJECT.md (updated 2026-03-07)
 ## Current Position
 
 Phase: 07-recipe-management
-Plan: 01 of 03 complete
+Plan: 02 of 03 complete
 Status: In progress
-Last activity: 2026-03-07 — Completed Plan 01 (backend DELETE and PUT endpoints)
+Last activity: 2026-03-07 — Completed Plan 02 (Delete recipe UI — modal button + optimistic gallery removal)
 
 ## Accumulated Context
 
@@ -45,6 +44,8 @@ Key architectural decisions from v1.0:
 v1.1 decisions:
 - updateRecipe uses insert (not upsert) for junction rows after delete, since no conflict key exists post-deletion
 - updateRecipe skips ingredients processing when no ingredients array provided (sparse update)
+- [Phase 07-recipe-management]: Delete fetch in RecipeModal; RecipeGallery responds via onDelete callback after success
+- [Phase 07-recipe-management]: onDelete called before onClose to ensure gallery state updated before modal unmounts
 
 ### Roadmap Evolution
 
@@ -62,6 +63,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-07
-Stopped at: Completed 07-01 — DELETE /api/recipes/:id and PUT /api/recipes/:id backend routes
+Last session: 2026-03-07T20:28:17.932Z
+Stopped at: Completed 07-02 — Delete recipe UI (RecipeModal Delete button + RecipeGallery optimistic removal)
 Resume file: None

@@ -36,7 +36,7 @@ Full archive: `.planning/milestones/v1.0-ROADMAP.md`
 **Goal:** Enable users to edit and delete saved recipes — API endpoints, Supabase queries, React state. No CSS/styling.
 **Requirements**: delete recipes from workspace; edit saved recipes via RecipeReviewScreen (post-save edit mode)
 **Depends on:** Phase 6
-**Plans:** 1/3 plans executed
+**Plans:** 2/3 plans executed
 
 Plans:
 - [ ] 07-01-PLAN.md — Backend: deleteRecipe + updateRecipe Supabase functions + DELETE/PUT API routes
