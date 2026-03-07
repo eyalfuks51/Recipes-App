@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Skill(gsd:execute-phase)",
+      "Bash(node:*)"
+    ]
+  }
+}

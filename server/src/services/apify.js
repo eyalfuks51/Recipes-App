@@ -11,8 +11,11 @@ export async function scrapeInstagramCaption(instagramUrl) {
     '$1www.'
   );
 
+  const APIFY_TIMEOUT_SECONDS = 300; // 5 minutes — Apify aborts the run after this
+  const FETCH_TIMEOUT_MS = (APIFY_TIMEOUT_SECONDS + 10) * 1000; // slight buffer for network
+
   const response = await fetch(
-    `https://api.apify.com/v2/acts/apify~instagram-scraper/run-sync-get-dataset-items?token=${process.env.APIFY_TOKEN}`,
+    `https://api.apify.com/v2/acts/apify~instagram-scraper/run-sync-get-dataset-items?token=${process.env.APIFY_TOKEN}&timeout=${APIFY_TIMEOUT_SECONDS}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -21,6 +24,7 @@ export async function scrapeInstagramCaption(instagramUrl) {
         resultsType: 'posts',
         resultsLimit: 1,
       }),
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     }
   );
 

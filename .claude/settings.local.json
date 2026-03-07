@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node:*)",
+      "Bash(git:*)",
+      "Bash(curl:*)",
+      "Bash(netstat:*)",
+      "Bash(tasklist:*)",
+      "Bash(wmic process:*)",
+      "Bash(python:*)",
+      "Bash(py:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Skill(gsd:plan-phase)",
+      "Skill(gsd:execute-phase)",
+      "Skill(gsd:discuss-phase)",
+      "Skill(gsd:resume-work)",
+      "Bash(ls:*)",
+      "Skill(gsd:quick)"
+    ]
+  }
+}
