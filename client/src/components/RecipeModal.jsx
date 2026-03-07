@@ -68,7 +68,7 @@ function IngredientSkeleton() {
 }
 
 // ─── Modal ────────────────────────────────────────────────────────────────────
-export function RecipeModal({ recipe, ingredients, ingredientsLoading, onClose }) {
+export function RecipeModal({ recipe, ingredients, ingredientsLoading, onClose, onDelete }) {
   const shortcode = extractShortcode(recipe.instagram_url);
   const embedUrl = shortcode ? `https://www.instagram.com/p/${shortcode}/embed/` : null;
   const diff = getDifficulty(recipe.difficulty);
@@ -77,6 +77,8 @@ export function RecipeModal({ recipe, ingredients, ingredientsLoading, onClose }
   const { activeWorkspaceId } = useWorkspace();
   const [checkedIds, setCheckedIds] = useState(new Set());
   const [checksLoading, setChecksLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
 
   // Load existing checkbox state when ingredients are ready
   useEffect(() => {
@@ -111,6 +113,26 @@ export function RecipeModal({ recipe, ingredients, ingredientsLoading, onClose }
       checked: nowChecked,
       updated_at: new Date().toISOString(),
     }, { onConflict: 'workspace_id,recipe_id,ingredient_id' });
+  }
+
+  async function handleDelete() {
+    if (deleting || !onDelete) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/recipes/${recipe.id}`, { method: 'DELETE' });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        onDelete(recipe.id);
+        onClose();
+      } else {
+        setDeleteError(data.error || 'מחיקה נכשלה — נסה שוב');
+        setDeleting(false);
+      }
+    } catch (err) {
+      setDeleteError(err.message || 'שגיאת רשת');
+      setDeleting(false);
+    }
   }
 
   // Lock body scroll and handle Escape key
@@ -149,6 +171,20 @@ export function RecipeModal({ recipe, ingredients, ingredientsLoading, onClose }
         <button className="modal-close" onClick={onClose} aria-label="Close recipe">
           <IconX />
         </button>
+
+        {/* ── Delete ──────────────────────────────────────────────────── */}
+        {onDelete && (
+          <>
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              aria-label="מחק מתכון"
+            >
+              {deleting ? 'מוחק...' : 'מחק מתכון'}
+            </button>
+            {deleteError && <p>{deleteError}</p>}
+          </>
+        )}
 
         <div className="modal-body">
           {/* ── Left: Instagram embed ─────────────────────────────────── */}
