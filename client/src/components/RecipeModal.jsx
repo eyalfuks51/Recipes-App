@@ -68,7 +68,7 @@ function IngredientSkeleton() {
 }
 
 // ─── Modal ────────────────────────────────────────────────────────────────────
-export function RecipeModal({ recipe, ingredients, ingredientsLoading, onClose, onDelete }) {
+export function RecipeModal({ recipe, ingredients, ingredientsLoading, onClose, onDelete, onEdit }) {
   const shortcode = extractShortcode(recipe.instagram_url);
   const embedUrl = shortcode ? `https://www.instagram.com/p/${shortcode}/embed/` : null;
   const diff = getDifficulty(recipe.difficulty);
@@ -184,6 +184,17 @@ export function RecipeModal({ recipe, ingredients, ingredientsLoading, onClose, 
             </button>
             {deleteError && <p>{deleteError}</p>}
           </>
+        )}
+
+        {/* ── Edit ────────────────────────────────────────────────────── */}
+        {onEdit && (
+          <button
+            onClick={() => onEdit(recipe)}
+            disabled={deleting}
+            aria-label="ערוך מתכון"
+          >
+            ערוך מתכון
+          </button>
         )}
 
         <div className="modal-body">

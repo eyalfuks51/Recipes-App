@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useWorkspace } from '../lib/workspace.jsx';
 import { RecipeModal } from './RecipeModal';
+import { RecipeReviewScreen } from './RecipeReviewScreen';
 import './RecipeGallery.scss';
 
 // ─── Difficulty config ─────────────────────────────────────────────────────────
@@ -76,6 +77,7 @@ export function RecipeGallery({ refreshTrigger = 0 }) {
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [modalIngredients, setModalIngredients] = useState([]);
   const [ingredientsLoading, setIngredientsLoading] = useState(false);
+  const [editingRecipe, setEditingRecipe] = useState(null);
 
   const { activeWorkspaceId } = useWorkspace();
 
@@ -92,7 +94,7 @@ export function RecipeGallery({ refreshTrigger = 0 }) {
 
       const { data, error: sbError } = await supabase
         .from('recipes')
-        .select('id, title, main_category, difficulty, instagram_url, instructions, workspace_id')
+        .select('id, title, main_category, difficulty, instagram_url, instructions, workspace_id, meal_type, cuisine, main_ingredient, prep_time, dietary_tags, thumbnail_url')
         .eq('workspace_id', activeWorkspaceId)
         .order('created_at', { ascending: false });
 
@@ -138,6 +140,25 @@ export function RecipeGallery({ refreshTrigger = 0 }) {
     setRecipes((prev) => prev.filter((r) => r.id !== recipeId));
     setSelectedRecipe(null);
     setModalIngredients([]);
+  }
+
+  function handleEdit(recipe) {
+    setSelectedRecipe(null);   // close modal
+    setModalIngredients([]);
+    setEditingRecipe(recipe);  // enter edit mode
+  }
+
+  function handleEditSaved(data) {
+    // Patch the recipe in the local list with the fields we know changed
+    // data = { success: true, recipe_id: string, title: string }
+    setRecipes((prev) =>
+      prev.map((r) => r.id === data.recipe_id ? { ...r, title: data.title } : r)
+    );
+    setEditingRecipe(null);
+  }
+
+  function handleEditDiscard() {
+    setEditingRecipe(null);
   }
 
   return (
@@ -193,6 +214,32 @@ export function RecipeGallery({ refreshTrigger = 0 }) {
           ingredientsLoading={ingredientsLoading}
           onClose={handleModalClose}
           onDelete={handleDelete}
+          onEdit={handleEdit}
+        />
+      )}
+
+      {editingRecipe && (
+        <RecipeReviewScreen
+          extractedRecipe={{
+            title: editingRecipe.title,
+            main_category: editingRecipe.main_category,
+            difficulty: editingRecipe.difficulty,
+            ingredients: [],
+            instructions: Array.isArray(editingRecipe.instructions) ? editingRecipe.instructions :
+              (typeof editingRecipe.instructions === 'string' ? JSON.parse(editingRecipe.instructions || '[]') : []),
+            meal_type: editingRecipe.meal_type ?? 'ארוחת צהריים/ערב',
+            cuisine: editingRecipe.cuisine ?? '',
+            main_ingredient: editingRecipe.main_ingredient ?? '',
+            prep_time: editingRecipe.prep_time ?? null,
+            dietary_tags: Array.isArray(editingRecipe.dietary_tags) ? editingRecipe.dietary_tags : [],
+          }}
+          instagramUrl={editingRecipe.instagram_url}
+          workspaceId={editingRecipe.workspace_id ?? activeWorkspaceId}
+          thumbnailUrl={editingRecipe.thumbnail_url ?? null}
+          editMode={true}
+          recipeId={editingRecipe.id}
+          onSaved={handleEditSaved}
+          onDiscard={handleEditDiscard}
         />
       )}
     </div>
