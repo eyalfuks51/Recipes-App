@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useWorkspace } from '../lib/workspace.jsx';
 import { RecipeModal } from './RecipeModal';
@@ -69,7 +69,7 @@ function RecipeCard({ recipe, onClick }) {
 }
 
 // ─── Gallery ──────────────────────────────────────────────────────────────────
-export function RecipeGallery({ refreshTrigger = 0 }) {
+export function RecipeGallery({ refreshTrigger = 0, filters = {} }) {
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -94,7 +94,7 @@ export function RecipeGallery({ refreshTrigger = 0 }) {
 
       const { data, error: sbError } = await supabase
         .from('recipes')
-        .select('id, title, main_category, difficulty, instagram_url, instructions, workspace_id, meal_type, cuisine, main_ingredient, prep_time, dietary_tags, thumbnail_url')
+        .select('id, title, main_category, difficulty, instagram_url, instructions, workspace_id, meal_type, cuisine, main_ingredient, prep_time, cook_time, dietary_tags, thumbnail_url')
         .eq('workspace_id', activeWorkspaceId)
         .order('created_at', { ascending: false });
 
@@ -109,6 +109,38 @@ export function RecipeGallery({ refreshTrigger = 0 }) {
 
     fetchRecipes();
   }, [refreshTrigger, activeWorkspaceId]);
+
+  // ── Client-side filtering ─────────────────────────────────────────────────
+  const filteredRecipes = useMemo(() => {
+    return recipes.filter((recipe) => {
+      // Meal type filter
+      if (filters.mealType && recipe.meal_type !== filters.mealType) return false;
+
+      // Dietary tags — recipe must have ALL selected tags
+      if (filters.dietaryTags?.length > 0) {
+        const recipeTags = recipe.dietary_tags || [];
+        if (!filters.dietaryTags.every((tag) => recipeTags.includes(tag))) return false;
+      }
+
+      // Prep time range
+      if (filters.prepTimeRange) {
+        const prep = parseInt(recipe.prep_time, 10);
+        if (isNaN(prep)) return false;
+        if (filters.prepTimeRange === '15' && prep > 15) return false;
+        if (filters.prepTimeRange === '30' && prep > 30) return false;
+        if (filters.prepTimeRange === '60+' && prep <= 60) return false;
+      }
+
+      // Main ingredient — substring match
+      if (filters.mainIngredient) {
+        if (!recipe.main_ingredient?.includes(filters.mainIngredient)) return false;
+      }
+
+      return true;
+    });
+  }, [recipes, filters]);
+
+  const hasActiveFilters = filters.mealType || (filters.dietaryTags?.length > 0) || filters.prepTimeRange || filters.mainIngredient;
 
   async function handleCardClick(recipe) {
     // Show modal immediately with card data; load ingredients in background
@@ -164,9 +196,9 @@ export function RecipeGallery({ refreshTrigger = 0 }) {
   return (
     <div className="recipe-gallery">
       <div className="gallery-header">
-        <h2>Your Recipes</h2>
+        <h2>ספר המתכונים שלך</h2>
         {!loading && !error && recipes.length > 0 && (
-          <span className="gallery-count">{recipes.length}</span>
+          <span className="gallery-count">{filteredRecipes.length}</span>
         )}
       </div>
 
@@ -195,9 +227,16 @@ export function RecipeGallery({ refreshTrigger = 0 }) {
         </div>
       )}
 
-      {!loading && !error && recipes.length > 0 && (
+      {!loading && !error && recipes.length > 0 && filteredRecipes.length === 0 && hasActiveFilters && (
+        <div className="gallery-empty gallery-empty--filtered">
+          <p className="gallery-empty__title">לא נמצאו מתכונים</p>
+          <p className="gallery-empty__sub">נסו לשנות את הסינון</p>
+        </div>
+      )}
+
+      {!loading && !error && filteredRecipes.length > 0 && (
         <div className="recipe-grid">
-          {recipes.map((recipe) => (
+          {filteredRecipes.map((recipe) => (
             <RecipeCard
               key={recipe.id}
               recipe={recipe}

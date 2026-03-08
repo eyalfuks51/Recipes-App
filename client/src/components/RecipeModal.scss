@@ -68,7 +68,7 @@
 .modal-close {
   position: absolute;
   top: 1rem;
-  right: 1rem;
+  left: 1rem;
   z-index: 20;
   width: 38px;
   height: 38px;
@@ -396,7 +396,7 @@
 }
 
 .modal-instructions-list {
-  padding-right: 20px;
+  padding-left: 20px;
   margin: 0;
 
   .modal-instruction-step {

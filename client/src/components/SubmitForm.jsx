@@ -131,7 +131,7 @@ export function SubmitForm({ onSuccess }) {
                 Processing…
               </>
             ) : (
-              'Extract Recipe'
+              'הוספת מתכון'
             )}
           </button>
         </div>
