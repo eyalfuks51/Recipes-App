@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useWorkspace } from '../lib/workspace.jsx';
 import { RecipeModal } from './RecipeModal';
 import { RecipeReviewScreen } from './RecipeReviewScreen';
+import { QuickFilterPills } from './QuickFilterPills';
 import './RecipeGallery.scss';
 
 // ─── Difficulty config ─────────────────────────────────────────────────────────
@@ -37,8 +38,53 @@ function SkeletonCard() {
 }
 
 // ─── Recipe Card ──────────────────────────────────────────────────────────────
-function RecipeCard({ recipe, onClick }) {
+function RecipeCard({ recipe, onClick, onDelete }) {
   const diff = getDifficulty(recipe.difficulty);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const confirmRef = useRef(null);
+
+  // Close popup on click outside
+  useEffect(() => {
+    if (!confirmingDelete) return;
+    function handleClickOutside(e) {
+      if (confirmRef.current && !confirmRef.current.contains(e.target)) {
+        setConfirmingDelete(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [confirmingDelete]);
+
+  function handleTrashClick(e) {
+    e.stopPropagation();
+    if (deleting) return;
+    setConfirmingDelete(true);
+  }
+
+  async function handleConfirmDelete(e) {
+    e.stopPropagation();
+    if (deleting) return;
+    setDeleting(true);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/recipes/${recipe.id}`, { method: 'DELETE' });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        onDelete(recipe.id);
+      } else {
+        setDeleting(false);
+        setConfirmingDelete(false);
+      }
+    } catch {
+      setDeleting(false);
+      setConfirmingDelete(false);
+    }
+  }
+
+  function handleCancelDelete(e) {
+    e.stopPropagation();
+    setConfirmingDelete(false);
+  }
 
   return (
     <div
@@ -52,6 +98,23 @@ function RecipeCard({ recipe, onClick }) {
       <div className="card-header">
         {recipe.main_category && (
           <span className="card-category">{recipe.main_category}</span>
+        )}
+        <button
+          className="card-trash"
+          onClick={handleTrashClick}
+          disabled={deleting}
+          aria-label="מחק מתכון"
+        >
+          <img src="/icons/trash.svg" width="16" height="16" alt="" aria-hidden="true" />
+        </button>
+        {confirmingDelete && (
+          <div className="card-delete-confirm" ref={confirmRef}>
+            <p className="card-delete-confirm__text">למחוק את המתכון?</p>
+            <div className="card-delete-confirm__actions">
+              <button className="card-delete-confirm__cancel" onClick={handleCancelDelete}>ביטול</button>
+              <button className="card-delete-confirm__confirm" onClick={handleConfirmDelete} disabled={deleting}>מחיקה</button>
+            </div>
+          </div>
         )}
       </div>
       <h3 className="card-title">{recipe.title}</h3>
@@ -69,7 +132,7 @@ function RecipeCard({ recipe, onClick }) {
 }
 
 // ─── Gallery ──────────────────────────────────────────────────────────────────
-export function RecipeGallery({ refreshTrigger = 0, filters = {} }) {
+export function RecipeGallery({ refreshTrigger = 0, filters = {}, activeFilter, onFilterChange, onOpenFilterSheet, hasActiveAdvancedFilters }) {
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -196,10 +259,18 @@ export function RecipeGallery({ refreshTrigger = 0, filters = {} }) {
   return (
     <div className="recipe-gallery">
       <div className="gallery-header">
-        <h2>ספר המתכונים שלך</h2>
-        {!loading && !error && recipes.length > 0 && (
-          <span className="gallery-count">{filteredRecipes.length}</span>
-        )}
+        <div className="gallery-header__top">
+          <h2>ספר המתכונים שלך</h2>
+          {!loading && !error && recipes.length > 0 && (
+            <span className="gallery-count">{filteredRecipes.length}</span>
+          )}
+        </div>
+        <QuickFilterPills
+          activeFilter={activeFilter}
+          onFilterChange={onFilterChange}
+          onOpenFilterSheet={onOpenFilterSheet}
+          hasActiveAdvancedFilters={hasActiveAdvancedFilters}
+        />
       </div>
 
       {loading && (
@@ -211,7 +282,7 @@ export function RecipeGallery({ refreshTrigger = 0, filters = {} }) {
       )}
 
       {!loading && error && (
-        <p className="gallery-error">Failed to load recipes: {error}</p>
+        <p className="gallery-error">שגיאה בטעינת המתכונים: {error}</p>
       )}
 
       {!loading && !error && recipes.length === 0 && (
@@ -222,8 +293,8 @@ export function RecipeGallery({ refreshTrigger = 0, filters = {} }) {
             <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3" />
             <path d="M21 15v7" />
           </svg>
-          <p className="gallery-empty__title">No recipes yet</p>
-          <p className="gallery-empty__sub">Paste an Instagram URL above to save your first recipe.</p>
+          <p className="gallery-empty__title">אין מתכונים עדיין</p>
+          <p className="gallery-empty__sub">הדביקו קישור מאינסטגרם למעלה כדי לשמור את המתכון הראשון שלכם.</p>
         </div>
       )}
 
@@ -241,6 +312,7 @@ export function RecipeGallery({ refreshTrigger = 0, filters = {} }) {
               key={recipe.id}
               recipe={recipe}
               onClick={() => handleCardClick(recipe)}
+              onDelete={handleDelete}
             />
           ))}
         </div>

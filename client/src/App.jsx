@@ -215,19 +215,20 @@ function AppContent() {
       <section className="hero" aria-label="Submit a recipe">
         <div className="hero__inner">
           <SubmitForm onSuccess={handleSuccess} />
-          <QuickFilterPills
-            activeFilter={filters.mealType}
-            onFilterChange={handleQuickFilter}
-            onOpenFilterSheet={() => setFilterSheetOpen(true)}
-            hasActiveAdvancedFilters={hasActiveAdvancedFilters}
-          />
         </div>
       </section>
 
       {/* ── Gallery ────────────────────────────────────────────────────── */}
       <main className="content" aria-label="Recipe gallery">
         <div className="content__inner">
-          <RecipeGallery refreshTrigger={refreshCount} filters={filters} />
+          <RecipeGallery
+            refreshTrigger={refreshCount}
+            filters={filters}
+            activeFilter={filters.mealType}
+            onFilterChange={handleQuickFilter}
+            onOpenFilterSheet={() => setFilterSheetOpen(true)}
+            hasActiveAdvancedFilters={hasActiveAdvancedFilters}
+          />
         </div>
       </main>
 

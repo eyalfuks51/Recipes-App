@@ -4,7 +4,7 @@
   overflow-x: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  padding: 1.25rem 0 0;
+  padding: 0.75rem 0 0;
   width: 100%;
   justify-content: center;
 
@@ -20,11 +20,11 @@
   padding: 0.4rem 1rem;
   border-radius: var(--radius-full);
   border: 1.5px solid transparent;
-  background: var(--color-pill-inactive);
+  background: #fff;
   color: var(--color-text-muted);
   font-family: var(--font-body);
   font-size: var(--text-sm);
-  font-weight: 700;
+  font-weight: 400;
   cursor: pointer;
   white-space: nowrap;
   transition:

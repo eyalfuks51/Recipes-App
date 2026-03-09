@@ -12,15 +12,21 @@
 // ─── Gallery header ───────────────────────────────────────────────────────────
 .gallery-header {
   display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 1.5rem;
+}
+
+.gallery-header__top {
+  display: flex;
   align-items: center;
   gap: 0.625rem;
-  margin-bottom: 1.5rem;
 
   h2 {
     font-size: 1.25rem;
     font-weight: 700;
     letter-spacing: -0.015em;
-    color: var(--color-text);
+    color: var(--color-primary);
   }
 }
 
@@ -102,8 +108,110 @@
 
 // ─── Card Header ──────────────────────────────────────────────────────────────
 .card-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 0.625rem;
   min-height: 22px;
+}
+
+.card-trash {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  cursor: pointer;
+  transition: background var(--transition-fast), filter var(--transition-fast);
+  img {
+    opacity: 0.7;
+    transition: opacity var(--transition-fast);
+  }
+
+  &:hover,
+  &:active {
+    background: transparent;
+
+    img {
+      opacity: 1;
+    }
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+}
+
+// ─── Delete Confirmation Popup ──────────────────────────────────────────────
+.card-delete-confirm {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 10;
+  margin-top: 0.25rem;
+  padding: 0.75rem 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  white-space: nowrap;
+  animation: confirmFadeIn 0.15s ease-out both;
+
+  &__text {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 0 0 0.5rem;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  &__cancel,
+  &__confirm {
+    padding: 0.3rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    border: none;
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
+  }
+
+  &__cancel {
+    background: var(--color-border);
+    color: var(--color-text-muted);
+
+    &:hover {
+      background: #d6d3d1;
+    }
+  }
+
+  &__confirm {
+    background: var(--color-error);
+    color: #fff;
+
+    &:hover {
+      background: #b91c1c;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+  }
+}
+
+@keyframes confirmFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .card-category {
