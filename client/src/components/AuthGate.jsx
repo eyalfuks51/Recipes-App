@@ -33,7 +33,7 @@ export function AuthGate({ children }) {
           <h1 className="auth-gate__logo">Re-smash</h1>
 
           <div className="auth-gate__hero">
-            <img src="/images/hero-cooking.png" alt="cooking" className="auth-gate__hero-img" />
+            <video src="/videos/cooking_video.mp4" className="auth-gate__hero-img" autoPlay loop muted playsInline />
           </div>
 
           <p className="auth-gate__tagline">

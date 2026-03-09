@@ -94,7 +94,7 @@ export function RecipeGallery({ refreshTrigger = 0, filters = {} }) {
 
       const { data, error: sbError } = await supabase
         .from('recipes')
-        .select('id, title, main_category, difficulty, instagram_url, instructions, workspace_id, meal_type, cuisine, main_ingredient, prep_time, cook_time, dietary_tags, thumbnail_url')
+        .select('id, title, main_category, difficulty, instagram_url, instructions, workspace_id, meal_type, cuisine, main_ingredient, prep_time, dietary_tags, thumbnail_url')
         .eq('workspace_id', activeWorkspaceId)
         .order('created_at', { ascending: false });
 
