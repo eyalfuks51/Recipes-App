@@ -98,7 +98,7 @@ recipeRouter.post('/confirm-recipe', async (req, res) => {
   const {
     instagram_url, title, main_category, difficulty, ingredients, workspace_id,
     instructions, meal_type, cuisine, main_ingredient,
-    prep_time, dietary_tags, thumbnail_url
+    prep_time, dietary_tags, thumbnail_url,
   } = req.body;
 
   // Validation

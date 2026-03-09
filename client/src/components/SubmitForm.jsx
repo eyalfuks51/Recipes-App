@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import './SubmitForm.scss';
 import { useWorkspace } from '../lib/workspace.jsx';
 import { RecipeReviewScreen } from './RecipeReviewScreen.jsx';
@@ -32,6 +32,14 @@ function IconAlert() {
   );
 }
 
+// ─── Loader messages ─────────────────────────────────────────────────────────
+const LOADER_MESSAGES = [
+  'מחלץ נתונים מהמתכון...',
+  'מעבד נתונים ב-AI...',
+  'מחלץ את רשימת המצרכים...',
+  'מחלק שלבי הכנה...',
+];
+
 // ─── Component ────────────────────────────────────────────────────────────────
 export function SubmitForm({ onSuccess }) {
   const { activeWorkspaceId } = useWorkspace();
@@ -40,6 +48,18 @@ export function SubmitForm({ onSuccess }) {
   const [result, setResult] = useState(null);
   const [extractedRecipe, setExtractedRecipe] = useState(null);
   const submittingRef = useRef(false);
+  const [loaderIndex, setLoaderIndex] = useState(0);
+
+  useEffect(() => {
+    if (status !== 'loading') {
+      setLoaderIndex(0);
+      return;
+    }
+    const id = setInterval(() => {
+      setLoaderIndex((prev) => (prev + 1) % LOADER_MESSAGES.length);
+    }, 2000);
+    return () => clearInterval(id);
+  }, [status]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -128,10 +148,12 @@ export function SubmitForm({ onSuccess }) {
             {status === 'loading' ? (
               <>
                 <span className="spinner" aria-hidden="true" />
-                Processing…
+                <span className="loader-text" key={loaderIndex}>
+                  {LOADER_MESSAGES[loaderIndex]}
+                </span>
               </>
             ) : (
-              'Extract Recipe'
+              'הוספת מתכון'
             )}
           </button>
         </div>

@@ -92,9 +92,8 @@ export async function saveRecipe({ instagram_url, title, main_category, difficul
   const recipe = recipeRows[0];
 
   // Step 2: Upsert each ingredient (normalize name: lowercase + trim, deduplicates by name)
-  const normalizedIngredients = ingredients.map((name) => ({
-    name: name.toLowerCase().trim(),
-  }));
+  const normalizedIngredients = [...new Set(ingredients.map((name) => name.toLowerCase().trim()))]
+    .map((name) => ({ name }));
 
   const { data: ingredientRows, error: ingredientsError } = await client
     .from('ingredients')
@@ -180,10 +179,9 @@ export async function updateRecipe(id, { title, main_category, difficulty, ingre
   const recipe = data[0];
 
   if (Array.isArray(ingredients) && ingredients.length > 0) {
-    // Upsert ingredients (normalize name: lowercase + trim)
-    const normalizedIngredients = ingredients.map((name) => ({
-      name: name.toLowerCase().trim(),
-    }));
+    // Upsert ingredients (normalize name: lowercase + trim, deduplicate)
+    const normalizedIngredients = [...new Set(ingredients.map((name) => name.toLowerCase().trim()))]
+      .map((name) => ({ name }));
 
     const { data: ingredientRows, error: ingredientsError } = await client
       .from('ingredients')

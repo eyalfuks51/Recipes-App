@@ -183,7 +183,7 @@ export function RecipeReviewScreen({
           className={activeTab === 'post' ? 'tab tab--active' : 'tab'}
           onClick={() => setActiveTab('post')}
         >
-          פוסט
+          סרטון
         </button>
         <button
           type="button"
@@ -199,28 +199,22 @@ export function RecipeReviewScreen({
         {!editMode && (
         <div className={`review-left ${activeTab === 'edit' ? 'review-left--hidden-mobile' : ''}`}>
           <div className="review-media-container">
-            {thumbnailUrl ? (
-              <a
-                href={instagramUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="review-thumbnail-link"
-                aria-label="פתח פוסט ב-Instagram"
-              >
-                <img src={thumbnailUrl} alt="תצוגה מקדימה" className="review-thumbnail-img" />
-                <div className="review-play-btn" aria-hidden="true">
-                  <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                    <circle cx="20" cy="20" r="20" fill="rgba(255,255,255,0.9)" />
-                    <polygon points="16,13 30,20 16,27" fill="#0f0f0f" />
-                  </svg>
+            {(() => {
+              const match = instagramUrl?.match(/instagram\.com\/(?:p|reel|tv)\/([A-Za-z0-9_-]+)/);
+              const embedUrl = match?.[1] ? `https://www.instagram.com/p/${match[1]}/embed/` : null;
+              if (embedUrl) {
+                return <iframe className="review-iframe" src={embedUrl} title="Instagram post" frameBorder="0" scrolling="no" allowTransparency="true" loading="lazy" />;
+              }
+              if (thumbnailUrl) {
+                return <img src={thumbnailUrl} alt="תצוגה מקדימה" className="review-thumbnail-img" />;
+              }
+              return (
+                <div className="review-left-fallback">
+                  <p>לא ניתן לטעון תצוגה מקדימה</p>
+                  <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="review-fallback-link">פתח ב-Instagram</a>
                 </div>
-              </a>
-            ) : (
-              <div className="review-left-fallback">
-                <p>לא ניתן לטעון תצוגה מקדימה</p>
-                <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="review-fallback-link">פתח ב-Instagram</a>
-              </div>
-            )}
+              );
+            })()}
           </div>
         </div>
         )}
