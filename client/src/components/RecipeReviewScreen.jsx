@@ -48,6 +48,8 @@ export function RecipeReviewScreen({
   thumbnailUrl,
   onSaved,
   onDiscard,
+  editMode = false,
+  recipeId = null,
 }) {
   const [title, setTitle] = useState(extractedRecipe.title ?? '');
   const [category, setCategory] = useState(extractedRecipe.main_category ?? '');
@@ -110,35 +112,60 @@ export function RecipeReviewScreen({
     const parsedPrepTime = parseInt(prepTime) || null;
 
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/confirm-recipe`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            instagram_url: instagramUrl,
-            title,
-            main_category: category,
-            difficulty,
-            ingredients,
-            workspace_id: workspaceId,
-            instructions: steps,
-            meal_type: mealType,
-            cuisine,
-            main_ingredient: mainIngredient,
-            prep_time: parsedPrepTime,
-            dietary_tags: dietaryTags,
-            thumbnail_url: thumbnailUrl ?? null,
-          }),
-        }
-      );
+      let response;
+      if (editMode) {
+        response = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/recipes/${recipeId}`,
+          {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              title,
+              main_category: category,
+              difficulty,
+              ingredients,
+              workspace_id: workspaceId,
+              instructions: steps,
+              meal_type: mealType,
+              cuisine,
+              main_ingredient: mainIngredient,
+              prep_time: parsedPrepTime,
+              dietary_tags: dietaryTags,
+              thumbnail_url: thumbnailUrl ?? null,
+            }),
+          }
+        );
+      } else {
+        response = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/confirm-recipe`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              instagram_url: instagramUrl,
+              title,
+              main_category: category,
+              difficulty,
+              ingredients,
+              workspace_id: workspaceId,
+              instructions: steps,
+              meal_type: mealType,
+              cuisine,
+              main_ingredient: mainIngredient,
+              prep_time: parsedPrepTime,
+              dietary_tags: dietaryTags,
+              thumbnail_url: thumbnailUrl ?? null,
+            }),
+          }
+        );
+      }
 
       const data = await response.json();
 
       if (response.ok && data.success) {
         onSaved(data);
       } else {
-        setSaveError(data.error || 'Something went wrong. Please try again.');
+        setSaveError(data.error || 'שמירה נכשלה — נסה שוב');
       }
     } catch (err) {
       setSaveError(err.message || 'Network error — check your connection.');
@@ -169,6 +196,7 @@ export function RecipeReviewScreen({
 
       <div className="review-body">
         {/* Left panel: Instagram embed */}
+        {!editMode && (
         <div className={`review-left ${activeTab === 'edit' ? 'review-left--hidden-mobile' : ''}`}>
           <div className="review-media-container">
             {thumbnailUrl ? (
@@ -195,6 +223,7 @@ export function RecipeReviewScreen({
             )}
           </div>
         </div>
+        )}
 
         {/* Right panel: edit form */}
         <div className={`review-right ${activeTab === 'post' ? 'review-right--hidden-mobile' : ''}`}>
@@ -369,7 +398,7 @@ export function RecipeReviewScreen({
               ביטול
             </button>
             <button type="submit" form="review-form" className="btn-primary" disabled={saving}>
-              {saving ? 'שומר...' : 'אישור ושמירה'}
+              {saving ? 'שומר...' : editMode ? 'שמור שינויים' : 'אישור ושמירה'}
             </button>
           </div>
         </div>
