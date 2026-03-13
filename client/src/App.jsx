@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider, useAuth } from './lib/auth.jsx';
 import { WorkspaceProvider, useWorkspace } from './lib/workspace.jsx';
 import { AuthGate } from './components/AuthGate';
@@ -9,6 +10,10 @@ import { QuickFilterPills } from './components/QuickFilterPills';
 import { FilterBottomSheet } from './components/FilterBottomSheet';
 import { JoinWorkspaceModal } from './components/JoinWorkspaceModal.jsx';
 import { LeaveWorkspaceModal } from './components/LeaveWorkspaceModal.jsx';
+
+function InviteHandler() {
+  return <div style={{ padding: '40px', textAlign: 'center' }}>Loading invite…</div>;
+}
 
 function WorkspaceSwitcher() {
   const { workspaces, activeWorkspace, setActiveWorkspace } = useWorkspace();
@@ -306,12 +311,29 @@ function WorkspaceGate() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <AuthGate>
-        <WorkspaceProvider>
-          <WorkspaceGate />
-        </WorkspaceProvider>
-      </AuthGate>
-    </AuthProvider>
+    <BrowserRouter>
+      <Routes>
+        <Route
+          path="/invite"
+          element={
+            <AuthProvider>
+              <InviteHandler />
+            </AuthProvider>
+          }
+        />
+        <Route
+          path="/*"
+          element={
+            <AuthProvider>
+              <AuthGate>
+                <WorkspaceProvider>
+                  <WorkspaceGate />
+                </WorkspaceProvider>
+              </AuthGate>
+            </AuthProvider>
+          }
+        />
+      </Routes>
+    </BrowserRouter>
   );
 }
