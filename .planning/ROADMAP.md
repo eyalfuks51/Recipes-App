@@ -49,10 +49,11 @@ Plans:
 **Goal:** Allow users to switch workspace via join code, leave a workspace, and delete it if they are the sole member. No CSS/styling.
 **Requirements**: user can switch to a different workspace using a join code, with workspace deletion if they are the sole member
 **Depends on:** Phase 6
-**Plans:** 0 plans
+**Plans:** 2 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 8 to break down)
+- [ ] 08-01-PLAN.md — WorkspaceProvider: add refreshWorkspaces() imperative method
+- [ ] 08-02-PLAN.md — JoinWorkspaceModal + LeaveWorkspaceModal components + WorkspaceSwitcher wiring
 
 ### Phase 9: Gallery Filters
 
