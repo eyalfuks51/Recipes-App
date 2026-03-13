@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './lib/auth.jsx';
 import { WorkspaceProvider, useWorkspace } from './lib/workspace.jsx';
+import { supabase } from './lib/supabase.js';
+import { InviteHandler } from './components/InviteHandler.jsx';
 import { AuthGate } from './components/AuthGate';
 import { WorkspaceOnboarding } from './components/WorkspaceOnboarding.jsx';
 import { SubmitForm } from './components/SubmitForm';
@@ -10,10 +12,6 @@ import { QuickFilterPills } from './components/QuickFilterPills';
 import { FilterBottomSheet } from './components/FilterBottomSheet';
 import { JoinWorkspaceModal } from './components/JoinWorkspaceModal.jsx';
 import { LeaveWorkspaceModal } from './components/LeaveWorkspaceModal.jsx';
-
-function InviteHandler() {
-  return <div style={{ padding: '40px', textAlign: 'center' }}>Loading invite…</div>;
-}
 
 function WorkspaceSwitcher() {
   const { workspaces, activeWorkspace, setActiveWorkspace } = useWorkspace();
@@ -308,7 +306,48 @@ function AppContent() {
 }
 
 function WorkspaceGate() {
-  const { workspaces, loading } = useWorkspace();
+  const { workspaces, loading, refreshWorkspaces, setActiveWorkspace } = useWorkspace();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!user || loading) return;
+    const code = localStorage.getItem('pendingInviteCode');
+    if (!code) return;
+
+    const autoJoin = async () => {
+      localStorage.removeItem('pendingInviteCode'); // clear early to prevent double-join
+      const trimmedCode = code.trim().toUpperCase();
+
+      const { data: ws, error: lookupErr } = await supabase
+        .from('workspaces')
+        .select('id, name')
+        .eq('invite_code', trimmedCode)
+        .single();
+
+      if (lookupErr || !ws) {
+        console.warn('pendingInviteCode: workspace not found for code', trimmedCode);
+        return;
+      }
+
+      const { error: joinErr } = await supabase
+        .from('workspace_users')
+        .upsert(
+          { workspace_id: ws.id, user_id: user.id, role: 'member' },
+          { onConflict: 'workspace_id,user_id' }
+        );
+
+      if (joinErr) {
+        console.warn('pendingInviteCode: join failed', joinErr.message);
+        return;
+      }
+
+      await refreshWorkspaces();
+      setActiveWorkspace(ws.id);
+    };
+
+    autoJoin();
+  }, [user, loading]);
 
   if (loading) {
     return <div className="auth-loading"><span className="spinner" /></div>;
