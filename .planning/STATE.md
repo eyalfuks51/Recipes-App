@@ -3,11 +3,27 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
+stopped_at: Completed 09-02 — Copy invite link + WhatsApp share in WorkspaceSwitcher
+last_updated: "2026-03-13T15:20:41.378Z"
+last_activity: 2026-03-13 — Completed Plan 01 (react-router-dom installed, /invite route added outside AuthGate)
+progress:
+  total_phases: 4
+  completed_phases: 2
+  total_plans: 8
+  completed_plans: 7
+  percent: 96
+---
+
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: completed
 stopped_at: Completed 09-01 — BrowserRouter + /invite route routing foundation
 last_updated: "2026-03-13T15:18:05.300Z"
 last_activity: 2026-03-13 — Phase 9 pivoted to Workspace Invite Links; Phase 10 is Gallery Filters
 progress:
-  total_phases: 4
+  [██████████] 96%
   completed_phases: 2
   total_plans: 8
   completed_plans: 6
@@ -85,6 +101,7 @@ v1.1 decisions:
 - [Phase 08-workspace-switching]: JoinWorkspaceModal calls refreshWorkspaces() then setActiveWorkspace() — refresh syncs list, setActiveWorkspace makes new workspace active immediately
 - [Phase 08-workspace-switching]: Leave flow does NOT call setActiveWorkspace manually — refreshWorkspaces() auto-corrects activeWorkspaceId to first remaining workspace
 - [Phase 09-workspace-invite-links Plan 01]: /invite route wraps only AuthProvider (no AuthGate) — unauthenticated users must reach invite URL without login block
+- [Phase 09-workspace-invite-links]: Full URL constructed client-side via window.location.origin; raw invite code display removed in favour of copy-link and WA share buttons
 
 ### Roadmap Evolution
 
@@ -103,6 +120,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-13T15:18:01.947Z
-Stopped at: Completed 09-01 — BrowserRouter + /invite route routing foundation
+Last session: 2026-03-13T15:20:41.376Z
+Stopped at: Completed 09-02 — Copy invite link + WhatsApp share in WorkspaceSwitcher
 Resume file: None
