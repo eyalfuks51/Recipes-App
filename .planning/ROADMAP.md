@@ -32,7 +32,7 @@ Full archive: `.planning/milestones/v1.0-ROADMAP.md`
 | 6. Human-in-the-Loop Review & Multi-Dimensional AI | v1.0 | 3/3 | Complete | 2026-03-07 |
 | 7. Recipe Management | v1.1 | 3/3 | Complete | 2026-03-07 |
 | 8. Workspace Switching | v1.1 | 2/2 | Complete | 2026-03-13 |
-| 9. Workspace Invite Links | 2/3 | In Progress|  | — |
+| 9. Workspace Invite Links | 3/3 | Complete   | 2026-03-13 | — |
 | 10. Gallery Filters | v1.1 | 0/0 | Pending | — |
 
 ### Phase 7: Recipe Management — COMPLETE 2026-03-07
@@ -63,7 +63,7 @@ Plans:
 **Goal:** Replace manual 6-character code entry with a seamless URL invite flow. Copy-invite-link UI, WhatsApp share, `/invite` route, authenticated confirmation modal, unauthenticated post-login auto-join.
 **Requirements**: copy invite link as full URL; share on WhatsApp; /invite route with authenticated confirmation and unauthenticated localStorage-code + post-login auto-join
 **Depends on:** Phase 8
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 - [ ] 09-01-PLAN.md — Add react-router-dom; restructure app entry for /invite route outside AuthGate
