@@ -4,7 +4,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-bg);
+  background: #fde8ec;
 }
 
 .auth-gate {
@@ -13,57 +13,66 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-bg);
+  background: #fde8ec;
+  overflow: hidden;
 }
 
-.auth-card {
+.auth-gate__content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
   width: 100%;
-  max-width: 360px;
-  padding: 40px;
-  background: #fff;
-  border-radius: var(--radius-lg, 16px);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
-  text-align: center;
-
-  .brand__icon {
-    color: var(--color-primary, #4f46e5);
-  }
-
-  h1 {
-    margin: 0;
-    font-size: 1.5rem;
-    font-weight: 700;
-  }
-
-  p {
-    margin: 0;
-    color: var(--color-text-muted, #6b7280);
-    font-size: 0.95rem;
-  }
+  max-width: 400px;
+  padding: 40px 24px;
+  gap: 20px;
+  z-index: 1;
 }
 
-.btn-google {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+.auth-gate__logo {
+  margin: 0;
+  font-family: 'TheSitcom', cursive;
+  font-size: 2.5rem;
+  font-weight: 400;
+  color: #c0392b;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.auth-gate__hero {
   width: 100%;
-  padding: 10px 16px;
-  background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: var(--radius-md, 8px);
-  font-size: 0.95rem;
-  font-weight: 500;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.auth-gate__hero-img {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.auth-gate__tagline {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.6;
+  color: var(--color-primary, #e85d3e);
+}
+
+.auth-gate__cta {
+  width: 100%;
+  padding: 14px 24px;
+  background: var(--color-primary, #e85d3e);
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  font-size: 1.1rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: box-shadow 0.15s ease, transform 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 
   &:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
     transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(232, 93, 62, 0.35);
   }
 
   &:active {
@@ -71,6 +80,102 @@
   }
 }
 
+.auth-gate__signin-link {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-primary, #e85d3e);
+
+  a {
+    color: var(--color-primary, #e85d3e);
+    text-decoration: underline;
+    cursor: pointer;
+    font-weight: 500;
+
+    &:hover {
+      color: var(--color-primary-hover, #d14e30);
+    }
+  }
+}
+
+// Floating food decorations
+.auth-gate__float {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.auth-gate__float--pasta {
+  top: -20px;
+  right: -20px;
+  width: 200px;
+  transform: rotate(-15deg);
+}
+
+.auth-gate__float--dumplings {
+  left: -30px;
+  top: 45%;
+  width: 190px;
+  transform: rotate(10deg);
+}
+
+.auth-gate__float--pancakes {
+  bottom: 10px;
+  right: -20px;
+  width: 200px;
+  transform: rotate(-5deg);
+}
+
+// Responsive adjustments
+@media (max-width: 480px) {
+  .auth-gate__float--pasta {
+    width: 140px;
+    top: -10px;
+    right: -15px;
+  }
+
+  .auth-gate__float--dumplings {
+    width: 130px;
+    left: -25px;
+  }
+
+  .auth-gate__float--pancakes {
+    width: 140px;
+    right: -15px;
+    bottom: 5px;
+  }
+
+  .auth-gate__content {
+    padding: 20px 20px;
+    height: 100%;
+  }
+
+  .auth-gate__logo {
+    font-size: 2rem;
+  }
+
+  .auth-gate__tagline {
+    font-size: 1.15rem;
+  }
+}
+
+// Spinner (kept from original)
+.spinner {
+  display: block;
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-top-color: var(--color-primary, #e85d3e);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Sign-out button (used elsewhere, kept for compatibility)
 .btn-signout {
   padding: 6px 14px;
   background: transparent;
@@ -83,21 +188,5 @@
 
   &:hover {
     background: var(--color-surface, #f9fafb);
-  }
-}
-
-.spinner {
-  display: block;
-  width: 36px;
-  height: 36px;
-  border: 3px solid var(--color-border, #e5e7eb);
-  border-top-color: var(--color-primary, #4f46e5);
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
   }
 }

@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useWorkspace } from '../lib/workspace.jsx';
 import { RecipeModal } from './RecipeModal';
+import { RecipeReviewScreen } from './RecipeReviewScreen';
+import { QuickFilterPills } from './QuickFilterPills';
 import './RecipeGallery.scss';
 
 // ─── Difficulty config ─────────────────────────────────────────────────────────
@@ -36,8 +38,53 @@ function SkeletonCard() {
 }
 
 // ─── Recipe Card ──────────────────────────────────────────────────────────────
-function RecipeCard({ recipe, onClick }) {
+function RecipeCard({ recipe, onClick, onDelete }) {
   const diff = getDifficulty(recipe.difficulty);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const confirmRef = useRef(null);
+
+  // Close popup on click outside
+  useEffect(() => {
+    if (!confirmingDelete) return;
+    function handleClickOutside(e) {
+      if (confirmRef.current && !confirmRef.current.contains(e.target)) {
+        setConfirmingDelete(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [confirmingDelete]);
+
+  function handleTrashClick(e) {
+    e.stopPropagation();
+    if (deleting) return;
+    setConfirmingDelete(true);
+  }
+
+  async function handleConfirmDelete(e) {
+    e.stopPropagation();
+    if (deleting) return;
+    setDeleting(true);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/recipes/${recipe.id}`, { method: 'DELETE' });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        onDelete(recipe.id);
+      } else {
+        setDeleting(false);
+        setConfirmingDelete(false);
+      }
+    } catch {
+      setDeleting(false);
+      setConfirmingDelete(false);
+    }
+  }
+
+  function handleCancelDelete(e) {
+    e.stopPropagation();
+    setConfirmingDelete(false);
+  }
 
   return (
     <div
@@ -51,6 +98,23 @@ function RecipeCard({ recipe, onClick }) {
       <div className="card-header">
         {recipe.main_category && (
           <span className="card-category">{recipe.main_category}</span>
+        )}
+        <button
+          className="card-trash"
+          onClick={handleTrashClick}
+          disabled={deleting}
+          aria-label="מחק מתכון"
+        >
+          <img src="/icons/trash.svg" width="16" height="16" alt="" aria-hidden="true" />
+        </button>
+        {confirmingDelete && (
+          <div className="card-delete-confirm" ref={confirmRef}>
+            <p className="card-delete-confirm__text">למחוק את המתכון?</p>
+            <div className="card-delete-confirm__actions">
+              <button className="card-delete-confirm__cancel" onClick={handleCancelDelete}>ביטול</button>
+              <button className="card-delete-confirm__confirm" onClick={handleConfirmDelete} disabled={deleting}>מחיקה</button>
+            </div>
+          </div>
         )}
       </div>
       <h3 className="card-title">{recipe.title}</h3>
@@ -68,7 +132,7 @@ function RecipeCard({ recipe, onClick }) {
 }
 
 // ─── Gallery ──────────────────────────────────────────────────────────────────
-export function RecipeGallery({ refreshTrigger = 0 }) {
+export function RecipeGallery({ refreshTrigger = 0, filters = {}, activeFilter, onFilterChange, onOpenFilterSheet, hasActiveAdvancedFilters }) {
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -76,6 +140,7 @@ export function RecipeGallery({ refreshTrigger = 0 }) {
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [modalIngredients, setModalIngredients] = useState([]);
   const [ingredientsLoading, setIngredientsLoading] = useState(false);
+  const [editingRecipe, setEditingRecipe] = useState(null);
 
   const { activeWorkspaceId } = useWorkspace();
 
@@ -92,7 +157,7 @@ export function RecipeGallery({ refreshTrigger = 0 }) {
 
       const { data, error: sbError } = await supabase
         .from('recipes')
-        .select('id, title, main_category, difficulty, instagram_url, instructions, workspace_id')
+        .select('id, title, main_category, difficulty, instagram_url, instructions, workspace_id, meal_type, cuisine, main_ingredient, prep_time, dietary_tags, thumbnail_url')
         .eq('workspace_id', activeWorkspaceId)
         .order('created_at', { ascending: false });
 
@@ -107,6 +172,38 @@ export function RecipeGallery({ refreshTrigger = 0 }) {
 
     fetchRecipes();
   }, [refreshTrigger, activeWorkspaceId]);
+
+  // ── Client-side filtering ─────────────────────────────────────────────────
+  const filteredRecipes = useMemo(() => {
+    return recipes.filter((recipe) => {
+      // Meal type filter
+      if (filters.mealType && recipe.meal_type !== filters.mealType) return false;
+
+      // Dietary tags — recipe must have ALL selected tags
+      if (filters.dietaryTags?.length > 0) {
+        const recipeTags = recipe.dietary_tags || [];
+        if (!filters.dietaryTags.every((tag) => recipeTags.includes(tag))) return false;
+      }
+
+      // Prep time range
+      if (filters.prepTimeRange) {
+        const prep = parseInt(recipe.prep_time, 10);
+        if (isNaN(prep)) return false;
+        if (filters.prepTimeRange === '15' && prep > 15) return false;
+        if (filters.prepTimeRange === '30' && prep > 30) return false;
+        if (filters.prepTimeRange === '60+' && prep <= 60) return false;
+      }
+
+      // Main ingredient — substring match
+      if (filters.mainIngredient) {
+        if (!recipe.main_ingredient?.includes(filters.mainIngredient)) return false;
+      }
+
+      return true;
+    });
+  }, [recipes, filters]);
+
+  const hasActiveFilters = filters.mealType || (filters.dietaryTags?.length > 0) || filters.prepTimeRange || filters.mainIngredient;
 
   async function handleCardClick(recipe) {
     // Show modal immediately with card data; load ingredients in background
@@ -133,13 +230,47 @@ export function RecipeGallery({ refreshTrigger = 0 }) {
     setModalIngredients([]);
   }
 
+  function handleDelete(recipeId) {
+    // Optimistic removal: remove recipe from list immediately
+    setRecipes((prev) => prev.filter((r) => r.id !== recipeId));
+    setSelectedRecipe(null);
+    setModalIngredients([]);
+  }
+
+  function handleEdit(recipe) {
+    setSelectedRecipe(null);   // close modal
+    setModalIngredients([]);
+    setEditingRecipe(recipe);  // enter edit mode
+  }
+
+  function handleEditSaved(data) {
+    // Patch the recipe in the local list with the fields we know changed
+    // data = { success: true, recipe_id: string, title: string }
+    setRecipes((prev) =>
+      prev.map((r) => r.id === data.recipe_id ? { ...r, title: data.title } : r)
+    );
+    setEditingRecipe(null);
+  }
+
+  function handleEditDiscard() {
+    setEditingRecipe(null);
+  }
+
   return (
     <div className="recipe-gallery">
       <div className="gallery-header">
-        <h2>Your Recipes</h2>
-        {!loading && !error && recipes.length > 0 && (
-          <span className="gallery-count">{recipes.length}</span>
-        )}
+        <div className="gallery-header__top">
+          <h2>ספר המתכונים שלך</h2>
+          {!loading && !error && recipes.length > 0 && (
+            <span className="gallery-count">{filteredRecipes.length}</span>
+          )}
+        </div>
+        <QuickFilterPills
+          activeFilter={activeFilter}
+          onFilterChange={onFilterChange}
+          onOpenFilterSheet={onOpenFilterSheet}
+          hasActiveAdvancedFilters={hasActiveAdvancedFilters}
+        />
       </div>
 
       {loading && (
@@ -151,7 +282,7 @@ export function RecipeGallery({ refreshTrigger = 0 }) {
       )}
 
       {!loading && error && (
-        <p className="gallery-error">Failed to load recipes: {error}</p>
+        <p className="gallery-error">שגיאה בטעינת המתכונים: {error}</p>
       )}
 
       {!loading && !error && recipes.length === 0 && (
@@ -162,18 +293,26 @@ export function RecipeGallery({ refreshTrigger = 0 }) {
             <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3" />
             <path d="M21 15v7" />
           </svg>
-          <p className="gallery-empty__title">No recipes yet</p>
-          <p className="gallery-empty__sub">Paste an Instagram URL above to save your first recipe.</p>
+          <p className="gallery-empty__title">אין מתכונים עדיין</p>
+          <p className="gallery-empty__sub">הדביקו קישור מאינסטגרם למעלה כדי לשמור את המתכון הראשון שלכם.</p>
         </div>
       )}
 
-      {!loading && !error && recipes.length > 0 && (
+      {!loading && !error && recipes.length > 0 && filteredRecipes.length === 0 && hasActiveFilters && (
+        <div className="gallery-empty gallery-empty--filtered">
+          <p className="gallery-empty__title">לא נמצאו מתכונים</p>
+          <p className="gallery-empty__sub">נסו לשנות את הסינון</p>
+        </div>
+      )}
+
+      {!loading && !error && filteredRecipes.length > 0 && (
         <div className="recipe-grid">
-          {recipes.map((recipe) => (
+          {filteredRecipes.map((recipe) => (
             <RecipeCard
               key={recipe.id}
               recipe={recipe}
               onClick={() => handleCardClick(recipe)}
+              onDelete={handleDelete}
             />
           ))}
         </div>
@@ -185,6 +324,33 @@ export function RecipeGallery({ refreshTrigger = 0 }) {
           ingredients={modalIngredients}
           ingredientsLoading={ingredientsLoading}
           onClose={handleModalClose}
+          onDelete={handleDelete}
+          onEdit={handleEdit}
+        />
+      )}
+
+      {editingRecipe && (
+        <RecipeReviewScreen
+          extractedRecipe={{
+            title: editingRecipe.title,
+            main_category: editingRecipe.main_category,
+            difficulty: editingRecipe.difficulty,
+            ingredients: [],
+            instructions: Array.isArray(editingRecipe.instructions) ? editingRecipe.instructions :
+              (typeof editingRecipe.instructions === 'string' ? JSON.parse(editingRecipe.instructions || '[]') : []),
+            meal_type: editingRecipe.meal_type ?? 'ארוחת צהריים/ערב',
+            cuisine: editingRecipe.cuisine ?? '',
+            main_ingredient: editingRecipe.main_ingredient ?? '',
+            prep_time: editingRecipe.prep_time ?? null,
+            dietary_tags: Array.isArray(editingRecipe.dietary_tags) ? editingRecipe.dietary_tags : [],
+          }}
+          instagramUrl={editingRecipe.instagram_url}
+          workspaceId={editingRecipe.workspace_id ?? activeWorkspaceId}
+          thumbnailUrl={editingRecipe.thumbnail_url ?? null}
+          editMode={true}
+          recipeId={editingRecipe.id}
+          onSaved={handleEditSaved}
+          onDiscard={handleEditDiscard}
         />
       )}
     </div>

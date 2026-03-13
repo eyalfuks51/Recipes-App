@@ -5,28 +5,8 @@ import { AuthGate } from './components/AuthGate';
 import { WorkspaceOnboarding } from './components/WorkspaceOnboarding.jsx';
 import { SubmitForm } from './components/SubmitForm';
 import { RecipeGallery } from './components/RecipeGallery';
-
-function BrandIcon() {
-  return (
-    <svg
-      className="brand__icon"
-      width="28"
-      height="28"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" />
-      <path d="M7 2v20" />
-      <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3" />
-      <path d="M21 15v7" />
-    </svg>
-  );
-}
+import { QuickFilterPills } from './components/QuickFilterPills';
+import { FilterBottomSheet } from './components/FilterBottomSheet';
 
 function WorkspaceSwitcher() {
   const { workspaces, activeWorkspace, setActiveWorkspace } = useWorkspace();
@@ -91,7 +71,7 @@ function WorkspaceSwitcher() {
           style={{
             position: 'absolute',
             top: 'calc(100% + 6px)',
-            left: 0,
+            right: 0,
             minWidth: '180px',
             background: '#fff',
             border: '1px solid #e2e8f0',
@@ -112,18 +92,18 @@ function WorkspaceSwitcher() {
                 style={{
                   display: 'block',
                   width: '100%',
-                  textAlign: 'left',
+                  textAlign: 'right',
                   padding: '10px 14px',
                   border: 'none',
-                  background: isActive ? '#f0f7ff' : 'transparent',
-                  color: isActive ? '#1a56db' : '#1a202c',
+                  background: isActive ? '#fff0ec' : 'transparent',
+                  color: isActive ? '#e85d3e' : '#1a202c',
                   cursor: 'pointer',
                   fontSize: '0.875rem',
                   fontWeight: isActive ? 600 : 400,
                 }}
               >
                 {isActive && (
-                  <span style={{ marginRight: '6px', fontSize: '0.75rem' }}>\u2713</span>
+                  <span style={{ marginLeft: '6px', fontSize: '0.75rem' }}>\u2713</span>
                 )}
                 {ws.name}
               </button>
@@ -184,6 +164,31 @@ function AppContent() {
   const [refreshCount, setRefreshCount] = useState(0);
   const { user, signOut } = useAuth();
 
+  // ── Filter state ──────────────────────────────────────────────────
+  const [filters, setFilters] = useState({
+    mealType: null,
+    dietaryTags: [],
+    prepTimeRange: null,
+    mainIngredient: null,
+  });
+  const [filterSheetOpen, setFilterSheetOpen] = useState(false);
+
+  const hasActiveAdvancedFilters = filters.dietaryTags.length > 0 || filters.prepTimeRange !== null || filters.mainIngredient !== null;
+
+  const handleQuickFilter = (mealType) => {
+    setFilters((prev) => ({ ...prev, mealType }));
+  };
+
+  const handleAdvancedFilters = (newFilters) => {
+    setFilters((prev) => ({ ...prev, ...newFilters }));
+    setFilterSheetOpen(false);
+  };
+
+  const handleClearAllFilters = () => {
+    setFilters({ mealType: null, dietaryTags: [], prepTimeRange: null, mainIngredient: null });
+    setFilterSheetOpen(false);
+  };
+
   const handleSuccess = (recipe) => {
     console.log('New recipe saved:', recipe.title);
     setRefreshCount((c) => c + 1);
@@ -195,13 +200,12 @@ function AppContent() {
       <header className="site-header">
         <div className="site-header__inner">
           <div className="brand">
-            <BrandIcon />
-            <span className="brand__name">Recipe Manager</span>
+            <span className="brand__name">Re-smash</span>
           </div>
           <WorkspaceSwitcher />
           {user && (
             <button className="btn-signout" onClick={signOut}>
-              Sign out
+              התנתקות
             </button>
           )}
         </div>
@@ -210,10 +214,6 @@ function AppContent() {
       {/* ── Hero / Submit ──────────────────────────────────────────────── */}
       <section className="hero" aria-label="Submit a recipe">
         <div className="hero__inner">
-          <h1 className="hero__title">Save Instagram recipes instantly</h1>
-          <p className="hero__subtitle">
-            Paste any Instagram post URL and we'll extract the full recipe automatically.
-          </p>
           <SubmitForm onSuccess={handleSuccess} />
         </div>
       </section>
@@ -221,9 +221,25 @@ function AppContent() {
       {/* ── Gallery ────────────────────────────────────────────────────── */}
       <main className="content" aria-label="Recipe gallery">
         <div className="content__inner">
-          <RecipeGallery refreshTrigger={refreshCount} />
+          <RecipeGallery
+            refreshTrigger={refreshCount}
+            filters={filters}
+            activeFilter={filters.mealType}
+            onFilterChange={handleQuickFilter}
+            onOpenFilterSheet={() => setFilterSheetOpen(true)}
+            hasActiveAdvancedFilters={hasActiveAdvancedFilters}
+          />
         </div>
       </main>
+
+      {/* ── Filter Bottom Sheet ───────────────────────────────────────── */}
+      <FilterBottomSheet
+        isOpen={filterSheetOpen}
+        onClose={() => setFilterSheetOpen(false)}
+        currentFilters={filters}
+        onApply={handleAdvancedFilters}
+        onClearAll={handleClearAllFilters}
+      />
     </div>
   );
 }

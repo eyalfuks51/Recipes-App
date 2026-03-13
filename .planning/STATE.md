@@ -1,17 +1,16 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.0
-milestone_name: MVP
-status: complete
-stopped_at: Milestone complete
-last_updated: "2026-03-07T18:30:00.000Z"
-last_activity: "2026-03-07 - v1.0 milestone archived"
+milestone_name: milestone
+status: completed
+stopped_at: Completed 07-03 — Edit recipe UI (RecipeReviewScreen editMode + RecipeGallery edit flow)
+last_updated: "2026-03-07T20:35:26.170Z"
+last_activity: 2026-03-07 — Completed Plan 03 (Edit recipe UI — editMode on RecipeReviewScreen, Edit button in RecipeModal, gallery edit state)
 progress:
-  total_phases: 6
-  completed_phases: 6
-  total_plans: 20
-  completed_plans: 20
-  percent: 100
+  total_phases: 3
+  completed_phases: 1
+  total_plans: 3
+  completed_plans: 3
 ---
 
 # Project State
@@ -21,16 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-07)
 
 **Core value:** Any Instagram recipe URL becomes a browsable, structured recipe card in one click.
-**Current focus:** v1.0 complete — start `/gsd:new-milestone` for v1.1
+**Current focus:** v1.1 — Functional Enhancements (delete, edit, workspace switching, filters)
 
 ## Current Position
 
-Milestone: v1.0 MVP — SHIPPED 2026-03-07
-Phase: All 6 phases complete
-Plan: All 20 plans complete
-Status: Complete
-
-Progress: [██████████] 100%
+Phase: 07-recipe-management
+Plan: 03 of 03 complete
+Status: Phase complete
+Last activity: 2026-03-07 — Completed Plan 03 (Edit recipe UI — editMode on RecipeReviewScreen, Edit button in RecipeModal, gallery edit state)
 
 ## Accumulated Context
 
@@ -44,18 +41,21 @@ Key architectural decisions from v1.0:
 - Workspace/ecosystem model with Supabase RLS for data isolation
 - RecipeReviewScreen split-screen as core human-in-the-loop UX
 
+v1.1 decisions:
+- updateRecipe uses insert (not upsert) for junction rows after delete, since no conflict key exists post-deletion
+- updateRecipe skips ingredients processing when no ingredients array provided (sparse update)
+- [Phase 07-recipe-management]: Delete fetch in RecipeModal; RecipeGallery responds via onDelete callback after success
+- [Phase 07-recipe-management]: onDelete called before onClose to ensure gallery state updated before modal unmounts
+- [Phase 07-recipe-management Plan 03]: Edit button uses deleting flag to disable — prevents conflicting actions in modal
+- [Phase 07-recipe-management Plan 03]: handleEdit resets selectedRecipe before setting editingRecipe — prevents dual render
+- [Phase 07-recipe-management Plan 03]: Optimistic title patch uses data.recipe_id from PUT response — matches API contract
+- [Phase 07-recipe-management Plan 03]: ingredients:[] in edit pre-fill is intentional v1.1 trade-off
+
 ### Roadmap Evolution
 
-v1.0 shipped with 6 phases (originally planned as 3). Phases 4-6 added during development:
-- Phase 4: Multi-tenant SaaS and Ecosystems (Google Auth, workspaces, recipe review flow)
-- Phase 5: Ecosystem Onboarding and Strict Data Isolation
-- Phase 6: Human-in-the-Loop Review & Multi-Dimensional AI
-
-### Quick Tasks Completed
-
-| # | Description | Date | Commit | Directory |
-|---|-------------|------|--------|-----------|
-| 1 | Fix Phase 6 visual regressions: CSS layout cutoff, sticky footer buttons, empty instructions bug, 9:16 iframe aspect ratio, og:image thumbnail fallback | 2026-03-07 | a887271 | [1-fix-phase-6-visual-regressions-css-layou](.planning/quick/1-fix-phase-6-visual-regressions-css-layou/) |
+- Phase 7 added: Recipe Management (edit + delete recipes, API + state, no CSS)
+- Phase 8 added: Workspace Switching (join code, leave, sole-member deletion, no CSS)
+- Phase 9 added: Gallery Filters (meal type, category, cuisine, vibe tags, Supabase queries, no CSS)
 
 ### Pending Todos
 
@@ -67,6 +67,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-07
-Stopped at: v1.0 milestone complete
+Last session: 2026-03-07T20:37:00Z
+Stopped at: Completed 07-03 — Edit recipe UI (RecipeReviewScreen editMode + RecipeGallery edit flow)
 Resume file: None

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { scrapeInstagramCaption } from '../services/scraper.js';
 import { extractRecipeFromCaption } from '../services/moonshot.js';
-import { saveRecipe, deleteRecipe } from '../services/supabase.js';
+import { saveRecipe, deleteRecipe, updateRecipe } from '../services/supabase.js';
 
 export const recipeRouter = Router();
 
@@ -98,7 +98,7 @@ recipeRouter.post('/confirm-recipe', async (req, res) => {
   const {
     instagram_url, title, main_category, difficulty, ingredients, workspace_id,
     instructions, meal_type, cuisine, main_ingredient,
-    prep_time, dietary_tags, thumbnail_url
+    prep_time, dietary_tags, thumbnail_url,
   } = req.body;
 
   // Validation
@@ -146,7 +146,6 @@ recipeRouter.post('/confirm-recipe', async (req, res) => {
   }
 });
 
-// DELETE /api/recipes/:id — remove a recipe and its related rows
 recipeRouter.delete('/recipes/:id', async (req, res) => {
   const { id } = req.params;
 
@@ -166,6 +165,49 @@ recipeRouter.delete('/recipes/:id', async (req, res) => {
   } catch (err) {
     const message = err?.message ?? String(err);
     console.error('[delete-recipe] Error:', message);
+
+recipeRouter.delete('/recipes/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    await deleteRecipe(id);
+    return res.json({ success: true });
+  } catch (err) {
+    const message = err?.message ?? String(err);
+    if (message === 'Recipe not found') {
+      return res.status(404).json({ success: false, error: message });
+    }
+    console.error('[delete-recipe] Error:', message);
+    return res.status(500).json({ success: false, error: message });
+  }
+});
+
+// PUT /api/recipes/:id — update an existing recipe by ID
+recipeRouter.put('/recipes/:id', async (req, res) => {
+  const { id } = req.params;
+  const {
+    title, main_category, difficulty, ingredients, workspace_id,
+    instructions, meal_type, cuisine, main_ingredient,
+    prep_time, dietary_tags, thumbnail_url,
+  } = req.body;
+
+  if (!title) {
+    return res.status(400).json({ success: false, error: 'title is required' });
+  }
+
+  try {
+    const updated = await updateRecipe(id, {
+      title, main_category, difficulty, ingredients, workspace_id,
+      instructions, meal_type, cuisine, main_ingredient,
+      prep_time, dietary_tags, thumbnail_url,
+    });
+    return res.json({ success: true, recipe_id: updated.recipe_id, title: updated.title });
+  } catch (err) {
+    const message = err?.message ?? String(err);
+    if (message === 'Recipe not found') {
+      return res.status(404).json({ success: false, error: message });
+    }
+    console.error('[update-recipe] Error:', message);
     return res.status(500).json({ success: false, error: message });
   }
 });

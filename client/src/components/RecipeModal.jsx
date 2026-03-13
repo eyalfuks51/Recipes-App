@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/auth.jsx';
@@ -45,6 +45,32 @@ function IconX() {
   );
 }
 
+function IconPen() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+    </svg>
+  );
+}
+
+function IconFlame() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
+    </svg>
+  );
+}
+
+function IconShare() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+      <polyline points="16 6 12 2 8 6" />
+      <line x1="12" y1="2" x2="12" y2="15" />
+    </svg>
+  );
+}
+
 function IconInstagram() {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -68,15 +94,23 @@ function IngredientSkeleton() {
 }
 
 // ─── Modal ────────────────────────────────────────────────────────────────────
-export function RecipeModal({ recipe, ingredients, ingredientsLoading, onClose }) {
+export function RecipeModal({ recipe, ingredients, ingredientsLoading, onClose, onDelete, onEdit }) {
   const shortcode = extractShortcode(recipe.instagram_url);
   const embedUrl = shortcode ? `https://www.instagram.com/p/${shortcode}/embed/` : null;
+  const hasMedia = !!(embedUrl || recipe.thumbnail_url);
   const diff = getDifficulty(recipe.difficulty);
 
   const { user } = useAuth();
   const { activeWorkspaceId } = useWorkspace();
   const [checkedIds, setCheckedIds] = useState(new Set());
   const [checksLoading, setChecksLoading] = useState(false);
+  const [closing, setClosing] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
+  const [cookingMode, setCookingMode] = useState(false);
+  const wakeLockRef = useRef(null);
+  const [shareTooltip, setShareTooltip] = useState(false);
+  const [activeTab, setActiveTab] = useState('recipe');
 
   // Load existing checkbox state when ingredients are ready
   useEffect(() => {
@@ -113,13 +147,86 @@ export function RecipeModal({ recipe, ingredients, ingredientsLoading, onClose }
     }, { onConflict: 'workspace_id,recipe_id,ingredient_id' });
   }
 
+  async function handleDelete() {
+    if (deleting || !onDelete) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/recipes/${recipe.id}`, { method: 'DELETE' });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        onDelete(recipe.id);
+        handleClose();
+      } else {
+        setDeleteError(data.error || 'מחיקה נכשלה — נסה שוב');
+        setDeleting(false);
+      }
+    } catch (err) {
+      setDeleteError(err.message || 'שגיאת רשת');
+      setDeleting(false);
+    }
+  }
+
+  function handleClose() {
+    if (closing) return;
+    setClosing(true);
+    setTimeout(() => onClose(), 250);
+  }
+
+  // ── Cooking Mode (Wake Lock) ──────────────────────────────────────────────
+  async function toggleCookingMode() {
+    try {
+      if (!cookingMode) {
+        wakeLockRef.current = await navigator.wakeLock.request('screen');
+        setCookingMode(true);
+      } else {
+        await wakeLockRef.current?.release();
+        wakeLockRef.current = null;
+        setCookingMode(false);
+      }
+    } catch {
+      setCookingMode(false);
+    }
+  }
+
+  // Re-acquire wake lock when tab becomes visible again
+  useEffect(() => {
+    if (!cookingMode) return;
+    function handleVisibility() {
+      if (document.visibilityState === 'visible' && cookingMode) {
+        navigator.wakeLock.request('screen').then(s => { wakeLockRef.current = s; }).catch(() => {});
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, [cookingMode]);
+
+  // Release wake lock on unmount
+  useEffect(() => {
+    return () => { wakeLockRef.current?.release(); };
+  }, []);
+
+  // ── Share Recipe ─────────────────────────────────────────────────────────────
+  async function handleShare() {
+    const shareData = { title: recipe.title, text: recipe.title, url: recipe.instagram_url };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(recipe.title + '\n' + recipe.instagram_url);
+        setShareTooltip(true);
+        setTimeout(() => setShareTooltip(false), 2000);
+      }
+    } catch { /* user cancelled share */ }
+  }
+
   // Lock body scroll and handle Escape key
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
     function onKey(e) {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') handleClose();
     }
     document.addEventListener('keydown', onKey);
 
@@ -127,62 +234,86 @@ export function RecipeModal({ recipe, ingredients, ingredientsLoading, onClose }
       document.body.style.overflow = prev;
       document.removeEventListener('keydown', onKey);
     };
-  }, [onClose]);
+  }, [onClose, closing]);
 
   function handleBackdropClick(e) {
-    if (e.target === e.currentTarget) onClose();
+    if (e.target === e.currentTarget) handleClose();
   }
 
   return createPortal(
     <div
-      className="modal-backdrop"
+      className={`modal-backdrop${closing ? ' modal-backdrop--closing' : ''}`}
       onClick={handleBackdropClick}
       role="presentation"
     >
       <div
-        className="modal-panel"
+        className={`modal-panel${closing ? ' modal-panel--closing' : ''}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-recipe-title"
       >
         {/* ── Close ───────────────────────────────────────────────────── */}
-        <button className="modal-close" onClick={onClose} aria-label="Close recipe">
+        <button className="modal-close" onClick={handleClose} aria-label="Close recipe">
           <IconX />
         </button>
 
-        <div className="modal-body">
-          {/* ── Left: Instagram embed ─────────────────────────────────── */}
-          <div className="modal-left">
-            <div className="modal-media-container">
-              {recipe.thumbnail_url ? (
-                <a
-                  href={recipe.instagram_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="modal-thumbnail-link"
-                  aria-label="View on Instagram"
-                >
-                  <img src={recipe.thumbnail_url} alt={recipe.title} className="modal-thumbnail-img" />
-                  <div className="modal-play-btn" aria-hidden="true">
-                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                      <circle cx="24" cy="24" r="24" fill="rgba(255,255,255,0.9)" />
-                      <polygon points="19,15 36,24 19,33" fill="#0f0f0f" />
-                    </svg>
-                  </div>
-                </a>
-              ) : embedUrl ? (
-                <iframe className="modal-iframe" src={embedUrl} title={`Instagram post: ${recipe.title}`} frameBorder="0" scrolling="no" allowTransparency="true" loading="lazy" />
-              ) : (
-                <div className="modal-iframe-fallback">
-                  <IconInstagram />
-                  <span>Preview unavailable</span>
-                </div>
-              )}
-            </div>
+        {/* ── Actions (top-right) ─────────────────────────────────────── */}
+        <div className="modal-actions">
+          {recipe.instagram_url && (
+            <button
+              className="modal-action-btn"
+              onClick={handleShare}
+              aria-label="שתף מתכון"
+            >
+              <IconShare />
+            </button>
+          )}
+          {onEdit && (
+            <button
+              className="modal-action-btn"
+              onClick={() => onEdit(recipe)}
+              disabled={deleting}
+              aria-label="ערוך מתכון"
+            >
+              <IconPen />
+            </button>
+          )}
+          {shareTooltip && <span className="modal-share-tooltip">הקישור הועתק!</span>}
+        </div>
+
+        {hasMedia && (
+          <div className="modal-tabs">
+            <button
+              className={activeTab === 'video' ? 'modal-tab modal-tab--active' : 'modal-tab'}
+              onClick={() => setActiveTab('video')}
+            >
+              סרטון
+            </button>
+            <button
+              className={activeTab === 'recipe' ? 'modal-tab modal-tab--active' : 'modal-tab'}
+              onClick={() => setActiveTab('recipe')}
+            >
+              מתכון
+            </button>
           </div>
+        )}
+
+        <div className={`modal-body${hasMedia ? '' : ' modal-body--no-media'}${hasMedia && activeTab === 'video' ? ' modal-body--video-active' : ''}`}>
+          {/* ── Left: Instagram embed (desktop always; mobile only on video tab) ── */}
+          {hasMedia && (
+            <div className={`modal-left${activeTab === 'recipe' ? ' modal-left--hidden-mobile' : ''}`}>
+              <div className="modal-media-container">
+                {embedUrl ? (
+                  <iframe className="modal-iframe" src={embedUrl} title={`Instagram post: ${recipe.title}`} frameBorder="0" scrolling="no" allowTransparency="true" loading="lazy" />
+                ) : (
+                  <img src={recipe.thumbnail_url} alt={recipe.title} className="modal-thumbnail-img" />
+                )}
+              </div>
+            </div>
+          )}
 
           {/* ── Right: Recipe details ──────────────────────────────────── */}
-          <div className="modal-right">
+          <div className={`modal-right${hasMedia && activeTab === 'video' ? ' modal-right--hidden-mobile' : ''}`}>
             <div className="modal-content">
               {/* Badges */}
               <div className="modal-badges">
@@ -211,7 +342,18 @@ export function RecipeModal({ recipe, ingredients, ingredientsLoading, onClose }
 
               {/* Ingredients */}
               <section className="modal-ingredients">
-                <h3 className="modal-section-heading">Ingredients</h3>
+                <div className="modal-ingredients-header">
+                  <h3 className="modal-section-heading">מצרכים</h3>
+                  {'wakeLock' in navigator && (
+                    <button
+                      className={`cooking-mode-btn${cookingMode ? ' cooking-mode-btn--active' : ''}`}
+                      onClick={toggleCookingMode}
+                    >
+                      <IconFlame />
+                      {cookingMode ? 'מצב בישול פעיל' : 'מצב בישול'}
+                    </button>
+                  )}
+                </div>
 
                 {ingredientsLoading && <IngredientSkeleton />}
 
@@ -234,7 +376,7 @@ export function RecipeModal({ recipe, ingredients, ingredientsLoading, onClose }
                 )}
 
                 {!ingredientsLoading && ingredients.length === 0 && (
-                  <p className="modal-empty-ingredients">No ingredients saved for this recipe.</p>
+                  <p className="modal-empty-ingredients">לא נשמרו מצרכים למתכון הזה.</p>
                 )}
               </section>
 
@@ -266,8 +408,21 @@ export function RecipeModal({ recipe, ingredients, ingredientsLoading, onClose }
                   className="modal-ig-link"
                 >
                   <IconInstagram />
-                  View original post
+                  צפייה בפוסט המקורי
                 </a>
+              )}
+
+              {onDelete && (
+                <div className="modal-delete-section">
+                  <button
+                    className="modal-delete-btn"
+                    onClick={handleDelete}
+                    disabled={deleting}
+                  >
+                    {deleting ? 'מוחק...' : 'מחק מתכון'}
+                  </button>
+                  {deleteError && <p className="modal-delete-error-inline">{deleteError}</p>}
+                </div>
               )}
             </div>
           </div>

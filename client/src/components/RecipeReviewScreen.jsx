@@ -48,6 +48,8 @@ export function RecipeReviewScreen({
   thumbnailUrl,
   onSaved,
   onDiscard,
+  editMode = false,
+  recipeId = null,
 }) {
   const [title, setTitle] = useState(extractedRecipe.title ?? '');
   const [category, setCategory] = useState(extractedRecipe.main_category ?? '');
@@ -110,35 +112,60 @@ export function RecipeReviewScreen({
     const parsedPrepTime = parseInt(prepTime) || null;
 
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/confirm-recipe`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            instagram_url: instagramUrl,
-            title,
-            main_category: category,
-            difficulty,
-            ingredients,
-            workspace_id: workspaceId,
-            instructions: steps,
-            meal_type: mealType,
-            cuisine,
-            main_ingredient: mainIngredient,
-            prep_time: parsedPrepTime,
-            dietary_tags: dietaryTags,
-            thumbnail_url: thumbnailUrl ?? null,
-          }),
-        }
-      );
+      let response;
+      if (editMode) {
+        response = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/recipes/${recipeId}`,
+          {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              title,
+              main_category: category,
+              difficulty,
+              ingredients,
+              workspace_id: workspaceId,
+              instructions: steps,
+              meal_type: mealType,
+              cuisine,
+              main_ingredient: mainIngredient,
+              prep_time: parsedPrepTime,
+              dietary_tags: dietaryTags,
+              thumbnail_url: thumbnailUrl ?? null,
+            }),
+          }
+        );
+      } else {
+        response = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/confirm-recipe`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              instagram_url: instagramUrl,
+              title,
+              main_category: category,
+              difficulty,
+              ingredients,
+              workspace_id: workspaceId,
+              instructions: steps,
+              meal_type: mealType,
+              cuisine,
+              main_ingredient: mainIngredient,
+              prep_time: parsedPrepTime,
+              dietary_tags: dietaryTags,
+              thumbnail_url: thumbnailUrl ?? null,
+            }),
+          }
+        );
+      }
 
       const data = await response.json();
 
       if (response.ok && data.success) {
         onSaved(data);
       } else {
-        setSaveError(data.error || 'Something went wrong. Please try again.');
+        setSaveError(data.error || 'שמירה נכשלה — נסה שוב');
       }
     } catch (err) {
       setSaveError(err.message || 'Network error — check your connection.');
@@ -156,7 +183,7 @@ export function RecipeReviewScreen({
           className={activeTab === 'post' ? 'tab tab--active' : 'tab'}
           onClick={() => setActiveTab('post')}
         >
-          פוסט
+          סרטון
         </button>
         <button
           type="button"
@@ -169,32 +196,28 @@ export function RecipeReviewScreen({
 
       <div className="review-body">
         {/* Left panel: Instagram embed */}
+        {!editMode && (
         <div className={`review-left ${activeTab === 'edit' ? 'review-left--hidden-mobile' : ''}`}>
           <div className="review-media-container">
-            {thumbnailUrl ? (
-              <a
-                href={instagramUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="review-thumbnail-link"
-                aria-label="פתח פוסט ב-Instagram"
-              >
-                <img src={thumbnailUrl} alt="תצוגה מקדימה" className="review-thumbnail-img" />
-                <div className="review-play-btn" aria-hidden="true">
-                  <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                    <circle cx="20" cy="20" r="20" fill="rgba(255,255,255,0.9)" />
-                    <polygon points="16,13 30,20 16,27" fill="#0f0f0f" />
-                  </svg>
+            {(() => {
+              const match = instagramUrl?.match(/instagram\.com\/(?:p|reel|tv)\/([A-Za-z0-9_-]+)/);
+              const embedUrl = match?.[1] ? `https://www.instagram.com/p/${match[1]}/embed/` : null;
+              if (embedUrl) {
+                return <iframe className="review-iframe" src={embedUrl} title="Instagram post" frameBorder="0" scrolling="no" allowTransparency="true" loading="lazy" />;
+              }
+              if (thumbnailUrl) {
+                return <img src={thumbnailUrl} alt="תצוגה מקדימה" className="review-thumbnail-img" />;
+              }
+              return (
+                <div className="review-left-fallback">
+                  <p>לא ניתן לטעון תצוגה מקדימה</p>
+                  <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="review-fallback-link">פתח ב-Instagram</a>
                 </div>
-              </a>
-            ) : (
-              <div className="review-left-fallback">
-                <p>לא ניתן לטעון תצוגה מקדימה</p>
-                <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="review-fallback-link">פתח ב-Instagram</a>
-              </div>
-            )}
+              );
+            })()}
           </div>
         </div>
+        )}
 
         {/* Right panel: edit form */}
         <div className={`review-right ${activeTab === 'post' ? 'review-right--hidden-mobile' : ''}`}>
@@ -369,7 +392,7 @@ export function RecipeReviewScreen({
               ביטול
             </button>
             <button type="submit" form="review-form" className="btn-primary" disabled={saving}>
-              {saving ? 'שומר...' : 'אישור ושמירה'}
+              {saving ? 'שומר...' : editMode ? 'שמור שינויים' : 'אישור ושמירה'}
             </button>
           </div>
         </div>
