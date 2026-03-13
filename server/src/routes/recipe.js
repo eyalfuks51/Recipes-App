@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { scrapeInstagramCaption } from '../services/scraper.js';
 import { extractRecipeFromCaption } from '../services/moonshot.js';
-import { saveRecipe } from '../services/supabase.js';
+import { saveRecipe, deleteRecipe } from '../services/supabase.js';
 
 export const recipeRouter = Router();
 
@@ -142,6 +142,30 @@ recipeRouter.post('/confirm-recipe', async (req, res) => {
   } catch (err) {
     const message = err?.message ?? String(err);
     console.error('[confirm-recipe] Error:', message);
+    return res.status(500).json({ success: false, error: message });
+  }
+});
+
+// DELETE /api/recipes/:id — remove a recipe and its related rows
+recipeRouter.delete('/recipes/:id', async (req, res) => {
+  const { id } = req.params;
+
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!id || !uuidRegex.test(id)) {
+    return res.status(400).json({ success: false, error: 'A valid recipe UUID is required' });
+  }
+
+  try {
+    const { deleted } = await deleteRecipe(id);
+
+    if (!deleted) {
+      return res.status(404).json({ success: false, error: 'Recipe not found' });
+    }
+
+    return res.json({ success: true });
+  } catch (err) {
+    const message = err?.message ?? String(err);
+    console.error('[delete-recipe] Error:', message);
     return res.status(500).json({ success: false, error: message });
   }
 });
