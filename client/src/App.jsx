@@ -7,10 +7,14 @@ import { SubmitForm } from './components/SubmitForm';
 import { RecipeGallery } from './components/RecipeGallery';
 import { QuickFilterPills } from './components/QuickFilterPills';
 import { FilterBottomSheet } from './components/FilterBottomSheet';
+import { JoinWorkspaceModal } from './components/JoinWorkspaceModal.jsx';
+import { LeaveWorkspaceModal } from './components/LeaveWorkspaceModal.jsx';
 
 function WorkspaceSwitcher() {
   const { workspaces, activeWorkspace, setActiveWorkspace } = useWorkspace();
   const [open, setOpen] = useState(false);
+  const [joinOpen, setJoinOpen] = useState(false);
+  const [leaveOpen, setLeaveOpen] = useState(false);
   const ref = useRef(null);
 
   useEffect(() => {
@@ -154,8 +158,50 @@ function WorkspaceSwitcher() {
               </div>
             </div>
           )}
+
+          <div style={{ borderTop: '1px solid #e2e8f0' }}>
+            <button
+              onClick={() => { setOpen(false); setJoinOpen(true); }}
+              style={{
+                display: 'block',
+                width: '100%',
+                textAlign: 'left',
+                padding: '10px 14px',
+                border: 'none',
+                background: 'transparent',
+                color: '#1a202c',
+                cursor: 'pointer',
+                fontSize: '0.875rem',
+              }}
+            >
+              Join Workspace
+            </button>
+            <button
+              onClick={() => { setOpen(false); setLeaveOpen(true); }}
+              style={{
+                display: 'block',
+                width: '100%',
+                textAlign: 'left',
+                padding: '10px 14px',
+                border: 'none',
+                background: 'transparent',
+                color: '#e53e3e',
+                cursor: 'pointer',
+                fontSize: '0.875rem',
+              }}
+            >
+              Leave Workspace
+            </button>
+          </div>
         </div>
       )}
+
+      <JoinWorkspaceModal isOpen={joinOpen} onClose={() => setJoinOpen(false)} />
+      <LeaveWorkspaceModal
+        isOpen={leaveOpen}
+        onClose={() => setLeaveOpen(false)}
+        workspace={activeWorkspace}
+      />
     </div>
   );
 }
