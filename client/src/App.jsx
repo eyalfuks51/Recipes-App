@@ -42,9 +42,18 @@ function WorkspaceSwitcher() {
     setOpen(false);
   };
 
-  const handleCopy = () => {
+  const handleCopyLink = () => {
     if (activeWorkspace?.invite_code) {
-      navigator.clipboard.writeText(activeWorkspace.invite_code);
+      const url = `${window.location.origin}/invite?code=${activeWorkspace.invite_code}`;
+      navigator.clipboard.writeText(url);
+    }
+  };
+
+  const handleWhatsApp = () => {
+    if (activeWorkspace?.invite_code) {
+      const url = `${window.location.origin}/invite?code=${activeWorkspace.invite_code}`;
+      const text = encodeURIComponent(`הצטרפ/י לסביבת העבודה שלי ב-Re-smash: ${url}`);
+      window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -128,37 +137,40 @@ function WorkspaceSwitcher() {
                 color: '#4a5568',
               }}
             >
-              <div style={{ marginBottom: '4px', fontWeight: 500 }}>Invite code</div>
+              <div style={{ marginBottom: '8px', fontWeight: 500 }}>קישור הזמנה</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <code
-                  style={{
-                    background: '#f7fafc',
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                    fontFamily: 'monospace',
-                    fontSize: '0.85em',
-                    flexGrow: 1,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {activeWorkspace.invite_code}
-                </code>
                 <button
-                  onClick={handleCopy}
-                  title="Copy invite code"
+                  onClick={handleCopyLink}
+                  title="העתק קישור הזמנה"
                   style={{
+                    flexGrow: 1,
                     border: '1px solid #cbd5e0',
                     borderRadius: '4px',
                     background: '#fff',
-                    padding: '2px 6px',
+                    padding: '4px 8px',
                     cursor: 'pointer',
                     fontSize: '0.75rem',
+                    textAlign: 'center',
+                  }}
+                >
+                  העתק קישור הזמנה
+                </button>
+                <button
+                  onClick={handleWhatsApp}
+                  title="שתף בוואטסאפ"
+                  style={{
+                    border: '1px solid #25D366',
+                    borderRadius: '4px',
+                    background: '#25D366',
+                    color: '#fff',
+                    padding: '4px 8px',
+                    cursor: 'pointer',
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
                     flexShrink: 0,
                   }}
                 >
-                  Copy
+                  WA
                 </button>
               </div>
             </div>
