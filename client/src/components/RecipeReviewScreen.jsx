@@ -195,23 +195,29 @@ export function RecipeReviewScreen({
       </div>
 
       <div className="review-body">
-        {/* Left panel: Instagram embed */}
+        {/* Left panel: source embed / thumbnail */}
         {!editMode && (
         <div className={`review-left ${activeTab === 'edit' ? 'review-left--hidden-mobile' : ''}`}>
           <div className="review-media-container">
             {(() => {
-              const match = instagramUrl?.match(/instagram\.com\/(?:p|reel|tv)\/([A-Za-z0-9_-]+)/);
-              const embedUrl = match?.[1] ? `https://www.instagram.com/p/${match[1]}/embed/` : null;
-              if (embedUrl) {
-                return <iframe className="review-iframe" src={embedUrl} title="Instagram post" frameBorder="0" scrolling="no" allowTransparency="true" loading="lazy" />;
+              // YouTube embed
+              const ytMatch = instagramUrl?.match(/(?:[?&]v=|youtu\.be\/|\/shorts\/)([A-Za-z0-9_-]{11})/);
+              if (ytMatch?.[1]) {
+                return <iframe className="review-iframe" src={`https://www.youtube.com/embed/${ytMatch[1]}`} title="YouTube video" frameBorder="0" allowFullScreen loading="lazy" />;
               }
+              // Instagram embed
+              const igMatch = instagramUrl?.match(/instagram\.com\/(?:p|reel|tv)\/([A-Za-z0-9_-]+)/);
+              if (igMatch?.[1]) {
+                return <iframe className="review-iframe" src={`https://www.instagram.com/p/${igMatch[1]}/embed/`} title="Instagram post" frameBorder="0" scrolling="no" allowTransparency="true" loading="lazy" />;
+              }
+              // TikTok and all other sources: show thumbnail (TikTok blocks iframes)
               if (thumbnailUrl) {
                 return <img src={thumbnailUrl} alt="תצוגה מקדימה" className="review-thumbnail-img" />;
               }
               return (
                 <div className="review-left-fallback">
                   <p>לא ניתן לטעון תצוגה מקדימה</p>
-                  <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="review-fallback-link">פתח ב-Instagram</a>
+                  <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="review-fallback-link">פתח בדפדפן</a>
                 </div>
               );
             })()}

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useNavigate, useSearchParams } from 'react-router-dom';
 import { AuthProvider, useAuth } from './lib/auth.jsx';
 import { WorkspaceProvider, useWorkspace } from './lib/workspace.jsx';
 import { supabase } from './lib/supabase.js';
@@ -10,14 +10,13 @@ import { SubmitForm } from './components/SubmitForm';
 import { RecipeGallery } from './components/RecipeGallery';
 import { QuickFilterPills } from './components/QuickFilterPills';
 import { FilterBottomSheet } from './components/FilterBottomSheet';
-import { JoinWorkspaceModal } from './components/JoinWorkspaceModal.jsx';
 import { LeaveWorkspaceModal } from './components/LeaveWorkspaceModal.jsx';
 
 function WorkspaceSwitcher() {
   const { workspaces, activeWorkspace, setActiveWorkspace } = useWorkspace();
   const [open, setOpen] = useState(false);
-  const [joinOpen, setJoinOpen] = useState(false);
   const [leaveOpen, setLeaveOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
   const ref = useRef(null);
 
   useEffect(() => {
@@ -41,16 +40,45 @@ function WorkspaceSwitcher() {
   };
 
   const handleCopyLink = () => {
-    if (activeWorkspace?.invite_code) {
-      const url = `${window.location.origin}/invite?code=${activeWorkspace.invite_code}`;
-      navigator.clipboard.writeText(url);
+    if (!activeWorkspace?.invite_code) return;
+    const url = `${window.location.origin}/invite?code=${activeWorkspace.invite_code}`;
+
+    const doCopy = () => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    };
+
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(url).then(doCopy).catch(() => {
+        // fallback if clipboard API rejected
+        const el = document.createElement('textarea');
+        el.value = url;
+        el.style.position = 'fixed';
+        el.style.opacity = '0';
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+        doCopy();
+      });
+    } else {
+      // fallback for non-HTTPS or unsupported browsers
+      const el = document.createElement('textarea');
+      el.value = url;
+      el.style.position = 'fixed';
+      el.style.opacity = '0';
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      doCopy();
     }
   };
 
   const handleWhatsApp = () => {
     if (activeWorkspace?.invite_code) {
       const url = `${window.location.origin}/invite?code=${activeWorkspace.invite_code}`;
-      const text = encodeURIComponent(`הצטרפ/י לסביבת העבודה שלי ב-Re-smash: ${url}`);
+      const text = encodeURIComponent(`הצטרפ/י לסביבת העבודה שלי ב-Re-smash:\n${url}`);
       window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener,noreferrer');
     }
   };
@@ -142,16 +170,18 @@ function WorkspaceSwitcher() {
                   title="העתק קישור הזמנה"
                   style={{
                     flexGrow: 1,
-                    border: '1px solid #cbd5e0',
+                    border: `1px solid ${copied ? '#38a169' : '#cbd5e0'}`,
                     borderRadius: '4px',
-                    background: '#fff',
+                    background: copied ? '#f0fff4' : '#fff',
+                    color: copied ? '#38a169' : 'inherit',
                     padding: '4px 8px',
                     cursor: 'pointer',
                     fontSize: '0.75rem',
                     textAlign: 'center',
+                    transition: 'all 0.2s',
                   }}
                 >
-                  העתק קישור הזמנה
+                  {copied ? '✓ הועתק' : 'העתק קישור הזמנה'}
                 </button>
                 <button
                   onClick={handleWhatsApp}
@@ -176,22 +206,6 @@ function WorkspaceSwitcher() {
 
           <div style={{ borderTop: '1px solid #e2e8f0' }}>
             <button
-              onClick={() => { setOpen(false); setJoinOpen(true); }}
-              style={{
-                display: 'block',
-                width: '100%',
-                textAlign: 'left',
-                padding: '10px 14px',
-                border: 'none',
-                background: 'transparent',
-                color: '#1a202c',
-                cursor: 'pointer',
-                fontSize: '0.875rem',
-              }}
-            >
-              Join Workspace
-            </button>
-            <button
               onClick={() => { setOpen(false); setLeaveOpen(true); }}
               style={{
                 display: 'block',
@@ -211,7 +225,6 @@ function WorkspaceSwitcher() {
         </div>
       )}
 
-      <JoinWorkspaceModal isOpen={joinOpen} onClose={() => setJoinOpen(false)} />
       <LeaveWorkspaceModal
         isOpen={leaveOpen}
         onClose={() => setLeaveOpen(false)}
@@ -225,28 +238,42 @@ function AppContent() {
   const [refreshCount, setRefreshCount] = useState(0);
   const { user, signOut } = useAuth();
 
-  // ── Filter state ──────────────────────────────────────────────────
-  const [filters, setFilters] = useState({
-    mealType: null,
-    dietaryTags: [],
-    prepTimeRange: null,
-    mainIngredient: null,
-  });
+  // ── Filter state (URL-backed) ──────────────────────────────────────
+  const [searchParams, setSearchParams] = useSearchParams();
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
 
-  const hasActiveAdvancedFilters = filters.dietaryTags.length > 0 || filters.prepTimeRange !== null || filters.mainIngredient !== null;
+  const filters = {
+    mealType: searchParams.get('meal') || null,
+    dietaryTags: searchParams.get('tags') ? searchParams.get('tags').split(',') : [],
+    prepTimeRange: searchParams.get('prep') || null,
+    mainIngredient: searchParams.get('ingredient') || null,
+  };
+
+  const hasActiveAdvancedFilters =
+    filters.dietaryTags.length > 0 ||
+    filters.prepTimeRange !== null ||
+    filters.mainIngredient !== null;
+
+  const buildParams = (next) => {
+    const p = {};
+    if (next.mealType) p.meal = next.mealType;
+    if (next.dietaryTags?.length) p.tags = next.dietaryTags.join(',');
+    if (next.prepTimeRange) p.prep = next.prepTimeRange;
+    if (next.mainIngredient) p.ingredient = next.mainIngredient;
+    return p;
+  };
 
   const handleQuickFilter = (mealType) => {
-    setFilters((prev) => ({ ...prev, mealType }));
+    setSearchParams(buildParams({ ...filters, mealType }));
   };
 
   const handleAdvancedFilters = (newFilters) => {
-    setFilters((prev) => ({ ...prev, ...newFilters }));
+    setSearchParams(buildParams({ ...filters, ...newFilters }));
     setFilterSheetOpen(false);
   };
 
   const handleClearAllFilters = () => {
-    setFilters({ mealType: null, dietaryTags: [], prepTimeRange: null, mainIngredient: null });
+    setSearchParams({});
     setFilterSheetOpen(false);
   };
 

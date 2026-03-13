@@ -1,7 +1,22 @@
 import { Router } from 'express';
 import { scrapeInstagramCaption } from '../services/scraper.js';
+import { scrapeYouTubeContent } from '../services/youtube.js';
+import { scrapeTikTokContent } from '../services/tiktok.js';
 import { extractRecipeFromCaption } from '../services/moonshot.js';
 import { saveRecipe, deleteRecipe, updateRecipe } from '../services/supabase.js';
+
+/**
+ * Detects whether a URL is from YouTube, TikTok, or Instagram.
+ * @param {string} url
+ * @returns {'youtube' | 'tiktok' | 'instagram' | 'unknown'}
+ */
+function detectUrlType(url) {
+  if (!url) return 'unknown';
+  if (/(?:youtube\.com\/(?:watch|shorts|embed)|youtu\.be\/)/.test(url)) return 'youtube';
+  if (/tiktok\.com/.test(url)) return 'tiktok';
+  if (/instagram\.com/.test(url)) return 'instagram';
+  return 'unknown';
+}
 
 export const recipeRouter = Router();
 
@@ -50,24 +65,41 @@ recipeRouter.post('/process-recipe', async (req, res) => {
 });
 
 // POST /api/extract-recipe — scrape + extract only, no DB write (step 1 of 2-step flow)
+// Accepts { url } for all sources, or legacy { instagram_url } for backward compatibility.
 recipeRouter.post('/extract-recipe', async (req, res) => {
-  const { instagram_url } = req.body;
+  const sourceUrl = req.body.url ?? req.body.instagram_url;
 
-  if (!instagram_url) {
-    return res.status(400).json({ success: false, error: 'instagram_url is required' });
+  if (!sourceUrl) {
+    return res.status(400).json({ success: false, error: 'url is required' });
   }
 
+  const sourceType = detectUrlType(sourceUrl);
+
   try {
-    // Step 1: Scrape caption from Instagram post
-    const { caption, thumbnailUrl } = await scrapeInstagramCaption(instagram_url);
+    let text, thumbnailUrl;
 
-    // Step 2: Extract structured recipe from caption via Moonshot AI
-    const recipe = await extractRecipeFromCaption(caption);
+    if (sourceType === 'youtube') {
+      const result = await scrapeYouTubeContent(sourceUrl);
+      text = result.text;
+      thumbnailUrl = result.thumbnailUrl;
+    } else if (sourceType === 'tiktok') {
+      const result = await scrapeTikTokContent(sourceUrl);
+      text = result.text;
+      thumbnailUrl = result.thumbnailUrl;
+    } else {
+      // instagram or unknown — use existing scraper
+      const result = await scrapeInstagramCaption(sourceUrl);
+      text = result.caption;
+      thumbnailUrl = result.thumbnailUrl;
+    }
 
-    // Return extracted data WITHOUT saving to DB
+    // Extract structured recipe from raw text via Moonshot AI
+    const recipe = await extractRecipeFromCaption(text);
+
     return res.json({
       success: true,
-      instagram_url,
+      source_url: sourceUrl,
+      source_type: sourceType,
       title: recipe.title,
       main_category: recipe.main_category,
       difficulty: recipe.difficulty,
@@ -82,10 +114,11 @@ recipeRouter.post('/extract-recipe', async (req, res) => {
     });
   } catch (err) {
     const isAbort = err?.name === 'AbortError' || err?.name === 'TimeoutError';
+    const sourceName = sourceType === 'youtube' ? 'YouTube' : sourceType === 'tiktok' ? 'TikTok' : 'Instagram';
     const message = isAbort
-      ? 'Instagram scraping timed out — Apify is running slowly, please retry in a minute.'
+      ? `${sourceName} scraping timed out — please retry in a moment.`
       : (err?.message ?? String(err));
-    const isUserError = message.includes('No caption found');
+    const isUserError = message.includes('No caption found') || message.includes('No content found');
     const statusCode = isUserError ? 422 : 500;
 
     console.error('[extract-recipe] Error:', message);
