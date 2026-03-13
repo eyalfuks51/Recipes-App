@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Phase 8 context gathered
-last_updated: "2026-03-13T14:18:08.685Z"
+stopped_at: Completed 08-01 — refreshWorkspaces() added to WorkspaceProvider
+last_updated: "2026-03-13T14:26:44.801Z"
 last_activity: 2026-03-07 — Completed Plan 03 (Edit recipe UI — editMode on RecipeReviewScreen, Edit button in RecipeModal, gallery edit state)
 progress:
   total_phases: 3
   completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
+  total_plans: 5
+  completed_plans: 4
 ---
 
 ---
@@ -65,6 +65,7 @@ v1.1 decisions:
 - [Phase 07-recipe-management Plan 03]: handleEdit resets selectedRecipe before setting editingRecipe — prevents dual render
 - [Phase 07-recipe-management Plan 03]: Optimistic title patch uses data.recipe_id from PUT response — matches API contract
 - [Phase 07-recipe-management Plan 03]: ingredients:[] in edit pre-fill is intentional v1.1 trade-off
+- [Phase 08-workspace-switching]: fetchWorkspaces extracted as useCallback([user]); refreshWorkspaces wraps it as stable useCallback for consumers
 
 ### Roadmap Evolution
 
@@ -82,6 +83,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-13T14:18:08.682Z
-Stopped at: Phase 8 context gathered
-Resume file: .planning/phases/08-workspace-switching/08-CONTEXT.md
+Last session: 2026-03-13T14:26:44.798Z
+Stopped at: Completed 08-01 — refreshWorkspaces() added to WorkspaceProvider
+Resume file: None
