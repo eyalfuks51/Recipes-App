@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 08-01 — refreshWorkspaces() added to WorkspaceProvider
-last_updated: "2026-03-13T14:26:44.801Z"
+stopped_at: Completed 08-02 — JoinWorkspaceModal, LeaveWorkspaceModal, WorkspaceSwitcher wired
+last_updated: "2026-03-13T14:28:48.564Z"
 last_activity: 2026-03-07 — Completed Plan 03 (Edit recipe UI — editMode on RecipeReviewScreen, Edit button in RecipeModal, gallery edit state)
 progress:
   total_phases: 3
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 5
-  completed_plans: 4
+  completed_plans: 5
 ---
 
 ---
@@ -66,6 +66,8 @@ v1.1 decisions:
 - [Phase 07-recipe-management Plan 03]: Optimistic title patch uses data.recipe_id from PUT response — matches API contract
 - [Phase 07-recipe-management Plan 03]: ingredients:[] in edit pre-fill is intentional v1.1 trade-off
 - [Phase 08-workspace-switching]: fetchWorkspaces extracted as useCallback([user]); refreshWorkspaces wraps it as stable useCallback for consumers
+- [Phase 08-workspace-switching]: JoinWorkspaceModal calls refreshWorkspaces() then setActiveWorkspace() — refresh syncs list, setActiveWorkspace makes new workspace active immediately
+- [Phase 08-workspace-switching]: Leave flow does NOT call setActiveWorkspace manually — refreshWorkspaces() auto-corrects activeWorkspaceId to first remaining workspace
 
 ### Roadmap Evolution
 
@@ -83,6 +85,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-13T14:26:44.798Z
-Stopped at: Completed 08-01 — refreshWorkspaces() added to WorkspaceProvider
+Last session: 2026-03-13T14:28:44.079Z
+Stopped at: Completed 08-02 — JoinWorkspaceModal, LeaveWorkspaceModal, WorkspaceSwitcher wired
 Resume file: None
