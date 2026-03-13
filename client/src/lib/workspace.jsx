@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { supabase } from './supabase.js';
 import { useAuth } from './auth.jsx';
 
@@ -7,6 +7,7 @@ export const WorkspaceContext = createContext({
   activeWorkspaceId: null,
   activeWorkspace: null,
   setActiveWorkspace: () => {},
+  refreshWorkspaces: () => {},
   loading: true,
 });
 
@@ -16,7 +17,7 @@ export function WorkspaceProvider({ children }) {
   const [activeWorkspaceId, setActiveWorkspaceId] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchWorkspaces = useCallback(async () => {
     if (!user) {
       setWorkspaces([]);
       setActiveWorkspaceId(null);
@@ -26,38 +27,45 @@ export function WorkspaceProvider({ children }) {
 
     setLoading(true);
 
-    supabase
+    const { data, error } = await supabase
       .from('workspace_users')
       .select('workspace_id, workspaces(id, name, invite_code)')
-      .eq('user_id', user.id)
-      .then(({ data, error }) => {
-        if (error) {
-          console.error('Failed to load workspaces:', error.message);
-          setWorkspaces([]);
-          setActiveWorkspaceId(null);
-          setLoading(false);
-          return;
-        }
+      .eq('user_id', user.id);
 
-        const list = (data ?? [])
-          .map((row) => row.workspaces)
-          .filter(Boolean)
-          .map(({ id, name, invite_code }) => ({
-            id,
-            name,
-            invite_code: invite_code ?? null,
-          }));
+    if (error) {
+      console.error('Failed to load workspaces:', error.message);
+      setWorkspaces([]);
+      setActiveWorkspaceId(null);
+      setLoading(false);
+      return;
+    }
 
-        setWorkspaces(list);
+    const list = (data ?? [])
+      .map((row) => row.workspaces)
+      .filter(Boolean)
+      .map(({ id, name, invite_code }) => ({
+        id,
+        name,
+        invite_code: invite_code ?? null,
+      }));
 
-        const stored = localStorage.getItem('activeWorkspaceId');
-        const isValid = list.some((ws) => ws.id === stored);
-        const resolved = isValid ? stored : list[0]?.id ?? null;
+    setWorkspaces(list);
 
-        setActiveWorkspaceId(resolved);
-        setLoading(false);
-      });
+    const stored = localStorage.getItem('activeWorkspaceId');
+    const isValid = list.some((ws) => ws.id === stored);
+    const resolved = isValid ? stored : list[0]?.id ?? null;
+
+    setActiveWorkspaceId(resolved);
+    setLoading(false);
   }, [user]);
+
+  useEffect(() => {
+    fetchWorkspaces();
+  }, [fetchWorkspaces]);
+
+  const refreshWorkspaces = useCallback(() => {
+    return fetchWorkspaces();
+  }, [fetchWorkspaces]);
 
   const setActiveWorkspace = (id) => {
     setActiveWorkspaceId(id);
@@ -68,7 +76,7 @@ export function WorkspaceProvider({ children }) {
 
   return (
     <WorkspaceContext.Provider
-      value={{ workspaces, activeWorkspaceId, activeWorkspace, setActiveWorkspace, loading }}
+      value={{ workspaces, activeWorkspaceId, activeWorkspace, setActiveWorkspace, refreshWorkspaces, loading }}
     >
       {children}
     </WorkspaceContext.Provider>
