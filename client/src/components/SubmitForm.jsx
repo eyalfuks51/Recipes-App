@@ -49,8 +49,9 @@ export function SubmitForm({ onSuccess }) {
     setResult(null);
 
     try {
+      const API = import.meta.env.VITE_API_URL.replace(/\/+$/, '');
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/extract-recipe`,
+        `${API}/api/extract-recipe`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

@@ -110,8 +110,9 @@ export function RecipeReviewScreen({
     const parsedPrepTime = parseInt(prepTime) || null;
 
     try {
+      const API = import.meta.env.VITE_API_URL.replace(/\/+$/, '');
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/confirm-recipe`,
+        `${API}/api/confirm-recipe`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
