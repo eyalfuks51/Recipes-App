@@ -39,10 +39,10 @@ See: .planning/PROJECT.md (updated 2026-03-07)
 
 ## Current Position
 
-Phase: 07-recipe-management
-Plan: 03 of 03 complete
-Status: Phase complete
-Last activity: 2026-03-07 — Completed Plan 03 (Edit recipe UI — editMode on RecipeReviewScreen, Edit button in RecipeModal, gallery edit state)
+Phase: 09-workspace-invite-links
+Plan: 0 of 3 — planning
+Status: Phase 8 complete, Phase 9 scope defined
+Last activity: 2026-03-13 — Phase 9 pivoted to Workspace Invite Links; Phase 10 is Gallery Filters
 
 ## Accumulated Context
 
@@ -73,7 +73,8 @@ v1.1 decisions:
 
 - Phase 7 added: Recipe Management (edit + delete recipes, API + state, no CSS)
 - Phase 8 added: Workspace Switching (join code, leave, sole-member deletion, no CSS)
-- Phase 9 added: Gallery Filters (meal type, category, cuisine, vibe tags, Supabase queries, no CSS)
+- Phase 9 PIVOTED 2026-03-13: replaced Gallery Filters with Workspace Invite Links (URL invite flow, /invite route, WhatsApp share, post-login auto-join)
+- Phase 10 added: Gallery Filters (formerly Phase 9 — meal type, category, cuisine, vibe tags, Supabase queries, no CSS)
 
 ### Pending Todos
 
