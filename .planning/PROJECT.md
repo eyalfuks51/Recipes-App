@@ -38,7 +38,12 @@ Any Instagram recipe URL becomes a browsable, structured recipe card in one clic
 
 ### Active
 
-(None — v1.0 complete. Start `/gsd:new-milestone` for v1.1.)
+**Milestone v1.1 — Functional Enhancements**
+
+- [ ] User can delete a saved recipe from the gallery
+- [ ] User can edit a saved recipe using the RecipeReviewScreen UI (post-save edit mode)
+- [ ] User can switch to a different workspace using a join code, with workspace deletion if they are the sole member
+- [ ] Gallery supports filtering by meal type (toggle), category (multi-select), cuisine (autocomplete from DB values), and vibe tags (pill buttons)
 
 ### Out of Scope
 
@@ -80,5 +85,15 @@ Any Instagram recipe URL becomes a browsable, structured recipe card in one clic
 | og:image → thumbnail_url pipeline | Instagram iframes sometimes blocked; thumbnail fallback ensures media visible | ✓ Good — resilient UX |
 | Removed cook_time and equipment_needed | UX review found them noisy; strict meal_type toggle cleaner | ✓ Good — schema simplified |
 
+## Current Milestone: v1.1 Functional Enhancements
+
+**Goal:** Add delete, edit, workspace switching, and advanced gallery filters — strictly new functional features (UI/CSS handled separately by partner).
+
+**Target features:**
+- Delete recipes from workspace
+- Edit saved recipes via RecipeReviewScreen (repurposed for edit mode)
+- Workspace switching with join code + sole-member workspace deletion
+- Advanced gallery filter bar (meal type, category, cuisine, vibe tags)
+
 ---
-*Last updated: 2026-03-07 after v1.0 milestone*
+*Last updated: 2026-03-07 after v1.1 milestone start*

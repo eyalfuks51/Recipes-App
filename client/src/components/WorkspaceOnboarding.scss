@@ -48,8 +48,8 @@
   }
 
   &--active {
-    color: #2563eb;
-    border-bottom-color: #2563eb;
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
   }
 }
 
@@ -64,8 +64,8 @@
   box-sizing: border-box;
 
   &:focus {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(232, 93, 62, 0.12);
   }
 
   &::placeholder {

@@ -60,6 +60,37 @@ export const supabase = new Proxy(
  * @param {string[]} [recipeData.dietary_tags] - Optional dietary tags (subset of ALLOWED_DIETARY_TAGS)
  * @returns {Promise<{recipe_id: string, title: string, ingredients_count: number, workspace_id: string|null}>}
  */
+export async function deleteRecipe(recipeId) {
+  const client = getClient();
+
+  // Delete workspace ingredient checks for this recipe
+  const { error: checksError } = await client
+    .from('workspace_ingredient_checks')
+    .delete()
+    .eq('recipe_id', recipeId);
+
+  if (checksError) throw new Error(`workspace_ingredient_checks delete failed: ${checksError.message}`);
+
+  // Delete recipe-ingredient junction rows
+  const { error: junctionError } = await client
+    .from('recipe_ingredients')
+    .delete()
+    .eq('recipe_id', recipeId);
+
+  if (junctionError) throw new Error(`recipe_ingredients delete failed: ${junctionError.message}`);
+
+  // Delete the recipe itself
+  const { data, error: recipeError } = await client
+    .from('recipes')
+    .delete()
+    .eq('id', recipeId)
+    .select('id');
+
+  if (recipeError) throw new Error(`Recipe delete failed: ${recipeError.message}`);
+
+  return { deleted: data?.length > 0 };
+}
+
 export async function saveRecipe({ instagram_url, title, main_category, difficulty, ingredients, workspace_id, instructions, meal_type, cuisine, main_ingredient, prep_time, dietary_tags, thumbnail_url }) {
   const client = getClient();
 
@@ -92,9 +123,8 @@ export async function saveRecipe({ instagram_url, title, main_category, difficul
   const recipe = recipeRows[0];
 
   // Step 2: Upsert each ingredient (normalize name: lowercase + trim, deduplicates by name)
-  const normalizedIngredients = ingredients.map((name) => ({
-    name: name.toLowerCase().trim(),
-  }));
+  const normalizedIngredients = [...new Set(ingredients.map((name) => name.toLowerCase().trim()))]
+    .map((name) => ({ name }));
 
   const { data: ingredientRows, error: ingredientsError } = await client
     .from('ingredients')
@@ -119,6 +149,102 @@ export async function saveRecipe({ instagram_url, title, main_category, difficul
     recipe_id: recipe.id,
     title: recipe.title,
     ingredients_count: ingredientRows.length,
+    workspace_id: recipe.workspace_id ?? null,
+  };
+}
+
+/**
+ * Deletes a recipe from Supabase by ID.
+ *
+ * @param {string} id - The recipe UUID to delete
+ * @returns {Promise<{ deleted: true }>}
+ */
+export async function deleteRecipe(id) {
+  const client = getClient();
+
+  const { data, error } = await client
+    .from('recipes')
+    .delete()
+    .eq('id', id)
+    .select('id');
+
+  if (error) throw new Error(`Recipe delete failed: ${error.message}`);
+  if (!data || data.length === 0) throw new Error('Recipe not found');
+
+  return { deleted: true };
+}
+
+/**
+ * Updates an existing recipe and optionally replaces its ingredients.
+ *
+ * @param {string} id - The recipe UUID to update
+ * @param {object} fields - Fields to update
+ * @returns {Promise<{ recipe_id: string, title: string, workspace_id: string|null }>}
+ */
+export async function updateRecipe(id, { title, main_category, difficulty, ingredients, workspace_id, instructions, meal_type, cuisine, main_ingredient, prep_time, dietary_tags, thumbnail_url }) {
+  const client = getClient();
+
+  const recipeData = {
+    ...(title != null ? { title } : {}),
+    ...(main_category != null ? { main_category } : {}),
+    ...(difficulty != null ? { difficulty } : {}),
+    ...(workspace_id != null ? { workspace_id } : {}),
+    ...(instructions != null ? { instructions } : {}),
+    ...(meal_type != null ? { meal_type } : {}),
+    ...(cuisine != null ? { cuisine } : {}),
+    ...(main_ingredient != null ? { main_ingredient } : {}),
+    ...(prep_time != null ? { prep_time } : {}),
+    ...(Array.isArray(dietary_tags) && dietary_tags.length ? { dietary_tags } : {}),
+    ...(thumbnail_url != null ? { thumbnail_url } : {}),
+  };
+
+  const { data, error } = await client
+    .from('recipes')
+    .update(recipeData)
+    .eq('id', id)
+    .select('id, title, workspace_id');
+
+  if (error) throw new Error(`Recipe update failed: ${error.message}`);
+  if (!data || data.length === 0) throw new Error('Recipe not found');
+
+  const recipe = data[0];
+
+  if (Array.isArray(ingredients) && ingredients.length > 0) {
+    // Upsert ingredients (normalize name: lowercase + trim, deduplicate)
+    const normalizedIngredients = [...new Set(ingredients.map((name) => name.toLowerCase().trim()))]
+      .map((name) => ({ name }));
+
+    const { data: ingredientRows, error: ingredientsError } = await client
+      .from('ingredients')
+      .upsert(normalizedIngredients, { onConflict: 'name' })
+      .select('id');
+
+    if (ingredientsError) throw new Error(`Ingredients upsert failed: ${ingredientsError.message}`);
+
+    // Delete existing junction rows for this recipe
+    const { error: deleteError } = await client
+      .from('recipe_ingredients')
+      .delete()
+      .eq('recipe_id', id);
+
+    if (deleteError) throw new Error(`recipe_ingredients delete failed: ${deleteError.message}`);
+
+    // Insert fresh junction rows
+    const junctionRows = ingredientRows.map((ingredient) => ({
+      recipe_id: recipe.id,
+      ingredient_id: ingredient.id,
+    }));
+
+    const { error: junctionError } = await client
+      .from('recipe_ingredients')
+      .insert(junctionRows);
+
+    if (junctionError) throw new Error(`recipe_ingredients insert failed: ${junctionError.message}`);
+  }
+
+  return {
+    recipe_id: recipe.id,
+    title: recipe.title,
     workspace_id: recipe.workspace_id ?? null,
   };
 }
