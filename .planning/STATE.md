@@ -3,11 +3,27 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
+stopped_at: Completed 09-01 — BrowserRouter + /invite route routing foundation
+last_updated: "2026-03-13T15:18:05.300Z"
+last_activity: 2026-03-13 — Phase 9 pivoted to Workspace Invite Links; Phase 10 is Gallery Filters
+progress:
+  total_phases: 4
+  completed_phases: 2
+  total_plans: 8
+  completed_plans: 6
+  percent: 93
+---
+
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: completed
 stopped_at: Completed 08-02 — JoinWorkspaceModal, LeaveWorkspaceModal, WorkspaceSwitcher wired
 last_updated: "2026-03-13T14:31:22.181Z"
 last_activity: 2026-03-07 — Completed Plan 03 (Edit recipe UI — editMode on RecipeReviewScreen, Edit button in RecipeModal, gallery edit state)
 progress:
-  total_phases: 3
+  [█████████░] 93%
   completed_phases: 2
   total_plans: 5
   completed_plans: 5
@@ -40,9 +56,9 @@ See: .planning/PROJECT.md (updated 2026-03-07)
 ## Current Position
 
 Phase: 09-workspace-invite-links
-Plan: 0 of 3 — planning
-Status: Phase 8 complete, Phase 9 scope defined
-Last activity: 2026-03-13 — Phase 9 pivoted to Workspace Invite Links; Phase 10 is Gallery Filters
+Plan: 1 of 3 — in progress
+Status: Plan 01 complete — BrowserRouter + /invite routing foundation installed
+Last activity: 2026-03-13 — Completed Plan 01 (react-router-dom installed, /invite route added outside AuthGate)
 
 ## Accumulated Context
 
@@ -68,6 +84,7 @@ v1.1 decisions:
 - [Phase 08-workspace-switching]: fetchWorkspaces extracted as useCallback([user]); refreshWorkspaces wraps it as stable useCallback for consumers
 - [Phase 08-workspace-switching]: JoinWorkspaceModal calls refreshWorkspaces() then setActiveWorkspace() — refresh syncs list, setActiveWorkspace makes new workspace active immediately
 - [Phase 08-workspace-switching]: Leave flow does NOT call setActiveWorkspace manually — refreshWorkspaces() auto-corrects activeWorkspaceId to first remaining workspace
+- [Phase 09-workspace-invite-links Plan 01]: /invite route wraps only AuthProvider (no AuthGate) — unauthenticated users must reach invite URL without login block
 
 ### Roadmap Evolution
 
@@ -86,6 +103,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-13T14:28:44.079Z
-Stopped at: Completed 08-02 — JoinWorkspaceModal, LeaveWorkspaceModal, WorkspaceSwitcher wired
+Last session: 2026-03-13T15:18:01.947Z
+Stopped at: Completed 09-01 — BrowserRouter + /invite route routing foundation
 Resume file: None
