@@ -88,6 +88,9 @@ export async function scrapeTikTokContent(url) {
   if (!res.ok) {
     const body = await res.text();
     console.error(`[tiktok] RapidAPI HTTP ${res.status}. Body:`, body.slice(0, 500));
+    if (res.status === 403) {
+      throw new Error('שירות הטיקטוק אינו זמין כרגע — נסו שוב מאוחר יותר.');
+    }
     throw new Error(`TikTok RapidAPI failed: ${res.status} ${res.statusText}`);
   }
 
