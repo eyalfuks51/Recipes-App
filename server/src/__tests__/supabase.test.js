@@ -250,20 +250,40 @@ describe('saveRecipe', () => {
 });
 
 describe('deleteRecipe', () => {
-  it('returns { deleted: true } when recipe exists', async () => {
-    const mockClient = {
+  function makeDeleteMock({ checksError, junctionError, recipeResult }) {
+    return {
       from: mock.fn((table) => {
+        if (table === 'workspace_ingredient_checks') {
+          return {
+            delete: mock.fn(() => ({
+              eq: mock.fn(() => Promise.resolve({ error: checksError ?? null })),
+            })),
+          };
+        }
+        if (table === 'recipe_ingredients') {
+          return {
+            delete: mock.fn(() => ({
+              eq: mock.fn(() => Promise.resolve({ error: junctionError ?? null })),
+            })),
+          };
+        }
         if (table === 'recipes') {
           return {
             delete: mock.fn(() => ({
               eq: mock.fn(() => ({
-                select: mock.fn(() => Promise.resolve({ data: [{ id: 'uuid-1' }], error: null })),
+                select: mock.fn(() => Promise.resolve(recipeResult)),
               })),
             })),
           };
         }
       }),
     };
+  }
+
+  it('returns { deleted: true } when recipe exists', async () => {
+    const mockClient = makeDeleteMock({
+      recipeResult: { data: [{ id: 'uuid-1' }], error: null },
+    });
 
     global.__mockSupabaseClient = mockClient;
 
@@ -273,44 +293,23 @@ describe('deleteRecipe', () => {
     assert.deepEqual(result, { deleted: true });
   });
 
-  it('throws "Recipe not found" when Supabase returns empty data array', async () => {
-    const mockClient = {
-      from: mock.fn((table) => {
-        if (table === 'recipes') {
-          return {
-            delete: mock.fn(() => ({
-              eq: mock.fn(() => ({
-                select: mock.fn(() => Promise.resolve({ data: [], error: null })),
-              })),
-            })),
-          };
-        }
-      }),
-    };
+  it('returns { deleted: false } when recipe does not exist', async () => {
+    const mockClient = makeDeleteMock({
+      recipeResult: { data: [], error: null },
+    });
 
     global.__mockSupabaseClient = mockClient;
 
     const mod = await import('../services/supabase.js?t=' + Date.now());
-    await assert.rejects(
-      () => mod.deleteRecipe('nonexistent-id'),
-      /Recipe not found/
-    );
+    const result = await mod.deleteRecipe('nonexistent-id');
+
+    assert.deepEqual(result, { deleted: false });
   });
 
   it('throws when Supabase returns an error', async () => {
-    const mockClient = {
-      from: mock.fn((table) => {
-        if (table === 'recipes') {
-          return {
-            delete: mock.fn(() => ({
-              eq: mock.fn(() => ({
-                select: mock.fn(() => Promise.resolve({ data: null, error: { message: 'DB error' } })),
-              })),
-            })),
-          };
-        }
-      }),
-    };
+    const mockClient = makeDeleteMock({
+      recipeResult: { data: null, error: { message: 'DB error' } },
+    });
 
     global.__mockSupabaseClient = mockClient;
 

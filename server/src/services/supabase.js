@@ -60,37 +60,6 @@ export const supabase = new Proxy(
  * @param {string[]} [recipeData.dietary_tags] - Optional dietary tags (subset of ALLOWED_DIETARY_TAGS)
  * @returns {Promise<{recipe_id: string, title: string, ingredients_count: number, workspace_id: string|null}>}
  */
-export async function deleteRecipe(recipeId) {
-  const client = getClient();
-
-  // Delete workspace ingredient checks for this recipe
-  const { error: checksError } = await client
-    .from('workspace_ingredient_checks')
-    .delete()
-    .eq('recipe_id', recipeId);
-
-  if (checksError) throw new Error(`workspace_ingredient_checks delete failed: ${checksError.message}`);
-
-  // Delete recipe-ingredient junction rows
-  const { error: junctionError } = await client
-    .from('recipe_ingredients')
-    .delete()
-    .eq('recipe_id', recipeId);
-
-  if (junctionError) throw new Error(`recipe_ingredients delete failed: ${junctionError.message}`);
-
-  // Delete the recipe itself
-  const { data, error: recipeError } = await client
-    .from('recipes')
-    .delete()
-    .eq('id', recipeId)
-    .select('id');
-
-  if (recipeError) throw new Error(`Recipe delete failed: ${recipeError.message}`);
-
-  return { deleted: data?.length > 0 };
-}
-
 export async function saveRecipe({ instagram_url, title, main_category, difficulty, ingredients, workspace_id, instructions, meal_type, cuisine, main_ingredient, prep_time, dietary_tags, thumbnail_url }) {
   const client = getClient();
 
@@ -167,24 +136,41 @@ export async function saveRecipe({ instagram_url, title, main_category, difficul
 }
 
 /**
- * Deletes a recipe from Supabase by ID.
+ * Deletes a recipe and its related rows from Supabase by ID.
+ * Cascade: workspace_ingredient_checks → recipe_ingredients → recipes.
  *
- * @param {string} id - The recipe UUID to delete
- * @returns {Promise<{ deleted: true }>}
+ * @param {string} recipeId - The recipe UUID to delete
+ * @returns {Promise<{ deleted: boolean }>}
  */
-export async function deleteRecipe(id) {
+export async function deleteRecipe(recipeId) {
   const client = getClient();
 
-  const { data, error } = await client
+  // Delete workspace ingredient checks for this recipe
+  const { error: checksError } = await client
+    .from('workspace_ingredient_checks')
+    .delete()
+    .eq('recipe_id', recipeId);
+
+  if (checksError) throw new Error(`workspace_ingredient_checks delete failed: ${checksError.message}`);
+
+  // Delete recipe-ingredient junction rows
+  const { error: junctionError } = await client
+    .from('recipe_ingredients')
+    .delete()
+    .eq('recipe_id', recipeId);
+
+  if (junctionError) throw new Error(`recipe_ingredients delete failed: ${junctionError.message}`);
+
+  // Delete the recipe itself
+  const { data, error: recipeError } = await client
     .from('recipes')
     .delete()
-    .eq('id', id)
+    .eq('id', recipeId)
     .select('id');
 
-  if (error) throw new Error(`Recipe delete failed: ${error.message}`);
-  if (!data || data.length === 0) throw new Error('Recipe not found');
+  if (recipeError) throw new Error(`Recipe delete failed: ${recipeError.message}`);
 
-  return { deleted: true };
+  return { deleted: data?.length > 0 };
 }
 
 /**

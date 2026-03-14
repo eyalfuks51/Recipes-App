@@ -1,5 +1,3 @@
-import { scrapeInstagramCaption as scrapeWithApify } from './apify.js';
-
 /**
  * Fetches the og:image URL from an Instagram post page.
  * @param {string} url
@@ -75,23 +73,13 @@ async function scrapeWithRapidAPI(instagramUrl) {
 }
 
 /**
- * Scrapes an Instagram post caption.
- * Tries RapidAPI first; falls back to Apify if RapidAPI fails.
+ * Scrapes an Instagram post caption via RapidAPI.
  * @param {string} instagramUrl
- * @returns {Promise<string>} caption text
+ * @returns {Promise<{caption: string, thumbnailUrl: string|null}>}
  */
 export async function scrapeInstagramCaption(instagramUrl) {
-  let caption;
-  let rapidApiThumbnail = null;
-  try {
-    const result = await scrapeWithRapidAPI(instagramUrl);
-    caption = result.caption;
-    rapidApiThumbnail = result.thumbnailUrl;
-    console.log('[scraper] RapidAPI succeeded');
-  } catch (err) {
-    console.warn('[scraper] RapidAPI failed, falling back to Apify:', err.message);
-    caption = await scrapeWithApify(instagramUrl);
-  }
+  const { caption, thumbnailUrl: rapidApiThumbnail } = await scrapeWithRapidAPI(instagramUrl);
+  console.log('[scraper] RapidAPI succeeded');
   // Use thumbnail from RapidAPI payload if available, fall back to og:image scraping
   const thumbnailUrl = rapidApiThumbnail ?? await fetchOgImage(instagramUrl);
   return { caption, thumbnailUrl };
