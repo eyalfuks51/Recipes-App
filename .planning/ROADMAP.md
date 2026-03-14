@@ -34,7 +34,7 @@ Full archive: `.planning/milestones/v1.0-ROADMAP.md`
 | 8. Workspace Switching | v1.1 | 2/2 | Complete | 2026-03-13 |
 | 9. Workspace Invite Links | v1.1 | 3/3 | Complete | 2026-03-13 |
 | 10. Multi-Platform Media Scraping | v1.1 | 1/1 | Complete | 2026-03-14 |
-| 11. Ingredient Measurements | 4/4 | Complete   | 2026-03-14 | — |
+| 11. Ingredient Measurements | v1.1 | 4/4 | Complete | 2026-03-14 |
 
 ### Phase 7: Recipe Management — COMPLETE 2026-03-07
 
@@ -81,15 +81,15 @@ Plans:
 Plans:
 - [x] 10-COMPLETION.md — YouTube + TikTok scrapers, route generalisation, moonshot prompt update, frontend URL detection + previews
 
-### Phase 11: Ingredient Measurements
+### Phase 11: Ingredient Measurements — COMPLETE 2026-03-14
 
-**Goal:** Capture exact ingredient quantities and units from AI extraction. DB migration adds `amount` and `unit` columns to `recipe_ingredients`; Moonshot prompt updated to return structured ingredient objects; backend save/update logic handles new schema; frontend allows editing of complete ingredient strings.
+**Goal:** Capture exact ingredient quantities and units from AI extraction. DB migration adds `amount` and `unit` columns to `recipe_ingredients`; Moonshot prompt updated to return structured ingredient objects; backend save/update logic handles new schema; frontend renders a dynamic per-ingredient input list.
 **Requirements**: DB migration for amount+unit; AI returns {name, amount, unit} objects; backend inserts structured data; frontend renders and allows editing of full ingredient text
 **Depends on:** Phase 1 (backend pipeline), Phase 3 (frontend), Phase 7 (recipe management)
 **Plans:** 4/4 plans complete
 
 Plans:
-- [ ] 11-01-PLAN.md — DB migration: add amount+unit columns to recipe_ingredients junction table
-- [ ] 11-02-PLAN.md — AI prompt: update HEBREW_SYSTEM_PROMPT to return {name,amount,unit} ingredient objects + normalization
-- [ ] 11-03-PLAN.md — Backend refactor: saveRecipe + updateRecipe propagate amount+unit into junction rows
-- [ ] 11-04-PLAN.md — Frontend update: RecipeReviewScreen initialize from objects + parse-on-save heuristic
+- [x] 11-01-PLAN.md — DB migration: add amount+unit columns to recipe_ingredients junction table
+- [x] 11-02-PLAN.md — AI prompt: update HEBREW_SYSTEM_PROMPT to return {name,amount,unit} ingredient objects + normalization
+- [x] 11-03-PLAN.md — Backend refactor: saveRecipe + updateRecipe propagate amount+unit into junction rows
+- [x] 11-04-PLAN.md — Frontend update: RecipeReviewScreen dynamic per-ingredient input list + parse-on-save heuristic

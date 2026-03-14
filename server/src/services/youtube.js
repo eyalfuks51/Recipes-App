@@ -27,9 +27,9 @@ export function extractYouTubeVideoId(url) {
  * @returns {Promise<string>} description text
  */
 async function fetchDescriptionRapidAPI(videoId) {
-  const host = process.env.RAPIDAPI_YOUTUBE_HOST ?? 'youtube138.p.rapidapi.com';
+  const host = process.env.RAPIDAPI_YOUTUBE_HOST ?? 'ytstream-download-youtube-videos.p.rapidapi.com';
   const res = await fetch(
-    `https://${host}/video/details/?id=${videoId}&hl=en&gl=US`,
+    `https://${host}/dl?id=${videoId}`,
     {
       headers: {
         'x-rapidapi-host': host,
@@ -40,8 +40,62 @@ async function fetchDescriptionRapidAPI(videoId) {
   );
   if (!res.ok) throw new Error(`YouTube RapidAPI failed: ${res.status} ${res.statusText}`);
   const data = await res.json();
+  if (data?.status !== 'OK') throw new Error(`YouTube RapidAPI returned status: ${data?.status}`);
   const text = [data?.title, data?.description].filter(Boolean).join('\n');
   if (!text) throw new Error('No content found in YouTube RapidAPI response');
+  return text;
+}
+
+/**
+ * Scrapes the YouTube page directly to extract title + description.
+ * Free fallback — no API key required. Works for watch, shorts, and embed URLs.
+ * Extracts from ytInitialData embedded in the page script tags.
+ * @param {string} videoId
+ * @returns {Promise<string>} title + description text
+ */
+async function fetchDescriptionFromPage(videoId) {
+  const res = await fetch(
+    `https://www.youtube.com/watch?v=${videoId}`,
+    {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept-Language': 'en-US,en;q=0.9',
+      },
+      signal: AbortSignal.timeout(20_000),
+    }
+  );
+  if (!res.ok) throw new Error(`YouTube page fetch failed: ${res.status} ${res.statusText}`);
+  const html = await res.text();
+
+  // Extract full description from ytInitialData JSON embedded in the page
+  const match = html.match(/var ytInitialData\s*=\s*(\{.+?\});\s*<\/script>/s);
+  if (match) {
+    try {
+      const data = JSON.parse(match[1]);
+      // Description lives at: engagementPanels[].header.engagementPanelTitleHeaderRenderer
+      // More reliably: videoDetails is in ytInitialPlayerResponse, but description is in
+      // the attributedDescriptionBodyText runs array inside videoSecondaryInfoRenderer
+      const runs =
+        data?.contents?.twoColumnWatchNextResults?.results?.results?.contents
+          ?.find(c => c.videoSecondaryInfoRenderer)
+          ?.videoSecondaryInfoRenderer?.attributedDescription?.content;
+      const title =
+        data?.contents?.twoColumnWatchNextResults?.results?.results?.contents
+          ?.find(c => c.videoPrimaryInfoRenderer)
+          ?.videoPrimaryInfoRenderer?.title?.runs?.[0]?.text;
+      if (runs || title) {
+        return [title, runs].filter(Boolean).join('\n');
+      }
+    } catch {
+      // fall through to meta tag extraction
+    }
+  }
+
+  // Fallback within fallback: og:title + og:description meta tags
+  const title = html.match(/<meta property="og:title" content="([^"]+)"/)?.[1];
+  const desc = html.match(/<meta property="og:description" content="([^"]+)"/)?.[1];
+  const text = [title, desc].filter(Boolean).join('\n');
+  if (!text) throw new Error('No content found on YouTube page');
   return text;
 }
 
@@ -63,8 +117,14 @@ export async function scrapeYouTubeContent(url) {
     console.log('[youtube] Transcript extracted via youtube-transcript');
   } catch (primaryErr) {
     console.warn('[youtube] Transcript failed, falling back to RapidAPI:', primaryErr.message);
-    text = await fetchDescriptionRapidAPI(videoId);
-    console.log('[youtube] Description extracted via RapidAPI');
+    try {
+      text = await fetchDescriptionRapidAPI(videoId);
+      console.log('[youtube] Description extracted via RapidAPI');
+    } catch (rapidErr) {
+      console.warn('[youtube] RapidAPI failed, falling back to page scrape:', rapidErr.message);
+      text = await fetchDescriptionFromPage(videoId);
+      console.log('[youtube] Description extracted via page scrape');
+    }
   }
 
   return { text, thumbnailUrl, videoId };
