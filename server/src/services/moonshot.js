@@ -34,7 +34,7 @@ const HEBREW_SYSTEM_PROMPT =
   `{"title": string (שם המתכון בעברית), ` +
   `"main_category": string (חייב להיות אחד בדיוק מהרשימה: ${ALLOWED_CATEGORIES.join(', ')}), ` +
   `"difficulty": string (אחד מ: קל, בינוני, קשה), ` +
-  `"ingredients": [מערך של שמות מרכיבים בעברית], ` +
+  `"ingredients": [מערך של אובייקטים, כל אחד בפורמט: {"name": string (שם המרכיב בלבד, ללא כמות או הכנה, למשל: "קמח", "בצל", "שמן זית"), "amount": string או null (הכמות בלבד, כולל ביטויים כמו "קורט", "לפי הטעם", "חצי" — בדיוק כפי שמופיע במקור; null אם אין כמות), "unit": string או null (יחידת המידה בלבד, למשל "כוסות", "גרם", "כפות"; null אם אין יחידה)}], ` +
   `"meal_type": string (חייב להיות אחד בדיוק מהרשימה: ${ALLOWED_MEAL_TYPES.join(', ')}), ` +
   `"cuisine": string (חייב להיות אחד בדיוק מהרשימה: ${ALLOWED_CUISINES.join(', ')}), ` +
   `"main_ingredient": string (המרכיב הראשי היחיד של המתכון בעברית), ` +
