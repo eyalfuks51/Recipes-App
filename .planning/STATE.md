@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 11-01 — DB migration for amount+unit on recipe_ingredients
-last_updated: "2026-03-14T09:05:24.716Z"
-last_activity: 2026-03-14 — Completed Phase 10 (multi-platform media scraping; short-link resolution; platform icons; preview embeds)
+stopped_at: Completed 11-02 — Ingredient prompt + shape normalization in moonshot.js
+last_updated: "2026-03-14T00:00:00.000Z"
+last_activity: 2026-03-14 — Completed Plan 11-02 (HEBREW_SYSTEM_PROMPT updated to request {name,amount,unit} objects; post-parse normalization added to extractRecipeFromCaption)
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 12
-  completed_plans: 9
+  completed_plans: 10
 ---
 
 ---
@@ -86,9 +86,10 @@ See: .planning/PROJECT.md (updated 2026-03-07)
 
 ## Current Position
 
-Phase: 10-media-scraping — COMPLETE 2026-03-14
-Status: All work done — YouTube + TikTok scrapers, route generalisation, frontend URL detection + previews
-Last activity: 2026-03-14 — Completed Phase 10 (multi-platform media scraping; short-link resolution; platform icons; preview embeds)
+Phase: 11-ingredient-measurements — IN PROGRESS
+Current plan: 11-02 COMPLETE (DB migration done; prompt updated; normalization added)
+Status: Plan 11-02 done — HEBREW_SYSTEM_PROMPT instructs AI to return {name,amount,unit} objects; extractRecipeFromCaption normalizes all ingredient items
+Last activity: 2026-03-14 — Completed Plan 11-02 (ingredient prompt + shape normalization)
 
 ## Accumulated Context
 
@@ -118,6 +119,7 @@ v1.1 decisions:
 - [Phase 09-workspace-invite-links]: Full URL constructed client-side via window.location.origin; raw invite code display removed in favour of copy-link and WA share buttons
 - [Phase 09-workspace-invite-links]: InviteHandler does not use useWorkspace — /invite route has no WorkspaceProvider; navigate('/') triggers fresh fetch
 - [Phase 09-workspace-invite-links]: pendingInviteCode cleared early in autoJoin before async calls — prevents double-join on re-render
+- [Phase 11-ingredient-measurements Plan 02]: Normalization placed after JSON.parse validation guard so invalid responses still throw early; legacy string items converted to {name, amount: null, unit: null} (not discarded); empty-name objects filtered after normalization
 
 ### Roadmap Evolution
 
@@ -137,6 +139,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-14T09:05:24.713Z
-Stopped at: Completed 11-01 — DB migration for amount+unit on recipe_ingredients
+Last session: 2026-03-14T00:00:00.000Z
+Stopped at: Completed 11-02 — Ingredient prompt + shape normalization in moonshot.js
 Resume file: None
