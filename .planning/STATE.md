@@ -2,12 +2,29 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
+current_plan: 11-03 COMPLETE (saveRecipe + updateRecipe persist amount+unit into junction rows)
+status: completed
+stopped_at: Completed 11-04 — ingredientLines dynamic list in RecipeReviewScreen
+last_updated: "2026-03-14T09:48:15.791Z"
+last_activity: 2026-03-14 — Completed Plan 11-03 (backend persistence layer wired for ingredient measurements)
+progress:
+  total_phases: 5
+  completed_phases: 4
+  total_plans: 12
+  completed_plans: 12
+  percent: 100
+---
+
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
 status: completed
 stopped_at: Completed 11-03 — saveRecipe + updateRecipe propagate amount+unit into junction rows
 last_updated: "2026-03-14T00:00:00.000Z"
 last_activity: 2026-03-14 — Completed Plan 11-03 (supabase.js refactored: dual-shape normalization, nameToRow map, amount+unit in recipe_ingredients)
 progress:
-  total_phases: 5
+  [██████████] 100%
   completed_phases: 3
   total_plans: 12
   completed_plans: 11
@@ -120,6 +137,8 @@ v1.1 decisions:
 - [Phase 09-workspace-invite-links]: InviteHandler does not use useWorkspace — /invite route has no WorkspaceProvider; navigate('/') triggers fresh fetch
 - [Phase 09-workspace-invite-links]: pendingInviteCode cleared early in autoJoin before async calls — prevents double-join on re-render
 - [Phase 11-ingredient-measurements Plan 02]: Normalization placed after JSON.parse validation guard so invalid responses still throw early; legacy string items converted to {name, amount: null, unit: null} (not discarded); empty-name objects filtered after normalization
+- [Phase 11-ingredient-measurements]: ingredientLines uses steps-list CSS classes — no new styles added
+- [Phase 11-ingredient-measurements]: KNOWN_UNITS / AMOUNT_PATTERN heuristic placed inside handleSave for co-location with API call
 
 ### Roadmap Evolution
 
@@ -139,6 +158,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-14T00:00:00.000Z
-Stopped at: Completed 11-02 — Ingredient prompt + shape normalization in moonshot.js
+Last session: 2026-03-14T09:48:11.533Z
+Stopped at: Completed 11-04 — ingredientLines dynamic list in RecipeReviewScreen
 Resume file: None
