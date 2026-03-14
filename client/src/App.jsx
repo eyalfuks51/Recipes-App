@@ -278,7 +278,7 @@ function AppContent() {
   };
 
   const handleSuccess = (recipe) => {
-    console.log('New recipe saved:', recipe.title);
+    console.log('New recipe saved~~~~~:', recipe.title);
     setRefreshCount((c) => c + 1);
   };
 
