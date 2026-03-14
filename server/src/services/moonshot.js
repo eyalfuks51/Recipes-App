@@ -57,7 +57,7 @@ export function createClient() {
 /**
  * Extracts structured recipe data from an Instagram post caption using Moonshot AI.
  * @param {string} caption - The Instagram post caption
- * @returns {Promise<{title: string, main_category: string, difficulty: string, ingredients: string[]}>}
+ * @returns {Promise<{title: string, main_category: string, difficulty: string, ingredients: Array<{name: string, amount: string|null, unit: string|null}>}>}
  * @throws {Error} If AI response cannot be parsed as recipe JSON
  */
 export async function extractRecipeFromCaption(caption) {
@@ -96,6 +96,19 @@ export async function extractRecipeFromCaption(caption) {
   if (!recipe.title || !Array.isArray(recipe.ingredients)) {
     throw new Error('AI response missing required recipe fields');
   }
+
+  // Normalize ingredient shape: AI should return [{name, amount, unit}] objects.
+  // If AI returns plain strings (legacy or fallback), convert to object shape.
+  recipe.ingredients = recipe.ingredients.map(item => {
+    if (typeof item === 'string') {
+      return { name: item.toLowerCase().trim(), amount: null, unit: null };
+    }
+    return {
+      name: (item.name ?? '').toLowerCase().trim(),
+      amount: item.amount ?? null,
+      unit: item.unit ?? null,
+    };
+  }).filter(item => item.name.length > 0);
 
   // Normalize category to allowed list; fallback to 'אחר'
   if (recipe.main_category && !ALLOWED_CATEGORIES.includes(recipe.main_category)) {
