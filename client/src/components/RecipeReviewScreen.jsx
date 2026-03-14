@@ -140,53 +140,29 @@ export function RecipeReviewScreen({
     const parsedPrepTime = parseInt(prepTime) || null;
 
     try {
-      let response;
-      if (editMode) {
-        response = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/recipes/${recipeId}`,
-          {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              title,
-              main_category: category,
-              difficulty,
-              ingredients,
-              workspace_id: workspaceId,
-              instructions: steps,
-              meal_type: mealType,
-              cuisine,
-              main_ingredient: mainIngredient,
-              prep_time: parsedPrepTime,
-              dietary_tags: dietaryTags,
-              thumbnail_url: thumbnailUrl ?? null,
-            }),
-          }
-        );
-      } else {
-        response = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/confirm-recipe`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              instagram_url: instagramUrl,
-              title,
-              main_category: category,
-              difficulty,
-              ingredients,
-              workspace_id: workspaceId,
-              instructions: steps,
-              meal_type: mealType,
-              cuisine,
-              main_ingredient: mainIngredient,
-              prep_time: parsedPrepTime,
-              dietary_tags: dietaryTags,
-              thumbnail_url: thumbnailUrl ?? null,
-            }),
-          }
-        );
-      }
+      const API = import.meta.env.VITE_API_URL.replace(/\/+$/, '');
+      const response = await fetch(
+        `${API}/api/confirm-recipe`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            instagram_url: instagramUrl,
+            title,
+            main_category: category,
+            difficulty,
+            ingredients,
+            workspace_id: workspaceId,
+            instructions: steps,
+            meal_type: mealType,
+            cuisine,
+            main_ingredient: mainIngredient,
+            prep_time: parsedPrepTime,
+            dietary_tags: dietaryTags,
+            thumbnail_url: thumbnailUrl ?? null,
+          }),
+        }
+      );
 
       const data = await response.json();
 
