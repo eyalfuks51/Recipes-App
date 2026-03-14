@@ -3,6 +3,21 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
+stopped_at: Completed 11-01 — DB migration for amount+unit on recipe_ingredients
+last_updated: "2026-03-14T09:05:24.716Z"
+last_activity: 2026-03-14 — Completed Phase 10 (multi-platform media scraping; short-link resolution; platform icons; preview embeds)
+progress:
+  total_phases: 5
+  completed_phases: 3
+  total_plans: 12
+  completed_plans: 9
+---
+
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: completed
 stopped_at: Completed 09-03 — InviteHandler + auto-join + AuthGate redirectTo fix
 last_updated: "2026-03-13T15:23:52.868Z"
 last_activity: 2026-03-13 — Completed Plan 01 (react-router-dom installed, /invite route added outside AuthGate)
@@ -66,15 +81,14 @@ progress:
 
 See: .planning/PROJECT.md (updated 2026-03-07)
 
-**Core value:** Any Instagram recipe URL becomes a browsable, structured recipe card in one click.
-**Current focus:** v1.1 — Functional Enhancements (delete, edit, workspace switching, filters)
+**Core value:** Any social-media recipe URL (Instagram, YouTube, TikTok) becomes a browsable, structured recipe card in one click.
+**Current focus:** v1.1 — Functional Enhancements (Phases 7–10 complete; Phase 11 next: ingredient quantities)
 
 ## Current Position
 
-Phase: 09-workspace-invite-links
-Plan: 1 of 3 — in progress
-Status: Plan 01 complete — BrowserRouter + /invite routing foundation installed
-Last activity: 2026-03-13 — Completed Plan 01 (react-router-dom installed, /invite route added outside AuthGate)
+Phase: 10-media-scraping — COMPLETE 2026-03-14
+Status: All work done — YouTube + TikTok scrapers, route generalisation, frontend URL detection + previews
+Last activity: 2026-03-14 — Completed Phase 10 (multi-platform media scraping; short-link resolution; platform icons; preview embeds)
 
 ## Accumulated Context
 
@@ -110,7 +124,8 @@ v1.1 decisions:
 - Phase 7 added: Recipe Management (edit + delete recipes, API + state, no CSS)
 - Phase 8 added: Workspace Switching (join code, leave, sole-member deletion, no CSS)
 - Phase 9 PIVOTED 2026-03-13: replaced Gallery Filters with Workspace Invite Links (URL invite flow, /invite route, WhatsApp share, post-login auto-join)
-- Phase 10 added: Gallery Filters (formerly Phase 9 — meal type, category, cuisine, vibe tags, Supabase queries, no CSS)
+- Phase 10 RENAMED + EXPANDED 2026-03-14: was "Gallery Filters" (minor URL search-params refactor done inline); became "Multi-Platform Media Scraping" — YouTube transcript, TikTok RapidAPI, short-link resolution, frontend URL detection, multi-platform preview embeds
+- Phase 11 (upcoming): Ingredient quantities — structured quantity/unit data model
 
 ### Pending Todos
 
@@ -122,6 +137,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-13T15:23:46.608Z
-Stopped at: Completed 09-03 — InviteHandler + auto-join + AuthGate redirectTo fix
+Last session: 2026-03-14T09:05:24.713Z
+Stopped at: Completed 11-01 — DB migration for amount+unit on recipe_ingredients
 Resume file: None
