@@ -13,7 +13,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // explicit pre-flight for all routes
+app.options(/.*/, cors(corsOptions)); // explicit pre-flight for all routes
 app.use(express.json());
 
 app.get('/health', (req, res) => {
