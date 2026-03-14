@@ -81,6 +81,11 @@ export async function scrapeTikTokContent(url) {
     headers: {
       'x-rapidapi-host': host,
       'x-rapidapi-key': process.env.RAPIDAPI_KEY,
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+      'Accept': 'application/json, text/plain, */*',
+      'Accept-Language': 'en-US,en;q=0.9',
+      'Accept-Encoding': 'gzip, deflate, br',
+      'Referer': 'https://www.tiktok.com/',
     },
     signal: AbortSignal.timeout(15_000),
   });
@@ -88,7 +93,9 @@ export async function scrapeTikTokContent(url) {
   if (!res.ok) {
     const body = await res.text();
     console.error(`[tiktok] RapidAPI HTTP ${res.status}. Body:`, body.slice(0, 500));
-    throw new Error(`TikTok RapidAPI failed: ${res.status} ${res.statusText}`);
+    const err = new Error(`TikTok RapidAPI failed: ${res.status} ${res.statusText}`);
+    err.upstreamStatus = res.status;
+    throw err;
   }
 
   const data = await res.json();
