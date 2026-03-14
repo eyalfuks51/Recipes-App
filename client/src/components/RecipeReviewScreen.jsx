@@ -54,10 +54,14 @@ export function RecipeReviewScreen({
   const [title, setTitle] = useState(extractedRecipe.title ?? '');
   const [category, setCategory] = useState(extractedRecipe.main_category ?? '');
   const [difficulty, setDifficulty] = useState(extractedRecipe.difficulty ?? '');
-  const [ingredientsText, setIngredientsText] = useState(
+  const [ingredientLines, setIngredientLines] = useState(
     Array.isArray(extractedRecipe.ingredients)
-      ? extractedRecipe.ingredients.join('\n')
-      : ''
+      ? extractedRecipe.ingredients.map(ing =>
+          typeof ing === 'string'
+            ? ing
+            : [ing.amount, ing.unit, ing.name].filter(Boolean).join(' ')
+        )
+      : []
   );
   const [steps, setSteps] = useState(
     Array.isArray(extractedRecipe.instructions) ? extractedRecipe.instructions : []
@@ -92,6 +96,18 @@ export function RecipeReviewScreen({
     setSteps((prev) => [...prev, '']);
   }
 
+  function handleIngredientChange(index, value) {
+    setIngredientLines((prev) => prev.map((s, i) => (i === index ? value : s)));
+  }
+
+  function handleIngredientDelete(index) {
+    setIngredientLines((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function handleIngredientAdd() {
+    setIngredientLines((prev) => [...prev, '']);
+  }
+
   function handleDietaryTagToggle(tag) {
     setDietaryTags((prev) =>
       prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
@@ -104,10 +120,22 @@ export function RecipeReviewScreen({
     setSaving(true);
     setSaveError(null);
 
-    const ingredients = ingredientsText
-      .split('\n')
+    const KNOWN_UNITS = ['כוסות','כוס','גרם','קג','מל','ליטר','כפות','כף','כפיות','כפית',"יח'",'חבילות','חבילה'];
+    const AMOUNT_PATTERN = /^[\d.,½¼¾⅓⅔]+$|^(קורט|מעט|חצי|שליש|רבע|לפי|כמה)$/;
+    const ingredients = ingredientLines
       .map((line) => line.trim())
-      .filter(Boolean);
+      .filter(Boolean)
+      .map((line) => {
+        const tokens = line.split(/\s+/);
+        if (tokens.length === 1) return { name: tokens[0], amount: null, unit: null };
+        if (AMOUNT_PATTERN.test(tokens[0])) {
+          if (tokens.length >= 3 && KNOWN_UNITS.includes(tokens[1])) {
+            return { name: tokens.slice(2).join(' '), amount: tokens[0], unit: tokens[1] };
+          }
+          return { name: tokens.slice(1).join(' '), amount: tokens[0], unit: null };
+        }
+        return { name: line, amount: null, unit: null };
+      });
 
     const parsedPrepTime = parseInt(prepTime) || null;
 
@@ -274,16 +302,35 @@ export function RecipeReviewScreen({
             </button>
 
             {/* Ingredients */}
-            <label className="field-label" style={{ marginTop: '24px' }}>
-              מצרכים (אחד בכל שורה)
-              <textarea
-                value={ingredientsText}
-                onChange={(e) => setIngredientsText(e.target.value)}
-                rows={6}
-                className="field-input"
-                dir="rtl"
-              />
-            </label>
+            <div className="section-heading" style={{ marginTop: '24px' }}>מצרכים</div>
+            <div className="steps-list">
+              {ingredientLines.length === 0 && (
+                <p className="steps-empty-msg">אין מצרכים — לחץ להוספה</p>
+              )}
+              {ingredientLines.map((line, index) => (
+                <div key={index} className="step-row">
+                  <input
+                    type="text"
+                    value={line}
+                    onChange={(e) => handleIngredientChange(index, e.target.value)}
+                    className="field-input step-input"
+                    placeholder="למשל: 2 כוסות קמח"
+                    dir="rtl"
+                  />
+                  <button
+                    type="button"
+                    className="step-delete"
+                    onClick={() => handleIngredientDelete(index)}
+                    aria-label="מחק מצרך"
+                  >
+                    מחק
+                  </button>
+                </div>
+              ))}
+            </div>
+            <button type="button" className="btn-add-step" onClick={handleIngredientAdd}>
+              + הוסף מצרך
+            </button>
 
             {/* Metadata section */}
             <div className="section-heading">פרטים נוספים</div>
