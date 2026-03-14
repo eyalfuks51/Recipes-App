@@ -115,13 +115,16 @@ recipeRouter.post('/extract-recipe', async (req, res) => {
   } catch (err) {
     const isAbort = err?.name === 'AbortError' || err?.name === 'TimeoutError';
     const sourceName = sourceType === 'youtube' ? 'YouTube' : sourceType === 'tiktok' ? 'TikTok' : 'Instagram';
+    const isUpstreamFailure = err?.upstreamStatus != null;
     const message = isAbort
       ? `${sourceName} scraping timed out — please retry in a moment.`
-      : (err?.message ?? String(err));
+      : isUpstreamFailure
+        ? `${sourceName} scraping failed: the external API returned ${err.upstreamStatus}. Please try again later.`
+        : (err?.message ?? String(err));
     const isUserError = message.includes('No caption found') || message.includes('No content found');
-    const statusCode = isUserError ? 422 : 500;
+    const statusCode = isUserError ? 422 : isUpstreamFailure ? 502 : 500;
 
-    console.error('[extract-recipe] Error:', message);
+    console.error('[extract-recipe] Error:', err?.message ?? String(err));
     return res.status(statusCode).json({ success: false, error: message });
   }
 });
