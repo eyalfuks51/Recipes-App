@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 11-02 — Ingredient prompt + shape normalization in moonshot.js
+stopped_at: Completed 11-03 — saveRecipe + updateRecipe propagate amount+unit into junction rows
 last_updated: "2026-03-14T00:00:00.000Z"
-last_activity: 2026-03-14 — Completed Plan 11-02 (HEBREW_SYSTEM_PROMPT updated to request {name,amount,unit} objects; post-parse normalization added to extractRecipeFromCaption)
+last_activity: 2026-03-14 — Completed Plan 11-03 (supabase.js refactored: dual-shape normalization, nameToRow map, amount+unit in recipe_ingredients)
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 12
-  completed_plans: 10
+  completed_plans: 11
 ---
 
 ---
@@ -87,9 +87,9 @@ See: .planning/PROJECT.md (updated 2026-03-07)
 ## Current Position
 
 Phase: 11-ingredient-measurements — IN PROGRESS
-Current plan: 11-02 COMPLETE (DB migration done; prompt updated; normalization added)
-Status: Plan 11-02 done — HEBREW_SYSTEM_PROMPT instructs AI to return {name,amount,unit} objects; extractRecipeFromCaption normalizes all ingredient items
-Last activity: 2026-03-14 — Completed Plan 11-02 (ingredient prompt + shape normalization)
+Current plan: 11-03 COMPLETE (saveRecipe + updateRecipe persist amount+unit into junction rows)
+Status: Plan 11-03 done — supabase.js refactored with dual-shape normalization, nameToRow map alignment, amount+unit in recipe_ingredients; all 21 server tests pass
+Last activity: 2026-03-14 — Completed Plan 11-03 (backend persistence layer wired for ingredient measurements)
 
 ## Accumulated Context
 
