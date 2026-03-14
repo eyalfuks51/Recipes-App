@@ -19,7 +19,9 @@
       "Skill(gsd:quick)",
       "Read(//c/dev/github/personal/recepies_api/$HOME/.claude/get-shit-done/**)",
       "Read(//c/dev/github/personal/recepies_api/$HOME/.claude/**)",
-      "Skill(gsd:add-phase)"
+      "Skill(gsd:add-phase)",
+      "WebFetch(domain:mad-catha-moriz-b35fa6dc.koyeb.app)",
+      "Bash(find:*)"
     ]
   }
 }
