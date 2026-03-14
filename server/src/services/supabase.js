@@ -50,7 +50,7 @@ export const supabase = new Proxy(
  * @param {string} recipeData.title
  * @param {string} recipeData.main_category
  * @param {string} recipeData.difficulty
- * @param {string[]} recipeData.ingredients - Array of ingredient name strings
+ * @param {Array<string|{name:string,amount?:string|null,unit?:string|null}>} recipeData.ingredients - Ingredient strings or structured objects
  * @param {string} [recipeData.workspace_id] - Optional workspace UUID for multi-tenant scoping
  * @param {string[]} [recipeData.instructions] - Optional cooking instructions steps array
  * @param {string} [recipeData.meal_type] - Optional meal type ('ארוחת בוקר' or 'ארוחת צהריים/ערב')
@@ -92,20 +92,33 @@ export async function saveRecipe({ instagram_url, title, main_category, difficul
   const recipe = recipeRows[0];
 
   // Step 2: Upsert each ingredient (normalize name: lowercase + trim, deduplicates by name)
-  const normalizedIngredients = [...new Set(ingredients.map((name) => name.toLowerCase().trim()))]
-    .map((name) => ({ name }));
+  // Normalize: accept string[] (legacy) or {name,amount,unit}[] (new structured shape)
+  const parsed = ingredients.map(item =>
+    typeof item === 'string'
+      ? { name: item.toLowerCase().trim(), amount: null, unit: null }
+      : { name: (item.name ?? '').toLowerCase().trim(), amount: item.amount ?? null, unit: item.unit ?? null }
+  ).filter(i => i.name.length > 0);
+
+  // Deduplicate by name (first occurrence wins for amount/unit)
+  const seen = new Set();
+  const normalizedIngredients = parsed.filter(i => seen.has(i.name) ? false : (seen.add(i.name), true));
 
   const { data: ingredientRows, error: ingredientsError } = await client
     .from('ingredients')
     .upsert(normalizedIngredients, { onConflict: 'name' })
-    .select('id');
+    .select('id, name');
 
   if (ingredientsError) throw new Error(`Ingredients upsert failed: ${ingredientsError.message}`);
 
   // Step 3: Insert junction rows linking recipe to each ingredient
-  const junctionRows = ingredientRows.map((ingredient) => ({
+  // Build name→id map (upsert returns rows in arbitrary order — do NOT use positional index)
+  const nameToRow = Object.fromEntries(ingredientRows.map(r => [r.name, r.id]));
+
+  const junctionRows = normalizedIngredients.map(ing => ({
     recipe_id: recipe.id,
-    ingredient_id: ingredient.id,
+    ingredient_id: nameToRow[ing.name],
+    amount: ing.amount ?? null,
+    unit: ing.unit ?? null,
   }));
 
   const { error: junctionError } = await client
@@ -180,13 +193,20 @@ export async function updateRecipe(id, { title, main_category, difficulty, ingre
 
   if (Array.isArray(ingredients) && ingredients.length > 0) {
     // Upsert ingredients (normalize name: lowercase + trim, deduplicate)
-    const normalizedIngredients = [...new Set(ingredients.map((name) => name.toLowerCase().trim()))]
-      .map((name) => ({ name }));
+    // Normalize: accept string[] (legacy) or {name,amount,unit}[] (new structured shape)
+    const parsed = ingredients.map(item =>
+      typeof item === 'string'
+        ? { name: item.toLowerCase().trim(), amount: null, unit: null }
+        : { name: (item.name ?? '').toLowerCase().trim(), amount: item.amount ?? null, unit: item.unit ?? null }
+    ).filter(i => i.name.length > 0);
+
+    const seen = new Set();
+    const normalizedIngredients = parsed.filter(i => seen.has(i.name) ? false : (seen.add(i.name), true));
 
     const { data: ingredientRows, error: ingredientsError } = await client
       .from('ingredients')
       .upsert(normalizedIngredients, { onConflict: 'name' })
-      .select('id');
+      .select('id, name');
 
     if (ingredientsError) throw new Error(`Ingredients upsert failed: ${ingredientsError.message}`);
 
@@ -199,9 +219,14 @@ export async function updateRecipe(id, { title, main_category, difficulty, ingre
     if (deleteError) throw new Error(`recipe_ingredients delete failed: ${deleteError.message}`);
 
     // Insert fresh junction rows
-    const junctionRows = ingredientRows.map((ingredient) => ({
+    // Build name→id map (upsert returns rows in arbitrary order — do NOT use positional index)
+    const nameToRow = Object.fromEntries(ingredientRows.map(r => [r.name, r.id]));
+
+    const junctionRows = normalizedIngredients.map(ing => ({
       recipe_id: recipe.id,
-      ingredient_id: ingredient.id,
+      ingredient_id: nameToRow[ing.name],
+      amount: ing.amount ?? null,
+      unit: ing.unit ?? null,
     }));
 
     const { error: junctionError } = await client

@@ -41,7 +41,7 @@ function makeChain(response) {
 describe('saveRecipe', () => {
   it('returns { recipe_id, title, ingredients_count } on successful save', async () => {
     const recipeRow = { id: 'uuid-recipe-1', title: 'פסטה בולונז' };
-    const ingredientRows = [{ id: 'uuid-ing-1' }, { id: 'uuid-ing-2' }];
+    const ingredientRows = [{ id: 'uuid-ing-1', name: 'ספגטי' }, { id: 'uuid-ing-2', name: 'בשר טחון' }];
 
     let fromCallCount = 0;
     const mockClient = {
@@ -103,7 +103,7 @@ describe('saveRecipe', () => {
             upsert: mock.fn((data) => {
               capturedIngredients = data;
               return {
-                select: mock.fn(() => Promise.resolve({ data: [{ id: 'ing-1' }], error: null })),
+                select: mock.fn(() => Promise.resolve({ data: [{ id: 'ing-1', name: 'olive oil' }, { id: 'ing-2', name: 'garlic' }, { id: 'ing-3', name: 'tomatoes' }], error: null })),
               };
             }),
           };
@@ -206,7 +206,7 @@ describe('saveRecipe', () => {
 
   it('throws an error when recipe_ingredients upsert fails', async () => {
     const recipeRow = { id: 'uuid-recipe-4', title: 'test' };
-    const ingredientRows = [{ id: 'ing-1' }];
+    const ingredientRows = [{ id: 'ing-1', name: 'test' }];
 
     const mockClient = {
       from: mock.fn((table) => {
@@ -400,7 +400,7 @@ describe('updateRecipe', () => {
 
   it('updates ingredients when ingredients array is provided', async () => {
     const recipeRow = { id: 'uuid-recipe-2', title: 'With Ingredients', workspace_id: null };
-    const ingredientRows = [{ id: 'ing-1' }, { id: 'ing-2' }];
+    const ingredientRows = [{ id: 'ing-1', name: 'tomato' }, { id: 'ing-2', name: 'garlic' }];
 
     let deleteCalled = false;
     let insertCalled = false;
