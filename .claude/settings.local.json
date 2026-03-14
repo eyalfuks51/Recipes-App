@@ -20,8 +20,15 @@
       "Read(//c/dev/github/personal/recepies_api/$HOME/.claude/get-shit-done/**)",
       "Read(//c/dev/github/personal/recepies_api/$HOME/.claude/**)",
       "Skill(gsd:add-phase)",
+<<<<<<< Updated upstream
       "WebFetch(domain:mad-catha-moriz-b35fa6dc.koyeb.app)",
       "Bash(find:*)"
+=======
+      "Bash(claude --version 2>/dev/null || echo \"not found\")",
+      "Bash(mv .planning/phases/09-gallery-filters .planning/phases/10-gallery-filters && mkdir -p .planning/phases/09-workspace-invite-links && echo \"done\")",
+      "Bash(find /c/dev/github/personal/recepies_api/client/src -type f -name \"*.jsx\" -o -name \"*.js\" -o -name \"*.tsx\" -o -name \"*.ts\" 2>/dev/null | head -30)",
+      "Read(//c/Users/Eyal/.claude/get-shit-done/bin//**)"
+>>>>>>> Stashed changes
     ]
   }
 }
