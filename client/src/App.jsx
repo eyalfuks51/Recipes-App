@@ -8,7 +8,7 @@ import { AuthGate } from './components/AuthGate';
 import { WorkspaceOnboarding } from './components/WorkspaceOnboarding.jsx';
 import { SubmitForm } from './components/SubmitForm';
 import { RecipeGallery } from './components/RecipeGallery';
-import { QuickFilterPills } from './components/QuickFilterPills';
+// import { QuickFilterPills } from './components/QuickFilterPills';
 import { FilterBottomSheet } from './components/FilterBottomSheet';
 import { LeaveWorkspaceModal } from './components/LeaveWorkspaceModal.jsx';
 
@@ -293,7 +293,7 @@ function AppContent() {
           <WorkspaceSwitcher />
           {user && (
             <button className="btn-signout" onClick={signOut}>
-              התנתקות
+              התנתקות!
             </button>
           )}
         </div>
