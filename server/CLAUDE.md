@@ -27,8 +27,7 @@ Two API flows exist:
 
 ### Service Layer (`src/services/`)
 
-- **scraper.js** — Orchestrator: tries RapidAPI first, falls back to Apify. Also fetches `og:image` thumbnail.
-- **apify.js** — Apify `instagram-scraper` actor (fallback only). Normalizes URLs to include `www.` prefix.
+- **scraper.js** — Orchestrator: scrapes Instagram captions via RapidAPI. Also fetches `og:image` thumbnail.
 - **moonshot.js** — Moonshot AI via OpenAI-compatible SDK. Hebrew system prompt. Normalizes output against `ALLOWED_CATEGORIES`, `ALLOWED_CUISINES`, `ALLOWED_DIETARY_TAGS`, `ALLOWED_MEAL_TYPES` enums. These enums are duplicated in the client's `RecipeEditForm.jsx`.
 - **supabase.js** — Proxy-based lazy client (defers initialization so tests can import without env vars). Uses `global.__mockSupabaseClient` for test injection. `saveRecipe` does a 3-step upsert: recipe → ingredients → junction rows. Uses optional-spread pattern for nullable fields.
 
@@ -40,7 +39,7 @@ Mocking strategy for ES modules: inject mocks via `global.__mockOpenAICreate` (m
 
 ### Environment Variables
 
-Required in `.env`: `APIFY_TOKEN`, `MOONSHOT_API_KEY`, `SUPABASE_URL`, `SUPABASE_KEY`, `RAPIDAPI_KEY`. Optional: `PORT` (default 3000).
+Required in `.env`: `MOONSHOT_API_KEY`, `SUPABASE_URL`, `SUPABASE_KEY`, `RAPIDAPI_KEY`. Optional: `PORT` (default 3000).
 
 ### Deployment
 

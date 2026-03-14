@@ -54,7 +54,7 @@ recipeRouter.post('/process-recipe', async (req, res) => {
   } catch (err) {
     const isAbort = err?.name === 'AbortError' || err?.name === 'TimeoutError';
     const message = isAbort
-      ? 'Instagram scraping timed out — Apify is running slowly, please retry in a minute.'
+      ? 'Instagram scraping timed out — please retry in a moment.'
       : (err?.message ?? String(err));
     const isUserError = message.includes('No caption found');
     const statusCode = isUserError ? 422 : 500;
@@ -197,19 +197,6 @@ recipeRouter.delete('/recipes/:id', async (req, res) => {
     return res.json({ success: true });
   } catch (err) {
     const message = err?.message ?? String(err);
-    console.error('[delete-recipe] Error:', message);
-
-recipeRouter.delete('/recipes/:id', async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    await deleteRecipe(id);
-    return res.json({ success: true });
-  } catch (err) {
-    const message = err?.message ?? String(err);
-    if (message === 'Recipe not found') {
-      return res.status(404).json({ success: false, error: message });
-    }
     console.error('[delete-recipe] Error:', message);
     return res.status(500).json({ success: false, error: message });
   }
