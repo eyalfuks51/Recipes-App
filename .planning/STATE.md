@@ -2,6 +2,85 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
+current_plan: 11-03 COMPLETE (saveRecipe + updateRecipe persist amount+unit into junction rows)
+status: completed
+stopped_at: Completed 11-04 — ingredientLines dynamic list in RecipeReviewScreen
+last_updated: "2026-03-14T09:48:15.791Z"
+last_activity: 2026-03-14 — Completed Plan 11-03 (backend persistence layer wired for ingredient measurements)
+progress:
+  total_phases: 5
+  completed_phases: 4
+  total_plans: 12
+  completed_plans: 12
+  percent: 100
+---
+
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: completed
+stopped_at: Completed 11-03 — saveRecipe + updateRecipe propagate amount+unit into junction rows
+last_updated: "2026-03-14T00:00:00.000Z"
+last_activity: 2026-03-14 — Completed Plan 11-03 (supabase.js refactored: dual-shape normalization, nameToRow map, amount+unit in recipe_ingredients)
+progress:
+  [██████████] 100%
+  completed_phases: 3
+  total_plans: 12
+  completed_plans: 11
+---
+
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: completed
+stopped_at: Completed 09-03 — InviteHandler + auto-join + AuthGate redirectTo fix
+last_updated: "2026-03-13T15:23:52.868Z"
+last_activity: 2026-03-13 — Completed Plan 01 (react-router-dom installed, /invite route added outside AuthGate)
+progress:
+  total_phases: 4
+  completed_phases: 3
+  total_plans: 8
+  completed_plans: 8
+  percent: 96
+---
+
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: completed
+stopped_at: Completed 09-01 — BrowserRouter + /invite route routing foundation
+last_updated: "2026-03-13T15:18:05.300Z"
+last_activity: 2026-03-13 — Phase 9 pivoted to Workspace Invite Links; Phase 10 is Gallery Filters
+progress:
+  [██████████] 96%
+  completed_phases: 2
+  total_plans: 8
+  completed_plans: 6
+  percent: 93
+---
+
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: completed
+stopped_at: Completed 08-02 — JoinWorkspaceModal, LeaveWorkspaceModal, WorkspaceSwitcher wired
+last_updated: "2026-03-13T14:31:22.181Z"
+last_activity: 2026-03-07 — Completed Plan 03 (Edit recipe UI — editMode on RecipeReviewScreen, Edit button in RecipeModal, gallery edit state)
+progress:
+  [█████████░] 93%
+  completed_phases: 2
+  total_plans: 5
+  completed_plans: 5
+---
+
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
 status: completed
 stopped_at: Completed 07-03 — Edit recipe UI (RecipeReviewScreen editMode + RecipeGallery edit flow)
 last_updated: "2026-03-07T20:35:26.170Z"
@@ -19,15 +98,15 @@ progress:
 
 See: .planning/PROJECT.md (updated 2026-03-07)
 
-**Core value:** Any Instagram recipe URL becomes a browsable, structured recipe card in one click.
-**Current focus:** v1.1 — Functional Enhancements (delete, edit, workspace switching, filters)
+**Core value:** Any social-media recipe URL (Instagram, YouTube, TikTok) becomes a browsable, structured recipe card in one click.
+**Current focus:** v1.1 — Functional Enhancements (Phases 7–10 complete; Phase 11 next: ingredient quantities)
 
 ## Current Position
 
-Phase: 07-recipe-management
-Plan: 03 of 03 complete
-Status: Phase complete
-Last activity: 2026-03-07 — Completed Plan 03 (Edit recipe UI — editMode on RecipeReviewScreen, Edit button in RecipeModal, gallery edit state)
+Phase: 11-ingredient-measurements — IN PROGRESS
+Current plan: 11-03 COMPLETE (saveRecipe + updateRecipe persist amount+unit into junction rows)
+Status: Plan 11-03 done — supabase.js refactored with dual-shape normalization, nameToRow map alignment, amount+unit in recipe_ingredients; all 21 server tests pass
+Last activity: 2026-03-14 — Completed Plan 11-03 (backend persistence layer wired for ingredient measurements)
 
 ## Accumulated Context
 
@@ -50,12 +129,24 @@ v1.1 decisions:
 - [Phase 07-recipe-management Plan 03]: handleEdit resets selectedRecipe before setting editingRecipe — prevents dual render
 - [Phase 07-recipe-management Plan 03]: Optimistic title patch uses data.recipe_id from PUT response — matches API contract
 - [Phase 07-recipe-management Plan 03]: ingredients:[] in edit pre-fill is intentional v1.1 trade-off
+- [Phase 08-workspace-switching]: fetchWorkspaces extracted as useCallback([user]); refreshWorkspaces wraps it as stable useCallback for consumers
+- [Phase 08-workspace-switching]: JoinWorkspaceModal calls refreshWorkspaces() then setActiveWorkspace() — refresh syncs list, setActiveWorkspace makes new workspace active immediately
+- [Phase 08-workspace-switching]: Leave flow does NOT call setActiveWorkspace manually — refreshWorkspaces() auto-corrects activeWorkspaceId to first remaining workspace
+- [Phase 09-workspace-invite-links Plan 01]: /invite route wraps only AuthProvider (no AuthGate) — unauthenticated users must reach invite URL without login block
+- [Phase 09-workspace-invite-links]: Full URL constructed client-side via window.location.origin; raw invite code display removed in favour of copy-link and WA share buttons
+- [Phase 09-workspace-invite-links]: InviteHandler does not use useWorkspace — /invite route has no WorkspaceProvider; navigate('/') triggers fresh fetch
+- [Phase 09-workspace-invite-links]: pendingInviteCode cleared early in autoJoin before async calls — prevents double-join on re-render
+- [Phase 11-ingredient-measurements Plan 02]: Normalization placed after JSON.parse validation guard so invalid responses still throw early; legacy string items converted to {name, amount: null, unit: null} (not discarded); empty-name objects filtered after normalization
+- [Phase 11-ingredient-measurements]: ingredientLines uses steps-list CSS classes — no new styles added
+- [Phase 11-ingredient-measurements]: KNOWN_UNITS / AMOUNT_PATTERN heuristic placed inside handleSave for co-location with API call
 
 ### Roadmap Evolution
 
 - Phase 7 added: Recipe Management (edit + delete recipes, API + state, no CSS)
 - Phase 8 added: Workspace Switching (join code, leave, sole-member deletion, no CSS)
-- Phase 9 added: Gallery Filters (meal type, category, cuisine, vibe tags, Supabase queries, no CSS)
+- Phase 9 PIVOTED 2026-03-13: replaced Gallery Filters with Workspace Invite Links (URL invite flow, /invite route, WhatsApp share, post-login auto-join)
+- Phase 10 RENAMED + EXPANDED 2026-03-14: was "Gallery Filters" (minor URL search-params refactor done inline); became "Multi-Platform Media Scraping" — YouTube transcript, TikTok RapidAPI, short-link resolution, frontend URL detection, multi-platform preview embeds
+- Phase 11 (upcoming): Ingredient quantities — structured quantity/unit data model
 
 ### Pending Todos
 
@@ -67,6 +158,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-07T20:37:00Z
-Stopped at: Completed 07-03 — Edit recipe UI (RecipeReviewScreen editMode + RecipeGallery edit flow)
+Last session: 2026-03-14T09:48:11.533Z
+Stopped at: Completed 11-04 — ingredientLines dynamic list in RecipeReviewScreen
 Resume file: None

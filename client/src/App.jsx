@@ -1,16 +1,22 @@
 import { useEffect, useRef, useState } from 'react';
+import { BrowserRouter, Routes, Route, useNavigate, useSearchParams } from 'react-router-dom';
 import { AuthProvider, useAuth } from './lib/auth.jsx';
 import { WorkspaceProvider, useWorkspace } from './lib/workspace.jsx';
+import { supabase } from './lib/supabase.js';
+import { InviteHandler } from './components/InviteHandler.jsx';
 import { AuthGate } from './components/AuthGate';
 import { WorkspaceOnboarding } from './components/WorkspaceOnboarding.jsx';
 import { SubmitForm } from './components/SubmitForm';
 import { RecipeGallery } from './components/RecipeGallery';
 import { QuickFilterPills } from './components/QuickFilterPills';
 import { FilterBottomSheet } from './components/FilterBottomSheet';
+import { LeaveWorkspaceModal } from './components/LeaveWorkspaceModal.jsx';
 
 function WorkspaceSwitcher() {
   const { workspaces, activeWorkspace, setActiveWorkspace } = useWorkspace();
   const [open, setOpen] = useState(false);
+  const [leaveOpen, setLeaveOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
   const ref = useRef(null);
 
   useEffect(() => {
@@ -33,9 +39,47 @@ function WorkspaceSwitcher() {
     setOpen(false);
   };
 
-  const handleCopy = () => {
+  const handleCopyLink = () => {
+    if (!activeWorkspace?.invite_code) return;
+    const url = `${window.location.origin}/invite?code=${activeWorkspace.invite_code}`;
+
+    const doCopy = () => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    };
+
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(url).then(doCopy).catch(() => {
+        // fallback if clipboard API rejected
+        const el = document.createElement('textarea');
+        el.value = url;
+        el.style.position = 'fixed';
+        el.style.opacity = '0';
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+        doCopy();
+      });
+    } else {
+      // fallback for non-HTTPS or unsupported browsers
+      const el = document.createElement('textarea');
+      el.value = url;
+      el.style.position = 'fixed';
+      el.style.opacity = '0';
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      doCopy();
+    }
+  };
+
+  const handleWhatsApp = () => {
     if (activeWorkspace?.invite_code) {
-      navigator.clipboard.writeText(activeWorkspace.invite_code);
+      const url = `${window.location.origin}/invite?code=${activeWorkspace.invite_code}`;
+      const text = encodeURIComponent(`הצטרפ/י לסביבת העבודה שלי ב-Re-smash:\n${url}`);
+      window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -119,43 +163,73 @@ function WorkspaceSwitcher() {
                 color: '#4a5568',
               }}
             >
-              <div style={{ marginBottom: '4px', fontWeight: 500 }}>Invite code</div>
+              <div style={{ marginBottom: '8px', fontWeight: 500 }}>קישור הזמנה</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <code
-                  style={{
-                    background: '#f7fafc',
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                    fontFamily: 'monospace',
-                    fontSize: '0.85em',
-                    flexGrow: 1,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {activeWorkspace.invite_code}
-                </code>
                 <button
-                  onClick={handleCopy}
-                  title="Copy invite code"
+                  onClick={handleCopyLink}
+                  title="העתק קישור הזמנה"
                   style={{
-                    border: '1px solid #cbd5e0',
+                    flexGrow: 1,
+                    border: `1px solid ${copied ? '#38a169' : '#cbd5e0'}`,
                     borderRadius: '4px',
-                    background: '#fff',
-                    padding: '2px 6px',
+                    background: copied ? '#f0fff4' : '#fff',
+                    color: copied ? '#38a169' : 'inherit',
+                    padding: '4px 8px',
                     cursor: 'pointer',
                     fontSize: '0.75rem',
+                    textAlign: 'center',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  {copied ? '✓ הועתק' : 'העתק קישור הזמנה'}
+                </button>
+                <button
+                  onClick={handleWhatsApp}
+                  title="שתף בוואטסאפ"
+                  style={{
+                    border: '1px solid #25D366',
+                    borderRadius: '4px',
+                    background: '#25D366',
+                    color: '#fff',
+                    padding: '4px 8px',
+                    cursor: 'pointer',
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
                     flexShrink: 0,
                   }}
                 >
-                  Copy
+                  WA
                 </button>
               </div>
             </div>
           )}
+
+          <div style={{ borderTop: '1px solid #e2e8f0' }}>
+            <button
+              onClick={() => { setOpen(false); setLeaveOpen(true); }}
+              style={{
+                display: 'block',
+                width: '100%',
+                textAlign: 'left',
+                padding: '10px 14px',
+                border: 'none',
+                background: 'transparent',
+                color: '#e53e3e',
+                cursor: 'pointer',
+                fontSize: '0.875rem',
+              }}
+            >
+              Leave Workspace
+            </button>
+          </div>
         </div>
       )}
+
+      <LeaveWorkspaceModal
+        isOpen={leaveOpen}
+        onClose={() => setLeaveOpen(false)}
+        workspace={activeWorkspace}
+      />
     </div>
   );
 }
@@ -164,28 +238,42 @@ function AppContent() {
   const [refreshCount, setRefreshCount] = useState(0);
   const { user, signOut } = useAuth();
 
-  // ── Filter state ──────────────────────────────────────────────────
-  const [filters, setFilters] = useState({
-    mealType: null,
-    dietaryTags: [],
-    prepTimeRange: null,
-    mainIngredient: null,
-  });
+  // ── Filter state (URL-backed) ──────────────────────────────────────
+  const [searchParams, setSearchParams] = useSearchParams();
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
 
-  const hasActiveAdvancedFilters = filters.dietaryTags.length > 0 || filters.prepTimeRange !== null || filters.mainIngredient !== null;
+  const filters = {
+    mealType: searchParams.get('meal') || null,
+    dietaryTags: searchParams.get('tags') ? searchParams.get('tags').split(',') : [],
+    prepTimeRange: searchParams.get('prep') || null,
+    mainIngredient: searchParams.get('ingredient') || null,
+  };
+
+  const hasActiveAdvancedFilters =
+    filters.dietaryTags.length > 0 ||
+    filters.prepTimeRange !== null ||
+    filters.mainIngredient !== null;
+
+  const buildParams = (next) => {
+    const p = {};
+    if (next.mealType) p.meal = next.mealType;
+    if (next.dietaryTags?.length) p.tags = next.dietaryTags.join(',');
+    if (next.prepTimeRange) p.prep = next.prepTimeRange;
+    if (next.mainIngredient) p.ingredient = next.mainIngredient;
+    return p;
+  };
 
   const handleQuickFilter = (mealType) => {
-    setFilters((prev) => ({ ...prev, mealType }));
+    setSearchParams(buildParams({ ...filters, mealType }));
   };
 
   const handleAdvancedFilters = (newFilters) => {
-    setFilters((prev) => ({ ...prev, ...newFilters }));
+    setSearchParams(buildParams({ ...filters, ...newFilters }));
     setFilterSheetOpen(false);
   };
 
   const handleClearAllFilters = () => {
-    setFilters({ mealType: null, dietaryTags: [], prepTimeRange: null, mainIngredient: null });
+    setSearchParams({});
     setFilterSheetOpen(false);
   };
 
@@ -245,7 +333,48 @@ function AppContent() {
 }
 
 function WorkspaceGate() {
-  const { workspaces, loading } = useWorkspace();
+  const { workspaces, loading, refreshWorkspaces, setActiveWorkspace } = useWorkspace();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!user || loading) return;
+    const code = localStorage.getItem('pendingInviteCode');
+    if (!code) return;
+
+    const autoJoin = async () => {
+      localStorage.removeItem('pendingInviteCode'); // clear early to prevent double-join
+      const trimmedCode = code.trim().toUpperCase();
+
+      const { data: ws, error: lookupErr } = await supabase
+        .from('workspaces')
+        .select('id, name')
+        .eq('invite_code', trimmedCode)
+        .single();
+
+      if (lookupErr || !ws) {
+        console.warn('pendingInviteCode: workspace not found for code', trimmedCode);
+        return;
+      }
+
+      const { error: joinErr } = await supabase
+        .from('workspace_users')
+        .upsert(
+          { workspace_id: ws.id, user_id: user.id, role: 'member' },
+          { onConflict: 'workspace_id,user_id' }
+        );
+
+      if (joinErr) {
+        console.warn('pendingInviteCode: join failed', joinErr.message);
+        return;
+      }
+
+      await refreshWorkspaces();
+      setActiveWorkspace(ws.id);
+    };
+
+    autoJoin();
+  }, [user, loading]);
 
   if (loading) {
     return <div className="auth-loading"><span className="spinner" /></div>;
@@ -260,12 +389,29 @@ function WorkspaceGate() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <AuthGate>
-        <WorkspaceProvider>
-          <WorkspaceGate />
-        </WorkspaceProvider>
-      </AuthGate>
-    </AuthProvider>
+    <BrowserRouter>
+      <Routes>
+        <Route
+          path="/invite"
+          element={
+            <AuthProvider>
+              <InviteHandler />
+            </AuthProvider>
+          }
+        />
+        <Route
+          path="/*"
+          element={
+            <AuthProvider>
+              <AuthGate>
+                <WorkspaceProvider>
+                  <WorkspaceGate />
+                </WorkspaceProvider>
+              </AuthGate>
+            </AuthProvider>
+          }
+        />
+      </Routes>
+    </BrowserRouter>
   );
 }

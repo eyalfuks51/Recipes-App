@@ -30,11 +30,11 @@ export const ALLOWED_MEAL_TYPES = ['ארוחת בוקר', 'ארוחת צהריי
 
 const HEBREW_SYSTEM_PROMPT =
   `חשוב ביותר: כל הטקסט בתשובה חייב להיות בעברית בלבד. ` +
-  `אתה עוזר לניתוח מתכונים. קרא את כיתוב האינסטגרם וחזור רק ב-JSON תקני עם השדות הבאים: ` +
+  `אתה עוזר לניתוח מתכונים. קרא את הטקסט הבא וחזור רק ב-JSON תקני עם השדות הבאים: ` +
   `{"title": string (שם המתכון בעברית), ` +
   `"main_category": string (חייב להיות אחד בדיוק מהרשימה: ${ALLOWED_CATEGORIES.join(', ')}), ` +
   `"difficulty": string (אחד מ: קל, בינוני, קשה), ` +
-  `"ingredients": [מערך של שמות מרכיבים בעברית], ` +
+  `"ingredients": [מערך של אובייקטים, כל אחד בפורמט: {"name": string (שם המרכיב בלבד, ללא כמות או הכנה, למשל: "קמח", "בצל", "שמן זית"), "amount": string או null (הכמות בלבד, כולל ביטויים כמו "קורט", "לפי הטעם", "חצי" — בדיוק כפי שמופיע במקור; null אם אין כמות), "unit": string או null (יחידת המידה בלבד, למשל "כוסות", "גרם", "כפות"; null אם אין יחידה)}], ` +
   `"meal_type": string (חייב להיות אחד בדיוק מהרשימה: ${ALLOWED_MEAL_TYPES.join(', ')}), ` +
   `"cuisine": string (חייב להיות אחד בדיוק מהרשימה: ${ALLOWED_CUISINES.join(', ')}), ` +
   `"main_ingredient": string (המרכיב הראשי היחיד של המתכון בעברית), ` +
@@ -57,7 +57,7 @@ export function createClient() {
 /**
  * Extracts structured recipe data from an Instagram post caption using Moonshot AI.
  * @param {string} caption - The Instagram post caption
- * @returns {Promise<{title: string, main_category: string, difficulty: string, ingredients: string[]}>}
+ * @returns {Promise<{title: string, main_category: string, difficulty: string, ingredients: Array<{name: string, amount: string|null, unit: string|null}>}>}
  * @throws {Error} If AI response cannot be parsed as recipe JSON
  */
 export async function extractRecipeFromCaption(caption) {
@@ -96,6 +96,19 @@ export async function extractRecipeFromCaption(caption) {
   if (!recipe.title || !Array.isArray(recipe.ingredients)) {
     throw new Error('AI response missing required recipe fields');
   }
+
+  // Normalize ingredient shape: AI should return [{name, amount, unit}] objects.
+  // If AI returns plain strings (legacy or fallback), convert to object shape.
+  recipe.ingredients = recipe.ingredients.map(item => {
+    if (typeof item === 'string') {
+      return { name: item.toLowerCase().trim(), amount: null, unit: null };
+    }
+    return {
+      name: (item.name ?? '').toLowerCase().trim(),
+      amount: item.amount ?? null,
+      unit: item.unit ?? null,
+    };
+  }).filter(item => item.name.length > 0);
 
   // Normalize category to allowed list; fallback to 'אחר'
   if (recipe.main_category && !ALLOWED_CATEGORIES.includes(recipe.main_category)) {
