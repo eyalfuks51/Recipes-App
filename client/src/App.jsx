@@ -11,8 +11,9 @@ import { RecipeGallery } from './components/RecipeGallery';
 // import { QuickFilterPills } from './components/QuickFilterPills';
 import { FilterBottomSheet } from './components/FilterBottomSheet';
 import { LeaveWorkspaceModal } from './components/LeaveWorkspaceModal.jsx';
+import { PwaInstallPrompt, PwaInstallManual, usePwaInstall } from './components/PwaInstallPrompt.jsx';
 
-function WorkspaceSwitcher() {
+function WorkspaceSwitcher({ pwa }) {
   const { workspaces, activeWorkspace, setActiveWorkspace } = useWorkspace();
   const [open, setOpen] = useState(false);
   const [leaveOpen, setLeaveOpen] = useState(false);
@@ -204,6 +205,22 @@ function WorkspaceSwitcher() {
             </div>
           )}
 
+          {!pwa.isInstalled && (
+            <div style={{ borderTop: '1px solid #e2e8f0' }}>
+              <button
+                className="pwa-menu-install"
+                onClick={() => { setOpen(false); pwa.openManual(); }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                התקן אפליקציה
+              </button>
+            </div>
+          )}
+
           <div style={{ borderTop: '1px solid #e2e8f0' }}>
             <button
               onClick={() => { setOpen(false); setLeaveOpen(true); }}
@@ -237,6 +254,7 @@ function WorkspaceSwitcher() {
 function AppContent() {
   const [refreshCount, setRefreshCount] = useState(0);
   const { user, signOut } = useAuth();
+  const pwa = usePwaInstall();
 
   // ── Filter state (URL-backed) ──────────────────────────────────────
   const [searchParams, setSearchParams] = useSearchParams();
@@ -290,7 +308,7 @@ function AppContent() {
           <div className="brand">
             <span className="brand__name">Re-smash</span>
           </div>
-          <WorkspaceSwitcher />
+          <WorkspaceSwitcher pwa={pwa} />
           {user && (
             <button className="btn-signout" onClick={signOut}>
               התנתקות!
@@ -328,6 +346,10 @@ function AppContent() {
         onApply={handleAdvancedFilters}
         onClearAll={handleClearAllFilters}
       />
+
+      {/* ── PWA Install Prompts ────────────────────────────────────────── */}
+      <PwaInstallPrompt pwa={pwa} />
+      <PwaInstallManual pwa={pwa} />
     </div>
   );
 }

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <rect width="192" height="192" rx="32" fill="#e85d4a"/>
+  <!-- Book cover -->
+  <rect x="40" y="28" width="108" height="136" rx="12" fill="#c94030"/>
+  <!-- Pages -->
+  <rect x="52" y="34" width="96" height="124" rx="8" fill="#fef5f3"/>
+  <!-- Lines -->
+  <rect x="68" y="56" width="64" height="8" rx="4" fill="#e85d4a" opacity="0.6"/>
+  <rect x="68" y="76" width="48" height="8" rx="4" fill="#e85d4a" opacity="0.6"/>
+  <rect x="68" y="96" width="64" height="8" rx="4" fill="#e85d4a" opacity="0.6"/>
+  <rect x="68" y="116" width="40" height="8" rx="4" fill="#e85d4a" opacity="0.6"/>
+</svg>
