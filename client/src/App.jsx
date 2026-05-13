@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { BrowserRouter, Routes, Route, useNavigate, useSearchParams } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useSearchParams } from 'react-router-dom';
 import { AuthProvider, useAuth } from './lib/auth.jsx';
 import { WorkspaceProvider, useWorkspace } from './lib/workspace.jsx';
 import { supabase } from './lib/supabase.js';
+import { joinWorkspaceByInvite } from './lib/workspaceApi.js';
 import { InviteHandler } from './components/InviteHandler.jsx';
 import { AuthGate } from './components/AuthGate';
 import { WorkspaceOnboarding } from './components/WorkspaceOnboarding.jsx';
@@ -357,7 +358,6 @@ function AppContent() {
 function WorkspaceGate() {
   const { workspaces, loading, refreshWorkspaces, setActiveWorkspace } = useWorkspace();
   const { user } = useAuth();
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (!user || loading) return;
@@ -368,35 +368,18 @@ function WorkspaceGate() {
       localStorage.removeItem('pendingInviteCode'); // clear early to prevent double-join
       const trimmedCode = code.trim().toUpperCase();
 
-      const { data: ws, error: lookupErr } = await supabase
-        .from('workspaces')
-        .select('id, name')
-        .eq('invite_code', trimmedCode)
-        .single();
-
-      if (lookupErr || !ws) {
-        console.warn('pendingInviteCode: workspace not found for code', trimmedCode);
+      try {
+        const ws = await joinWorkspaceByInvite(supabase, trimmedCode);
+        await refreshWorkspaces();
+        setActiveWorkspace(ws.id);
+      } catch (err) {
+        console.warn('pendingInviteCode: join failed', err.message);
         return;
       }
-
-      const { error: joinErr } = await supabase
-        .from('workspace_users')
-        .upsert(
-          { workspace_id: ws.id, user_id: user.id, role: 'member' },
-          { onConflict: 'workspace_id,user_id' }
-        );
-
-      if (joinErr) {
-        console.warn('pendingInviteCode: join failed', joinErr.message);
-        return;
-      }
-
-      await refreshWorkspaces();
-      setActiveWorkspace(ws.id);
     };
 
     autoJoin();
-  }, [user, loading]);
+  }, [user, loading, refreshWorkspaces, setActiveWorkspace]);
 
   if (loading) {
     return <div className="auth-loading"><span className="spinner" /></div>;

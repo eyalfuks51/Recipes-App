@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase.js';
-import { useAuth } from '../lib/auth.jsx';
 import { useWorkspace } from '../lib/workspace.jsx';
+import { joinWorkspaceByInvite } from '../lib/workspaceApi.js';
 
 export function JoinWorkspaceModal({ isOpen, onClose }) {
-  const { user } = useAuth();
   const { refreshWorkspaces, setActiveWorkspace } = useWorkspace();
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
@@ -30,36 +29,17 @@ export function JoinWorkspaceModal({ isOpen, onClose }) {
     setLoading(true);
     setError(null);
 
-    const { data: ws, error: lookupErr } = await supabase
-      .from('workspaces')
-      .select('id, name')
-      .eq('invite_code', trimmedCode)
-      .single();
-
-    if (lookupErr || !ws) {
-      setError('No workspace found with that code.');
+    try {
+      const ws = await joinWorkspaceByInvite(supabase, trimmedCode);
+      await refreshWorkspaces();
+      setActiveWorkspace(ws.id);
+      setCode('');
+      setError(null);
+      onClose();
+    } catch (err) {
+      setError(err.message || 'No workspace found with that code.');
       setLoading(false);
-      return;
     }
-
-    const { error: joinErr } = await supabase
-      .from('workspace_users')
-      .upsert(
-        { workspace_id: ws.id, user_id: user.id, role: 'member' },
-        { onConflict: 'workspace_id,user_id' }
-      );
-
-    if (joinErr) {
-      setError(joinErr.message);
-      setLoading(false);
-      return;
-    }
-
-    await refreshWorkspaces();
-    setActiveWorkspace(ws.id);
-    setCode('');
-    setError(null);
-    onClose();
   };
 
   return (

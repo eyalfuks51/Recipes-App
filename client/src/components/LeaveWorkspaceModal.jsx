@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase.js';
-import { useAuth } from '../lib/auth.jsx';
 import { useWorkspace } from '../lib/workspace.jsx';
+import { getWorkspaceMemberCount, leaveWorkspace } from '../lib/workspaceApi.js';
 
 export function LeaveWorkspaceModal({ isOpen, onClose, workspace }) {
-  const { user } = useAuth();
   const { refreshWorkspaces } = useWorkspace();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -18,14 +17,18 @@ export function LeaveWorkspaceModal({ isOpen, onClose, workspace }) {
     let cancelled = false;
 
     const checkSoleMember = async () => {
-      const { count } = await supabase
-        .from('workspace_users')
-        .select('*', { count: 'exact', head: true })
-        .eq('workspace_id', workspace.id);
+      try {
+        const count = await getWorkspaceMemberCount(supabase, workspace.id);
 
-      if (!cancelled) {
-        setIsSoleMember(count === 1);
-        setChecked(true);
+        if (!cancelled) {
+          setIsSoleMember(count === 1);
+          setChecked(true);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err.message);
+          setChecked(true);
+        }
       }
     };
 
@@ -56,33 +59,14 @@ export function LeaveWorkspaceModal({ isOpen, onClose, workspace }) {
     setLoading(true);
     setError(null);
 
-    const { error: deleteErr } = await supabase
-      .from('workspace_users')
-      .delete()
-      .eq('workspace_id', workspace.id)
-      .eq('user_id', user.id);
-
-    if (deleteErr) {
-      setError(deleteErr.message);
+    try {
+      await leaveWorkspace(supabase, workspace.id);
+      await refreshWorkspaces();
+      onClose();
+    } catch (err) {
+      setError(err.message);
       setLoading(false);
-      return;
     }
-
-    if (isSoleMember) {
-      const { error: wsDeleteErr } = await supabase
-        .from('workspaces')
-        .delete()
-        .eq('id', workspace.id);
-
-      if (wsDeleteErr) {
-        setError(wsDeleteErr.message);
-        setLoading(false);
-        return;
-      }
-    }
-
-    await refreshWorkspaces();
-    onClose();
   };
 
   return (

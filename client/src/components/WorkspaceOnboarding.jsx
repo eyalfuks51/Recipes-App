@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase.js';
-import { useAuth } from '../lib/auth.jsx';
 import { useWorkspace } from '../lib/workspace.jsx';
+import { createWorkspace, joinWorkspaceByInvite } from '../lib/workspaceApi.js';
 import './WorkspaceOnboarding.scss';
 
 export function WorkspaceOnboarding({ onComplete }) {
-  const { user } = useAuth();
   const { setActiveWorkspace } = useWorkspace();
   const [activeTab, setActiveTab] = useState('create');
   const [loading, setLoading] = useState(false);
@@ -27,32 +26,14 @@ export function WorkspaceOnboarding({ onComplete }) {
     setLoading(true);
     setError(null);
 
-    const inviteCode = (Math.random().toString(36).toUpperCase() + 'AAAAAA').slice(2, 8);
-
-    const { data: workspace, error: insertErr } = await supabase
-      .from('workspaces')
-      .insert({ name: trimmedName, invite_code: inviteCode })
-      .select()
-      .single();
-
-    if (insertErr) {
-      setError(insertErr.message);
+    try {
+      const workspace = await createWorkspace(supabase, trimmedName);
+      setActiveWorkspace(workspace.id);
+      onComplete();
+    } catch (err) {
+      setError(err.message);
       setLoading(false);
-      return;
     }
-
-    const { error: memberErr } = await supabase
-      .from('workspace_users')
-      .insert({ workspace_id: workspace.id, user_id: user.id, role: 'owner' });
-
-    if (memberErr) {
-      setError(memberErr.message);
-      setLoading(false);
-      return;
-    }
-
-    setActiveWorkspace(workspace.id);
-    onComplete();
   }
 
   async function handleJoin(e) {
@@ -65,33 +46,14 @@ export function WorkspaceOnboarding({ onComplete }) {
     setLoading(true);
     setError(null);
 
-    const { data: ws, error: lookupErr } = await supabase
-      .from('workspaces')
-      .select('id, name')
-      .eq('invite_code', trimmedCode)
-      .single();
-
-    if (lookupErr || !ws) {
-      setError('No workspace found with that code.');
+    try {
+      const ws = await joinWorkspaceByInvite(supabase, trimmedCode);
+      setActiveWorkspace(ws.id);
+      onComplete();
+    } catch (err) {
+      setError(err.message || 'No workspace found with that code.');
       setLoading(false);
-      return;
     }
-
-    const { error: joinErr } = await supabase
-      .from('workspace_users')
-      .upsert(
-        { workspace_id: ws.id, user_id: user.id, role: 'member' },
-        { onConflict: 'workspace_id,user_id' }
-      );
-
-    if (joinErr) {
-      setError(joinErr.message);
-      setLoading(false);
-      return;
-    }
-
-    setActiveWorkspace(ws.id);
-    onComplete();
   }
 
   function handleTabSwitch(tab) {

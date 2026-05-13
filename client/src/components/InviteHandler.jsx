@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase.js';
 import { useAuth } from '../lib/auth.jsx';
+import { joinWorkspaceByInvite } from '../lib/workspaceApi.js';
 
 export function InviteHandler() {
   const { user, loading: authLoading } = useAuth();
@@ -10,11 +11,11 @@ export function InviteHandler() {
 
   const [joining, setJoining] = useState(false);
   const [error, setError] = useState(null);
-  const [redirecting, setRedirecting] = useState(false);
+  const [, setRedirecting] = useState(false);
 
   const code = searchParams.get('code')?.trim().toUpperCase() ?? '';
 
-  // Unauthenticated flow — save code and trigger OAuth
+  // Unauthenticated flow - save code and trigger OAuth
   useEffect(() => {
     if (authLoading) return;
     if (user) return; // handled by confirmation modal
@@ -32,7 +33,7 @@ export function InviteHandler() {
     });
   }, [authLoading, user, code]);
 
-  // Authenticated edge case — no code in URL
+  // Authenticated edge case - no code in URL
   useEffect(() => {
     if (authLoading) return;
     if (!user) return;
@@ -45,32 +46,13 @@ export function InviteHandler() {
     setJoining(true);
     setError(null);
 
-    const { data: ws, error: lookupErr } = await supabase
-      .from('workspaces')
-      .select('id, name')
-      .eq('invite_code', code)
-      .single();
-
-    if (lookupErr || !ws) {
-      setError('לא נמצאה סביבת עבודה עם הקוד הזה');
+    try {
+      await joinWorkspaceByInvite(supabase, code);
+      navigate('/');
+    } catch (err) {
+      setError(err.message || 'לא נמצאה סביבת עבודה עם הקוד הזה');
       setJoining(false);
-      return;
     }
-
-    const { error: joinErr } = await supabase
-      .from('workspace_users')
-      .upsert(
-        { workspace_id: ws.id, user_id: user.id, role: 'member' },
-        { onConflict: 'workspace_id,user_id' }
-      );
-
-    if (joinErr) {
-      setError(joinErr.message);
-      setJoining(false);
-      return;
-    }
-
-    navigate('/');
   };
 
   const handleCancel = () => {
@@ -86,19 +68,19 @@ export function InviteHandler() {
     );
   }
 
-  // Unauthenticated — redirecting to OAuth
+  // Unauthenticated - redirecting to OAuth
   if (!user) {
     return (
       <div style={{ padding: '40px', textAlign: 'center' }}>מעביר לדף ההתחברות…</div>
     );
   }
 
-  // No code in URL — useEffect will navigate('/') but render nothing in the meantime
+  // No code in URL - useEffect will navigate('/') but render nothing in the meantime
   if (!code) {
     return null;
   }
 
-  // Authenticated — confirmation modal
+  // Authenticated - confirmation modal
   return (
     <div
       style={{
