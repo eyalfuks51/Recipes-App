@@ -131,6 +131,9 @@ describe('saveRecipe', () => {
     assert.equal(capturedIngredients[0].name, 'olive oil');
     assert.equal(capturedIngredients[1].name, 'garlic');
     assert.equal(capturedIngredients[2].name, 'tomatoes');
+    // Regression guard: catalog upsert must be name-only. amount/unit live on
+    // recipe_ingredients, not ingredients — sending them 500s the real DB.
+    assert.deepEqual(Object.keys(capturedIngredients[0]), ['name']);
   });
 
   it('throws an error when recipe upsert fails', async () => {

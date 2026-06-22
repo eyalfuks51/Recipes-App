@@ -105,7 +105,8 @@ export async function saveRecipe({ instagram_url, title, main_category, difficul
 
   const { data: ingredientRows, error: ingredientsError } = await client
     .from('ingredients')
-    .upsert(normalizedIngredients, { onConflict: 'name' })
+    // catalog is name-only; amount/unit live on recipe_ingredients (junction)
+    .upsert(normalizedIngredients.map((i) => ({ name: i.name })), { onConflict: 'name' })
     .select('id, name');
 
   if (ingredientsError) throw new Error(`Ingredients upsert failed: ${ingredientsError.message}`);
@@ -222,7 +223,8 @@ export async function updateRecipe(id, { title, main_category, difficulty, ingre
 
     const { data: ingredientRows, error: ingredientsError } = await client
       .from('ingredients')
-      .upsert(normalizedIngredients, { onConflict: 'name' })
+      // catalog is name-only; amount/unit live on recipe_ingredients (junction)
+      .upsert(normalizedIngredients.map((i) => ({ name: i.name })), { onConflict: 'name' })
       .select('id, name');
 
     if (ingredientsError) throw new Error(`Ingredients upsert failed: ${ingredientsError.message}`);

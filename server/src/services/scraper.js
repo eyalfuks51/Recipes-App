@@ -54,7 +54,11 @@ async function scrapeWithRapidAPI(instagramUrl) {
   );
 
   if (!response.ok) {
-    throw new Error(`RapidAPI request failed: ${response.status} ${response.statusText}`);
+    const body = await response.text().catch(() => '');
+    console.error(`[scraper] RapidAPI returned HTTP ${response.status}. Body:`, body.slice(0, 500));
+    const err = new Error(`RapidAPI request failed: ${response.status} ${response.statusText}`);
+    err.upstreamStatus = response.status;
+    throw err;
   }
 
   const data = await response.json();
