@@ -1,99 +1,97 @@
 # Recipe Manager
 
+> Live project reference. Updated 2026-06-22. Paired with STATE.md (current
+> position). The GSD `phases/`, `milestones/`, `MILESTONES.md`, `RETROSPECTIVE.md`,
+> `config.json` are frozen archive — see `.planning/README.md`.
+
 ## What This Is
 
-A full-stack web application for saving and browsing Instagram recipes. Users paste an Instagram post URL; the backend scrapes the caption via Apify, extracts a rich multi-dimensional recipe via Moonshot AI (title, ingredients, instructions, cuisine, meal type, dietary tags), and saves to Supabase after the user validates the output on a split-screen review screen.
+A full-stack web app for saving and browsing recipes from social media. Users paste a
+recipe URL (Instagram, YouTube, or TikTok); the backend scrapes the caption/transcript,
+extracts a rich multi-dimensional recipe via Moonshot AI (title, ingredients with
+amount+unit, instructions, cuisine, meal type, dietary tags), and saves to Supabase
+after the user validates the output on a split-screen review screen.
 
-Users authenticate via Google OAuth, belong to workspaces (ecosystems), and all recipe data is isolated per workspace via Supabase RLS. The React frontend lets users submit URLs, review AI-extracted content before saving, and browse a categorized gallery with full recipe modal view including ingredient checklists synced to Supabase.
+Users authenticate via Google OAuth, belong to workspaces, and all recipe data is
+isolated per workspace via Supabase RLS. Installable as a PWA.
 
-**Stack:** Node.js/Express (Koyeb) + React/Vite/SCSS (Vercel) + Supabase + Moonshot AI + Apify
+**Stack:** Node/Express (Koyeb) + React/Vite/SCSS (Vercel) + Supabase + Moonshot AI.
+Scraping via RapidAPI (Instagram/TikTok) + youtube-transcript (YouTube), TikTok through
+a Vercel proxy in prod.
 
 ## Core Value
 
-Any Instagram recipe URL becomes a browsable, structured recipe card in one click.
+Any social-media recipe URL becomes a browsable, structured recipe card in one click.
 
-## Requirements
+## Status
 
-### Validated
+- ✅ **v1.0 MVP** shipped 2026-03-07 (phases 1–6)
+- ✅ **v1.1 Functional Enhancements** shipped 2026-03-14 (phases 7–11): delete, edit, workspace switching, invite links, multi-platform scraping, ingredient measurements
+- 🔧 **Now:** maintenance + hardening (no formal milestone). RLS Security-Advisor cleanup, deploy/compat fixes, PWA. See STATE.md.
 
-- ✓ POST /api/extract-recipe + /api/confirm-recipe: two-step extract-then-confirm API for human-in-the-loop review — v1.0
-- ✓ Apify `apify~instagram-scraper` scrapes post caption; `www.` prefix normalization — v1.0
-- ✓ Moonshot AI (`moonshot-v1-8k`) extracts multi-dimensional recipe schema with Hebrew prompt — v1.0
-- ✓ Recipe upserted to Supabase `recipes` table; ingredients deduplicated in `ingredients` table; junction in `recipe_ingredients` — v1.0
-- ✓ Node.js server Dockerized (node:20-alpine) for Koyeb deployment with `.env.example` — v1.0
-- ✓ React/Vite frontend with SCSS, deployed to Vercel — v1.0
-- ✓ URL submission form with loading/success/error states — v1.0
-- ✓ Recipe gallery fetches directly from Supabase with skeleton loading — v1.0
-- ✓ Google OAuth via Supabase: AuthProvider, AuthGate login wall, sign-out — v1.0
-- ✓ Workspace schema: `workspaces`, `workspace_users`, `workspace_ingredient_checks`; recipes scoped to workspace — v1.0
-- ✓ AI category restrictions: `ALLOWED_CATEGORIES` constant + `ALLOWED_CUISINES` + `ALLOWED_DIETARY_TAGS` enums — v1.0
-- ✓ RecipeEditForm / RecipeReviewScreen: two-step review before save ("אישור ושמירה") — v1.0
-- ✓ Full Recipe View: RecipeModal with instructions + stateful ingredient checkboxes synced to Supabase — v1.0
-- ✓ WorkspaceProvider context, localStorage persistence, workspace switcher dropdown — v1.0
-- ✓ Workspace onboarding screen: create or join via invite code — v1.0
-- ✓ Supabase RLS policies: all recipe/workspace reads scoped to authenticated user's workspaces — v1.0
-- ✓ Multi-dimensional AI schema: cuisine, meal_type, main_ingredient, prep_time, dietary_tags added to `recipes` table — v1.0
-- ✓ RecipeReviewScreen: split-screen desktop / tab-switcher mobile, all AI fields editable — v1.0
-- ✓ og:image extraction → thumbnail_url pipeline for recipe media fallback — v1.0
+## Requirements (delivered)
 
-### Active
+**v1.0**
+- Two-step extract-then-confirm API for human-in-the-loop review
+- Moonshot AI extracts multi-dimensional recipe schema (Hebrew prompt)
+- Recipe → `recipes`; ingredients deduped in `ingredients`; junction in `recipe_ingredients`
+- Dockerized Node server (Koyeb); React/Vite frontend (Vercel)
+- Google OAuth (AuthProvider + AuthGate); workspace schema + per-workspace RLS isolation
+- ALLOWED_* enum restrictions on AI output
+- RecipeReviewScreen split-screen review; RecipeModal full view + ingredient checkboxes
+- og:image → thumbnail_url fallback
 
-**Milestone v1.1 — Functional Enhancements**
+**v1.1**
+- Delete + edit saved recipes (post-save edit mode reuses RecipeReviewScreen)
+- Workspace switching via join code; sole-member workspace deletion
+- Invite links: `/invite` route, copy-link, WhatsApp share, post-login auto-join
+- Multi-platform scraping: YouTube transcript + TikTok caption, URL detection, platform previews
+- Ingredient measurements: `amount`+`unit` on `recipe_ingredients`, AI returns `{name,amount,unit}`
 
-- [ ] User can delete a saved recipe from the gallery
-- [ ] User can edit a saved recipe using the RecipeReviewScreen UI (post-save edit mode)
-- [ ] User can switch to a different workspace using a join code, with workspace deletion if they are the sole member
-- [ ] Gallery supports filtering by meal type (toggle), category (multi-select), cuisine (autocomplete from DB values), and vibe tags (pill buttons)
+## Out of Scope
 
-### Out of Scope
-
-- Real-time multi-user collaboration — single-user tool, workspace model sufficient
-- Mobile native app — PWA/responsive web covers mobile needs
-- Offline mode — Supabase connectivity required for recipe sync
-- Bulk import / CSV upload — one-at-a-time URL flow is the UX
-
-## Context
-
-**Shipped:** v1.0 — 2026-03-07
-**Codebase:** ~4,600 LOC JS/JSX/SCSS across `/server` and `/client` monorepo
-**Deployment:** Backend on Koyeb (Docker), Frontend on Vercel
-**Database:** Supabase with tables: `recipes`, `ingredients`, `recipe_ingredients`, `workspaces`, `workspace_users`, `workspace_ingredient_checks`
-
-**Moonshot AI:** Hebrew prompt forces structured JSON with `main_category` from `ALLOWED_CATEGORIES` (14 values), `cuisine` from `ALLOWED_CUISINES` (12 values), `dietary_tags` from `ALLOWED_DIETARY_TAGS` (4 values), strict `meal_type` toggle (ארוחת בוקר / ארוחת צהריים / ארוחת ערב / חטיף)
-
-**Two-step API pattern:** `/api/extract-recipe` → AI preview (not saved); `/api/confirm-recipe` → saves user-edited recipe to Supabase. Nothing persists until user clicks "אישור ושמירה".
+- Real-time multi-user collaboration — workspace model is sufficient
+- Mobile native app — PWA + responsive web covers it
+- Offline mode — Supabase connectivity required
+- Bulk import / CSV — one-at-a-time URL flow is the UX
 
 ## Constraints
 
-- **Backend runtime:** Node.js + Express — persistent server (not serverless) on Koyeb
-- **Frontend:** React + Vite + SCSS — handoff-friendly for non-Claude developer
-- **Database:** Supabase (PostgreSQL with RLS)
-- **Deployment:** Backend → Koyeb (Docker), Frontend → Vercel
+- **Backend:** Node + Express — persistent server (not serverless) on Koyeb
+- **Frontend:** React + Vite + SCSS — handoff-friendly for non-Claude (Mor) frontend work
+- **Database:** Supabase (Postgres + RLS)
+- **Deploy:** Backend → Koyeb (Docker), Frontend → Vercel, TikTok proxy → Vercel function
+- **Language:** all recipe content + AI prompts in Hebrew (RTL)
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Dual /client + /server monorepo | Clean separation, each deployable independently | ✓ Good — no coupling issues |
-| Frontend reads Supabase directly | Gallery doesn't need to proxy through backend — simpler | ✓ Good — auth tokens flow naturally |
-| No auth for v1 original plan | Personal tool | ⚠️ Revisit — Google OAuth added in Phase 4; essential for workspace isolation |
-| Two-step extract-then-confirm API | Separates AI extraction from persistence; enables human review | ✓ Good — core UX pattern |
-| ALLOWED_CATEGORIES as single source of truth in moonshot.js | AI prompt and normalization share one constant | ✓ Good — prevents drift |
-| workspace_id nullable FK on recipes | Backward-compatible; existing recipes unaffected | ✓ Good — smooth migration |
-| JSONB for dietary_tags | Stores Hebrew string arrays without junction tables | ✓ Good — simple and sufficient |
-| RecipeReviewScreen split-screen | Premium feel; Instagram iframe left, edit form right | ✓ Good — well received in UAT |
-| og:image → thumbnail_url pipeline | Instagram iframes sometimes blocked; thumbnail fallback ensures media visible | ✓ Good — resilient UX |
-| Removed cook_time and equipment_needed | UX review found them noisy; strict meal_type toggle cleaner | ✓ Good — schema simplified |
+| Dual /client + /server monorepo | Clean separation, each deployable | ✓ Good |
+| Frontend reads Supabase directly | Gallery needn't proxy through backend | ✓ Good — auth tokens flow naturally |
+| Two-step extract-then-confirm API | Separates AI extraction from persistence; enables review | ✓ Good — core UX pattern |
+| ALLOWED_* enums as single source of truth in moonshot.js | AI prompt + normalization share one constant | ⚠️ Duplicated in client `RecipeReviewScreen.jsx` — keep in sync |
+| workspace_id nullable FK on recipes | Backward-compatible migration | ✓ Good |
+| JSONB for dietary_tags | Hebrew string arrays without junction tables | ✓ Good |
+| RecipeReviewScreen split-screen | Premium feel; preview left, edit form right | ✓ Good |
+| og:image → thumbnail_url | IG iframes sometimes blocked; thumbnail fallback | ✓ Good |
+| Dropped cook_time + equipment_needed | UX review found them noisy | ✓ Good |
+| **Removed Apify, switched to RapidAPI** | Apify scraper unreliable/costly; RapidAPI covers IG/TikTok/YT | ✓ Good |
+| **TikTok via Vercel proxy** | RapidAPI blocked Koyeb egress IPs; proxy unblocks | ✓ Good |
+| **Express 5 wildcard `*` → `/.*/`** | path-to-regexp v6 rejects bare `*` | ✓ Fixed |
+| **Workspace RPCs in `private` schema + INVOKER wrappers** | Supabase Advisor: keep privileged logic off the exposed API; RLS on all public tables | ✓ Current branch |
 
-## Current Milestone: v1.1 Functional Enhancements
+## Moonshot AI
 
-**Goal:** Add delete, edit, workspace switching, and advanced gallery filters — strictly new functional features (UI/CSS handled separately by partner).
+Hebrew system prompt forces structured JSON. Output normalized against
+`ALLOWED_CATEGORIES`, `ALLOWED_CUISINES`, `ALLOWED_DIETARY_TAGS`, `ALLOWED_MEAL_TYPES`
+(source of truth: `server/src/services/moonshot.js`). Ingredients returned as
+`{name, amount, unit}` objects.
 
-**Target features:**
-- Delete recipes from workspace
-- Edit saved recipes via RecipeReviewScreen (repurposed for edit mode)
-- Workspace switching with join code + sole-member workspace deletion
-- Advanced gallery filter bar (meal type, category, cuisine, vibe tags)
+## Two-step API pattern
+
+`POST /api/extract-recipe` → AI preview (not saved). `POST /api/confirm-recipe` → saves
+user-edited recipe. Nothing persists until the user clicks "אישור ושמירה".
 
 ---
-*Last updated: 2026-03-07 after v1.1 milestone start*
+*Last updated 2026-06-22 — refreshed from code after dropping the GSD workflow.*

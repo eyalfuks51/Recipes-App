@@ -1,163 +1,97 @@
 ---
-gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-current_plan: 11-03 COMPLETE (saveRecipe + updateRecipe persist amount+unit into junction rows)
-status: completed
-stopped_at: Completed 11-04 — ingredientLines dynamic list in RecipeReviewScreen
-last_updated: "2026-03-14T09:48:15.791Z"
-last_activity: 2026-03-14 — Completed Plan 11-03 (backend persistence layer wired for ingredient measurements)
-progress:
-  total_phases: 5
-  completed_phases: 4
-  total_plans: 12
-  completed_plans: 12
-  percent: 100
----
-
----
-gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: completed
-stopped_at: Completed 11-03 — saveRecipe + updateRecipe propagate amount+unit into junction rows
-last_updated: "2026-03-14T00:00:00.000Z"
-last_activity: 2026-03-14 — Completed Plan 11-03 (supabase.js refactored: dual-shape normalization, nameToRow map, amount+unit in recipe_ingredients)
-progress:
-  [██████████] 100%
-  completed_phases: 3
-  total_plans: 12
-  completed_plans: 11
----
-
----
-gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: completed
-stopped_at: Completed 09-03 — InviteHandler + auto-join + AuthGate redirectTo fix
-last_updated: "2026-03-13T15:23:52.868Z"
-last_activity: 2026-03-13 — Completed Plan 01 (react-router-dom installed, /invite route added outside AuthGate)
-progress:
-  total_phases: 4
-  completed_phases: 3
-  total_plans: 8
-  completed_plans: 8
-  percent: 96
----
-
----
-gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: completed
-stopped_at: Completed 09-01 — BrowserRouter + /invite route routing foundation
-last_updated: "2026-03-13T15:18:05.300Z"
-last_activity: 2026-03-13 — Phase 9 pivoted to Workspace Invite Links; Phase 10 is Gallery Filters
-progress:
-  [██████████] 96%
-  completed_phases: 2
-  total_plans: 8
-  completed_plans: 6
-  percent: 93
----
-
----
-gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: completed
-stopped_at: Completed 08-02 — JoinWorkspaceModal, LeaveWorkspaceModal, WorkspaceSwitcher wired
-last_updated: "2026-03-13T14:31:22.181Z"
-last_activity: 2026-03-07 — Completed Plan 03 (Edit recipe UI — editMode on RecipeReviewScreen, Edit button in RecipeModal, gallery edit state)
-progress:
-  [█████████░] 93%
-  completed_phases: 2
-  total_plans: 5
-  completed_plans: 5
----
-
----
-gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: completed
-stopped_at: Completed 07-03 — Edit recipe UI (RecipeReviewScreen editMode + RecipeGallery edit flow)
-last_updated: "2026-03-07T20:35:26.170Z"
-last_activity: 2026-03-07 — Completed Plan 03 (Edit recipe UI — editMode on RecipeReviewScreen, Edit button in RecipeModal, gallery edit state)
-progress:
-  total_phases: 3
-  completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
+project: Recipe Manager
+milestone: v1.1 shipped — now maintenance / hardening
+branch: fix/supabase-rls-advisor
+status: active
+last_updated: 2026-06-22
 ---
 
 # Project State
 
-## Project Reference
+> Scanned 2026-06-22 from code + git + data model. Replaces the old GSD-format
+> STATE.md (was frozen at Phase 11, 2026-03-14). PROJECT.md is also stale — it
+> still names Apify, which was removed; treat this file as truth where they differ.
 
-See: .planning/PROJECT.md (updated 2026-03-07)
+## What it is
 
-**Core value:** Any social-media recipe URL (Instagram, YouTube, TikTok) becomes a browsable, structured recipe card in one click.
-**Current focus:** v1.1 — Functional Enhancements (Phases 7–10 complete; Phase 11 next: ingredient quantities)
+Paste a social-media recipe URL (Instagram / YouTube / TikTok) → backend scrapes
+caption/transcript → Moonshot AI extracts a structured Hebrew recipe → user reviews
+on a split-screen → saves to Supabase. Workspace-scoped, Google OAuth, RLS-isolated.
 
-## Current Position
+## Stack (current)
 
-Phase: 11-ingredient-measurements — IN PROGRESS
-Current plan: 11-03 COMPLETE (saveRecipe + updateRecipe persist amount+unit into junction rows)
-Status: Plan 11-03 done — supabase.js refactored with dual-shape normalization, nameToRow map alignment, amount+unit in recipe_ingredients; all 21 server tests pass
-Last activity: 2026-03-14 — Completed Plan 11-03 (backend persistence layer wired for ingredient measurements)
+- **Server** `server/` — Node/Express 5.2, ESM. Deploy: Docker `node:20-alpine` → Koyeb.
+- **Client** `client/` — React 19.1 + Vite 6 + SCSS, react-router-dom 7. Deploy: Vercel.
+- **DB** — Supabase (Postgres + RLS), `@supabase/supabase-js` 2.98.
+- **AI** — Moonshot via OpenAI-compatible SDK (`openai` 6.26), Hebrew prompts.
+- **Scraping** — RapidAPI for IG/TikTok, `youtube-transcript` (→ RapidAPI → page-scrape fallback) for YT. TikTok routed through a Vercel serverless proxy in prod (RapidAPI IP block). **Apify removed.**
+- **Env (server):** `MOONSHOT_API_KEY`, `SUPABASE_URL`, `SUPABASE_KEY`, `RAPIDAPI_KEY`, `PORT?`
 
-## Accumulated Context
+## Current position
 
-### Decisions
+On `fix/supabase-rls-advisor` — closing out Supabase Security Advisor findings (RLS
+on public tables, privileged logic moved out of the exposed API).
 
-Full decision log in PROJECT.md Key Decisions table.
+**Uncommitted:**
+- `CLAUDE.md` modified
+- `AGENTS.md` new — Codex instruction mirror (multi-model Claude+Codex workflow)
 
-Key architectural decisions from v1.0:
-- Two-step extract-then-confirm API pattern (separates AI from persistence)
-- ALLOWED_* constants as single source of truth in moonshot.js
-- Workspace/ecosystem model with Supabase RLS for data isolation
-- RecipeReviewScreen split-screen as core human-in-the-loop UX
+## Roadmap
 
-v1.1 decisions:
-- updateRecipe uses insert (not upsert) for junction rows after delete, since no conflict key exists post-deletion
-- updateRecipe skips ingredients processing when no ingredients array provided (sparse update)
-- [Phase 07-recipe-management]: Delete fetch in RecipeModal; RecipeGallery responds via onDelete callback after success
-- [Phase 07-recipe-management]: onDelete called before onClose to ensure gallery state updated before modal unmounts
-- [Phase 07-recipe-management Plan 03]: Edit button uses deleting flag to disable — prevents conflicting actions in modal
-- [Phase 07-recipe-management Plan 03]: handleEdit resets selectedRecipe before setting editingRecipe — prevents dual render
-- [Phase 07-recipe-management Plan 03]: Optimistic title patch uses data.recipe_id from PUT response — matches API contract
-- [Phase 07-recipe-management Plan 03]: ingredients:[] in edit pre-fill is intentional v1.1 trade-off
-- [Phase 08-workspace-switching]: fetchWorkspaces extracted as useCallback([user]); refreshWorkspaces wraps it as stable useCallback for consumers
-- [Phase 08-workspace-switching]: JoinWorkspaceModal calls refreshWorkspaces() then setActiveWorkspace() — refresh syncs list, setActiveWorkspace makes new workspace active immediately
-- [Phase 08-workspace-switching]: Leave flow does NOT call setActiveWorkspace manually — refreshWorkspaces() auto-corrects activeWorkspaceId to first remaining workspace
-- [Phase 09-workspace-invite-links Plan 01]: /invite route wraps only AuthProvider (no AuthGate) — unauthenticated users must reach invite URL without login block
-- [Phase 09-workspace-invite-links]: Full URL constructed client-side via window.location.origin; raw invite code display removed in favour of copy-link and WA share buttons
-- [Phase 09-workspace-invite-links]: InviteHandler does not use useWorkspace — /invite route has no WorkspaceProvider; navigate('/') triggers fresh fetch
-- [Phase 09-workspace-invite-links]: pendingInviteCode cleared early in autoJoin before async calls — prevents double-join on re-render
-- [Phase 11-ingredient-measurements Plan 02]: Normalization placed after JSON.parse validation guard so invalid responses still throw early; legacy string items converted to {name, amount: null, unit: null} (not discarded); empty-name objects filtered after normalization
-- [Phase 11-ingredient-measurements]: ingredientLines uses steps-list CSS classes — no new styles added
-- [Phase 11-ingredient-measurements]: KNOWN_UNITS / AMOUNT_PATTERN heuristic placed inside handleSave for co-location with API call
+Phases 1–11 complete. v1.0 shipped 2026-03-07; v1.1 (phases 7–11) done 2026-03-14.
 
-### Roadmap Evolution
+| Phase | Title | Status |
+|-------|-------|--------|
+| 1–6 | v1.0 MVP (pipeline, deploy, frontend, multi-tenant SaaS, data isolation, human-in-loop AI) | ✅ |
+| 7 | Recipe Management (edit/delete) | ✅ |
+| 8 | Workspace Switching | ✅ |
+| 9 | Workspace Invite Links | ✅ |
+| 10 | Multi-Platform Scraping (YT + TikTok) | ✅ |
+| 11 | Ingredient Measurements (amount+unit) | ✅ |
 
-- Phase 7 added: Recipe Management (edit + delete recipes, API + state, no CSS)
-- Phase 8 added: Workspace Switching (join code, leave, sole-member deletion, no CSS)
-- Phase 9 PIVOTED 2026-03-13: replaced Gallery Filters with Workspace Invite Links (URL invite flow, /invite route, WhatsApp share, post-login auto-join)
-- Phase 10 RENAMED + EXPANDED 2026-03-14: was "Gallery Filters" (minor URL search-params refactor done inline); became "Multi-Platform Media Scraping" — YouTube transcript, TikTok RapidAPI, short-link resolution, frontend URL detection, multi-platform preview embeds
-- Phase 11 (upcoming): Ingredient quantities — structured quantity/unit data model
+### Post-v1.1 work (Mar 14 → Jun 22, not phase-tracked)
 
-### Pending Todos
+- Removed Apify scraper; fixed delete route
+- Fixed double-slash API URL; TikTok 403 fix (browser headers, 502 on upstream fail)
+- Vercel proxy for TikTok (bypass RapidAPI IP block)
+- Express 5 path-to-regexp: wildcard `*` → `/.*/`
+- PWA install prompt (platform-specific)
+- **RLS hardening (current branch):** RLS enabled on `ingredients`, `workspaces`, `workspace_users`; workspace create/join/leave/count moved to `private` schema SECURITY DEFINER fns with public SECURITY INVOKER wrappers; `is_workspace_member` helper in `private`
 
-None.
+## Data model
 
-### Blockers/Concerns
+Tables (`supabase/migrations/`):
+- `recipes` — core; unique `instagram_url`; workspace-scoped; +dimensions, +`thumbnail_url`
+- `ingredients` — global catalog, unique lowercase Hebrew `name`
+- `recipe_ingredients` — junction, +`amount` +`unit` (phase 11)
+- `workspaces` — +`invite_code` (unique partial index)
+- `workspace_users` — membership + role
+- `workspace_ingredient_checks` — per-workspace checkbox state
 
-None.
+**RLS posture:** all enabled. Reads gated by `private.is_workspace_member()`. Workspace
+mutations only via SECURITY DEFINER RPCs in `private`, exposed through INVOKER wrappers
+in `public` (browser has no direct write to workspace tables). Server uses service_role key.
 
-## Session Continuity
+## API surface
 
-Last session: 2026-03-14T09:48:11.533Z
-Stopped at: Completed 11-04 — ingredientLines dynamic list in RecipeReviewScreen
-Resume file: None
+All in `server/src/routes/recipe.js`, mounted `/api`:
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET | `/health` | health (index.js) |
+| POST | `/api/process-recipe` | one-shot scrape+extract+save |
+| POST | `/api/extract-recipe` | step 1: scrape+AI, no write |
+| POST | `/api/confirm-recipe` | step 2: save edited recipe |
+| PUT | `/api/recipes/:id` | update |
+| DELETE | `/api/recipes/:id` | delete (cascade) |
+
+## Watch / debt
+
+- **Enum drift:** `ALLOWED_CATEGORIES/CUISINES/DIETARY_TAGS/MEAL_TYPES` defined in `moonshot.js`, duplicated in client `RecipeReviewScreen.jsx`. Keep in sync.
+- `DIFFICULTY_MAP` duplicated in `RecipeGallery.jsx` + `RecipeModal.jsx`.
+- `PROJECT.md` is stale (Apify, Mar-7 milestone text) — refresh if it's still used.
+- `.planning/phases/*` are GSD-era artifacts; kept as history, not live process.
+
+## Open / next
+
+None tracked. Finish RLS advisor branch → PR.
