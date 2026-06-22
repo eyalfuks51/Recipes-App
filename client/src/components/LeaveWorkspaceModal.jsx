@@ -2,17 +2,25 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase.js';
 import { useWorkspace } from '../lib/workspace.jsx';
 import { getWorkspaceMemberCount, leaveWorkspace } from '../lib/workspaceApi.js';
+import './RecipeLibraryMenu.scss';
 
 export function LeaveWorkspaceModal({ isOpen, onClose, workspace }) {
-  const { refreshWorkspaces } = useWorkspace();
+  const { refreshWorkspaces, workspaces } = useWorkspace();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isSoleMember, setIsSoleMember] = useState(null);
   const [checked, setChecked] = useState(false);
 
-  // Run sole-member check when modal opens
+  const isOnlyLibrary = workspaces.length <= 1;
+
   useEffect(() => {
     if (!isOpen || !workspace?.id) return;
+
+    if (isOnlyLibrary) {
+      setIsSoleMember(null);
+      setChecked(true);
+      return;
+    }
 
     let cancelled = false;
 
@@ -37,9 +45,8 @@ export function LeaveWorkspaceModal({ isOpen, onClose, workspace }) {
     return () => {
       cancelled = true;
     };
-  }, [isOpen, workspace?.id]);
+  }, [isOpen, isOnlyLibrary, workspace?.id]);
 
-  // Reset state when modal closes
   useEffect(() => {
     if (!isOpen) {
       setIsSoleMember(null);
@@ -51,11 +58,9 @@ export function LeaveWorkspaceModal({ isOpen, onClose, workspace }) {
 
   if (!isOpen || !workspace) return null;
 
-  const handleCancel = () => {
-    onClose();
-  };
-
   const handleConfirmLeave = async () => {
+    if (isOnlyLibrary) return;
+
     setLoading(true);
     setError(null);
 
@@ -70,87 +75,53 @@ export function LeaveWorkspaceModal({ isOpen, onClose, workspace }) {
   };
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0,0,0,0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-      }}
-    >
-      <div
-        style={{
-          background: '#fff',
-          borderRadius: '12px',
-          padding: '24px',
-          minWidth: '320px',
-          maxWidth: '420px',
-          width: '100%',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
-        }}
-      >
-        <h2 style={{ margin: '0 0 8px', fontSize: '1.25rem', fontWeight: 600 }}>Leave Workspace</h2>
-
-        <p style={{ margin: '0 0 16px', fontWeight: 500, color: '#1a202c' }}>{workspace.name}</p>
+    <div className="library-modal-overlay" onClick={onClose}>
+      <div className="library-modal" onClick={(e) => e.stopPropagation()} dir="rtl">
+        <h2 className="library-modal__title">עזיבת הספרייה</h2>
+        <p className="library-modal__copy">
+          <strong>{workspace.name}</strong>
+        </p>
 
         {!checked && (
-          <p style={{ color: '#718096', fontSize: '0.875rem', margin: '0 0 16px' }}>Checking…</p>
+          <p className="library-modal__copy">בודקים את מצב הספרייה...</p>
         )}
 
-        {checked && isSoleMember && (
-          <p style={{ color: '#c53030', fontSize: '0.875rem', margin: '0 0 16px', lineHeight: 1.5 }}>
-            You are the only member.{' '}
-            <strong>This workspace and all its recipes will be permanently deleted.</strong>{' '}
-            This cannot be undone.
+        {checked && isOnlyLibrary && (
+          <p className="library-modal__warning">
+            זו הספרייה היחידה שלך. לפני עזיבה צריך ליצור או להצטרף לספרייה אחרת.
           </p>
         )}
 
-        {checked && !isSoleMember && (
-          <p style={{ color: '#4a5568', fontSize: '0.875rem', margin: '0 0 16px', lineHeight: 1.5 }}>
-            You will leave this workspace. You can rejoin with the invite code.
+        {checked && !isOnlyLibrary && isSoleMember && (
+          <p className="library-modal__warning">
+            לא זיהינו חברים נוספים בספרייה הזו. אחרי העזיבה לא תוכלו לגשת אליה מתוך החשבון הזה.
           </p>
         )}
 
-        {error && (
-          <p style={{ color: '#e53e3e', fontSize: '0.875rem', margin: '0 0 12px' }}>{error}</p>
+        {checked && !isOnlyLibrary && !isSoleMember && (
+          <p className="library-modal__copy">
+            תצאו מהספרייה הזו. תוכלו להצטרף שוב עם קישור הזמנה.
+          </p>
         )}
 
-        <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+        {error && <p className="library-modal__error">{error}</p>}
+
+        <div className="library-modal__actions">
           <button
             type="button"
-            onClick={handleCancel}
+            className="library-modal__button library-modal__button--ghost"
+            onClick={onClose}
             disabled={loading}
-            style={{
-              padding: '8px 16px',
-              borderRadius: '6px',
-              border: '1px solid #cbd5e0',
-              background: '#fff',
-              cursor: 'pointer',
-              fontSize: '0.875rem',
-            }}
           >
-            Cancel
+            ביטול
           </button>
           <button
             type="button"
+            className="library-modal__button library-modal__button--danger"
             onClick={handleConfirmLeave}
-            disabled={loading || !checked}
-            style={{
-              padding: '8px 16px',
-              borderRadius: '6px',
-              border: 'none',
-              background: '#e53e3e',
-              color: '#fff',
-              cursor: loading || !checked ? 'not-allowed' : 'pointer',
-              fontSize: '0.875rem',
-              fontWeight: 500,
-              opacity: loading || !checked ? 0.6 : 1,
-            }}
+            disabled={loading || !checked || isOnlyLibrary}
           >
-            {loading ? 'Leaving…' : 'Confirm Leave'}
+            {isOnlyLibrary ? 'צריך ספרייה נוספת קודם' : loading ? 'עוזב...' : 'עזיבת הספרייה'}
           </button>
         </div>
       </div>

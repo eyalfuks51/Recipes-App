@@ -15,10 +15,9 @@ export function InviteHandler() {
 
   const code = searchParams.get('code')?.trim().toUpperCase() ?? '';
 
-  // Unauthenticated flow - save code and trigger OAuth
   useEffect(() => {
     if (authLoading) return;
-    if (user) return; // handled by confirmation modal
+    if (user) return;
 
     if (!code) {
       navigate('/');
@@ -31,16 +30,15 @@ export function InviteHandler() {
       provider: 'google',
       options: { redirectTo: window.location.href },
     });
-  }, [authLoading, user, code]);
+  }, [authLoading, user, code, navigate]);
 
-  // Authenticated edge case - no code in URL
   useEffect(() => {
     if (authLoading) return;
     if (!user) return;
     if (!code) {
       navigate('/');
     }
-  }, [authLoading, user, code]);
+  }, [authLoading, user, code, navigate]);
 
   const handleJoin = async () => {
     setJoining(true);
@@ -50,7 +48,7 @@ export function InviteHandler() {
       await joinWorkspaceByInvite(supabase, code);
       navigate('/');
     } catch (err) {
-      setError(err.message || 'לא נמצאה סביבת עבודה עם הקוד הזה');
+      setError(err.message || 'לא נמצאה ספרייה עם הקוד הזה');
       setJoining(false);
     }
   };
@@ -59,7 +57,6 @@ export function InviteHandler() {
     navigate('/');
   };
 
-  // Auth loading
   if (authLoading) {
     return (
       <div className="auth-loading">
@@ -68,19 +65,16 @@ export function InviteHandler() {
     );
   }
 
-  // Unauthenticated - redirecting to OAuth
   if (!user) {
     return (
-      <div style={{ padding: '40px', textAlign: 'center' }}>מעביר לדף ההתחברות…</div>
+      <div style={{ padding: '40px', textAlign: 'center' }}>מעביר לדף ההתחברות...</div>
     );
   }
 
-  // No code in URL - useEffect will navigate('/') but render nothing in the meantime
   if (!code) {
     return null;
   }
 
-  // Authenticated - confirmation modal
   return (
     <div
       style={{
@@ -113,11 +107,11 @@ export function InviteHandler() {
             color: '#1a202c',
           }}
         >
-          הוזמנת להצטרף לסביבת עבודה
+          הוזמנת להצטרף לספריית מתכונים
         </h2>
 
         <p style={{ margin: '0 0 24px', color: '#4a5568', fontSize: '0.9375rem' }}>
-          האם ברצונך להצטרף?
+          להצטרף לספרייה הזו?
         </p>
 
         {error && (
@@ -147,7 +141,7 @@ export function InviteHandler() {
               fontSize: '0.9375rem',
             }}
           >
-            {joining ? 'מצטרף…' : 'הצטרף/י'}
+            {joining ? 'מצטרף...' : 'הצטרפות'}
           </button>
 
           <button

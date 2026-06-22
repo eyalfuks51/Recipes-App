@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, useSearchParams } from 'react-router-dom';
 import { AuthProvider, useAuth } from './lib/auth.jsx';
 import { WorkspaceProvider, useWorkspace } from './lib/workspace.jsx';
@@ -9,255 +9,15 @@ import { AuthGate } from './components/AuthGate';
 import { WorkspaceOnboarding } from './components/WorkspaceOnboarding.jsx';
 import { SubmitForm } from './components/SubmitForm';
 import { RecipeGallery } from './components/RecipeGallery';
-// import { QuickFilterPills } from './components/QuickFilterPills';
 import { FilterBottomSheet } from './components/FilterBottomSheet';
-import { LeaveWorkspaceModal } from './components/LeaveWorkspaceModal.jsx';
+import { RecipeLibraryMenu } from './components/RecipeLibraryMenu.jsx';
 import { PwaInstallPrompt, PwaInstallManual, usePwaInstall } from './components/PwaInstallPrompt.jsx';
-
-function WorkspaceSwitcher({ pwa }) {
-  const { workspaces, activeWorkspace, setActiveWorkspace } = useWorkspace();
-  const [open, setOpen] = useState(false);
-  const [leaveOpen, setLeaveOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const ref = useRef(null);
-
-  useEffect(() => {
-    if (!open) return;
-
-    const handleMouseDown = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) {
-        setOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleMouseDown);
-    return () => document.removeEventListener('mousedown', handleMouseDown);
-  }, [open]);
-
-  if (workspaces.length === 0) return null;
-
-  const handleSelect = (id) => {
-    setActiveWorkspace(id);
-    setOpen(false);
-  };
-
-  const handleCopyLink = () => {
-    if (!activeWorkspace?.invite_code) return;
-    const url = `${window.location.origin}/invite?code=${activeWorkspace.invite_code}`;
-
-    const doCopy = () => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    };
-
-    if (navigator.clipboard?.writeText) {
-      navigator.clipboard.writeText(url).then(doCopy).catch(() => {
-        // fallback if clipboard API rejected
-        const el = document.createElement('textarea');
-        el.value = url;
-        el.style.position = 'fixed';
-        el.style.opacity = '0';
-        document.body.appendChild(el);
-        el.select();
-        document.execCommand('copy');
-        document.body.removeChild(el);
-        doCopy();
-      });
-    } else {
-      // fallback for non-HTTPS or unsupported browsers
-      const el = document.createElement('textarea');
-      el.value = url;
-      el.style.position = 'fixed';
-      el.style.opacity = '0';
-      document.body.appendChild(el);
-      el.select();
-      document.execCommand('copy');
-      document.body.removeChild(el);
-      doCopy();
-    }
-  };
-
-  const handleWhatsApp = () => {
-    if (activeWorkspace?.invite_code) {
-      const url = `${window.location.origin}/invite?code=${activeWorkspace.invite_code}`;
-      const text = encodeURIComponent(`הצטרפ/י לסביבת העבודה שלי ב-Re-smash:\n${url}`);
-      window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener,noreferrer');
-    }
-  };
-
-  return (
-    <div
-      className="workspace-switcher"
-      ref={ref}
-      style={{ position: 'relative', display: 'inline-block' }}
-    >
-      <button
-        className="workspace-switcher__trigger"
-        onClick={() => setOpen((v) => !v)}
-        style={{
-          padding: '6px 12px',
-          borderRadius: '6px',
-          border: '1px solid rgba(255,255,255,0.25)',
-          background: 'rgba(255,255,255,0.1)',
-          color: 'inherit',
-          cursor: 'pointer',
-          fontSize: '0.875rem',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '6px',
-        }}
-      >
-        {activeWorkspace?.name ?? 'Loading\u2026'}
-        <span style={{ fontSize: '0.7rem', opacity: 0.7 }}>{open ? '\u25B2' : '\u25BC'}</span>
-      </button>
-
-      {open && (
-        <div
-          className="workspace-switcher__dropdown"
-          style={{
-            position: 'absolute',
-            top: 'calc(100% + 6px)',
-            right: 0,
-            minWidth: '180px',
-            background: '#fff',
-            border: '1px solid #e2e8f0',
-            borderRadius: '8px',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
-            zIndex: 100,
-            overflow: 'hidden',
-          }}
-        >
-          {workspaces.map((ws) => {
-            const isActive = ws.id === activeWorkspace?.id;
-            return (
-              <button
-                key={ws.id}
-                aria-current={isActive ? 'true' : undefined}
-                className={`workspace-switcher__option${isActive ? ' workspace-switcher__option--active' : ''}`}
-                onClick={() => handleSelect(ws.id)}
-                style={{
-                  display: 'block',
-                  width: '100%',
-                  textAlign: 'right',
-                  padding: '10px 14px',
-                  border: 'none',
-                  background: isActive ? '#fff0ec' : 'transparent',
-                  color: isActive ? '#e85d3e' : '#1a202c',
-                  cursor: 'pointer',
-                  fontSize: '0.875rem',
-                  fontWeight: isActive ? 600 : 400,
-                }}
-              >
-                {isActive && (
-                  <span style={{ marginLeft: '6px', fontSize: '0.75rem' }}>\u2713</span>
-                )}
-                {ws.name}
-              </button>
-            );
-          })}
-
-          {activeWorkspace?.invite_code && (
-            <div
-              style={{
-                padding: '10px 14px',
-                borderTop: '1px solid #e2e8f0',
-                fontSize: '0.75rem',
-                color: '#4a5568',
-              }}
-            >
-              <div style={{ marginBottom: '8px', fontWeight: 500 }}>קישור הזמנה</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <button
-                  onClick={handleCopyLink}
-                  title="העתק קישור הזמנה"
-                  style={{
-                    flexGrow: 1,
-                    border: `1px solid ${copied ? '#38a169' : '#cbd5e0'}`,
-                    borderRadius: '4px',
-                    background: copied ? '#f0fff4' : '#fff',
-                    color: copied ? '#38a169' : 'inherit',
-                    padding: '4px 8px',
-                    cursor: 'pointer',
-                    fontSize: '0.75rem',
-                    textAlign: 'center',
-                    transition: 'all 0.2s',
-                  }}
-                >
-                  {copied ? '✓ הועתק' : 'העתק קישור הזמנה'}
-                </button>
-                <button
-                  onClick={handleWhatsApp}
-                  title="שתף בוואטסאפ"
-                  style={{
-                    border: '1px solid #25D366',
-                    borderRadius: '4px',
-                    background: '#25D366',
-                    color: '#fff',
-                    padding: '4px 8px',
-                    cursor: 'pointer',
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
-                    flexShrink: 0,
-                  }}
-                >
-                  WA
-                </button>
-              </div>
-            </div>
-          )}
-
-          {pwa.canInstall && (
-            <div style={{ borderTop: '1px solid #e2e8f0' }}>
-              <button
-                className="pwa-menu-install"
-                onClick={() => { setOpen(false); pwa.openManual(); }}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                  <polyline points="7 10 12 15 17 10"/>
-                  <line x1="12" y1="15" x2="12" y2="3"/>
-                </svg>
-                התקן אפליקציה
-              </button>
-            </div>
-          )}
-
-          <div style={{ borderTop: '1px solid #e2e8f0' }}>
-            <button
-              onClick={() => { setOpen(false); setLeaveOpen(true); }}
-              style={{
-                display: 'block',
-                width: '100%',
-                textAlign: 'left',
-                padding: '10px 14px',
-                border: 'none',
-                background: 'transparent',
-                color: '#e53e3e',
-                cursor: 'pointer',
-                fontSize: '0.875rem',
-              }}
-            >
-              Leave Workspace
-            </button>
-          </div>
-        </div>
-      )}
-
-      <LeaveWorkspaceModal
-        isOpen={leaveOpen}
-        onClose={() => setLeaveOpen(false)}
-        workspace={activeWorkspace}
-      />
-    </div>
-  );
-}
 
 function AppContent() {
   const [refreshCount, setRefreshCount] = useState(0);
   const { user, signOut } = useAuth();
   const pwa = usePwaInstall();
 
-  // ── Filter state (URL-backed) ──────────────────────────────────────
   const [searchParams, setSearchParams] = useSearchParams();
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
 
@@ -303,29 +63,31 @@ function AppContent() {
 
   return (
     <div className="app">
-      {/* ── Header ─────────────────────────────────────────────────────── */}
       <header className="site-header">
         <div className="site-header__inner">
           <div className="brand">
             <span className="brand__name">Re-smash</span>
           </div>
-          <WorkspaceSwitcher pwa={pwa} />
+
+          <RecipeLibraryMenu pwa={pwa} />
+
           {user && (
-            <button className="btn-signout" onClick={signOut}>
-              התנתקות!
-            </button>
+            <button
+              className="btn-signout btn-signout--icon"
+              onClick={signOut}
+              aria-label="התנתקות"
+              title="התנתקות"
+            />
           )}
         </div>
       </header>
 
-      {/* ── Hero / Submit ──────────────────────────────────────────────── */}
       <section className="hero" aria-label="Submit a recipe">
         <div className="hero__inner">
           <SubmitForm onSuccess={handleSuccess} />
         </div>
       </section>
 
-      {/* ── Gallery ────────────────────────────────────────────────────── */}
       <main className="content" aria-label="Recipe gallery">
         <div className="content__inner">
           <RecipeGallery
@@ -339,7 +101,6 @@ function AppContent() {
         </div>
       </main>
 
-      {/* ── Filter Bottom Sheet ───────────────────────────────────────── */}
       <FilterBottomSheet
         isOpen={filterSheetOpen}
         onClose={() => setFilterSheetOpen(false)}
@@ -348,7 +109,6 @@ function AppContent() {
         onClearAll={handleClearAllFilters}
       />
 
-      {/* ── PWA Install Prompts ────────────────────────────────────────── */}
       <PwaInstallPrompt pwa={pwa} />
       <PwaInstallManual pwa={pwa} />
     </div>
@@ -365,7 +125,7 @@ function WorkspaceGate() {
     if (!code) return;
 
     const autoJoin = async () => {
-      localStorage.removeItem('pendingInviteCode'); // clear early to prevent double-join
+      localStorage.removeItem('pendingInviteCode');
       const trimmedCode = code.trim().toUpperCase();
 
       try {
@@ -374,7 +134,6 @@ function WorkspaceGate() {
         setActiveWorkspace(ws.id);
       } catch (err) {
         console.warn('pendingInviteCode: join failed', err.message);
-        return;
       }
     };
 

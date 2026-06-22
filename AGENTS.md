@@ -1,4 +1,4 @@
-# Claude Instructions
+# Codex Instructions
 
 ## 1. Git Workflow (Strict — applies to all developers)
 

@@ -1,5 +1,8 @@
 import { describe, it, mock } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import {
   createWorkspace,
@@ -7,6 +10,12 @@ import {
   joinWorkspaceByInvite,
   leaveWorkspace,
 } from './workspaceApi.js';
+import {
+  buildInviteUrl,
+  buildWhatsAppInviteUrl,
+} from './recipeLibraryMenu.js';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 function makeRpcClient(response) {
   const calls = [];
@@ -73,5 +82,40 @@ describe('workspaceApi', () => {
       () => joinWorkspaceByInvite(client, 'ABC123'),
       /Not allowed/
     );
+  });
+
+  it('builds invite and WhatsApp share links for recipe libraries', () => {
+    const inviteUrl = buildInviteUrl('https://app.example.com', 'abc123');
+    const whatsAppUrl = buildWhatsAppInviteUrl('https://app.example.com', 'abc123');
+
+    assert.equal(inviteUrl, 'https://app.example.com/invite?code=ABC123');
+    assert.match(decodeURIComponent(whatsAppUrl), /הצטרפו לספריית המתכונים שלי ב-Re-smash/);
+    assert.match(decodeURIComponent(whatsAppUrl), /https:\/\/app\.example\.com\/invite\?code=ABC123/);
+  });
+
+  it('keeps the recipe library menu comfortable on mobile viewports', () => {
+    const menuCss = readFileSync(resolve(__dirname, '../components/RecipeLibraryMenu.scss'), 'utf8');
+    const menuComponent = readFileSync(resolve(__dirname, '../components/RecipeLibraryMenu.jsx'), 'utf8');
+    const shellCss = readFileSync(resolve(__dirname, '../styles/main.scss'), 'utf8');
+
+    assert.match(menuComponent, /import \{ createPortal \} from 'react-dom';/);
+    assert.match(menuComponent, /createPortal\(menuLayer, document\.body\)/);
+    assert.match(menuCss, /max-height:\s*calc\(100dvh - 12px\)/);
+    assert.match(menuCss, /overscroll-behavior:\s*contain/);
+    assert.match(menuCss, /min-height:\s*52px/);
+    assert.match(menuCss, /\.library-modal__actions[\s\S]*flex-direction:\s*column-reverse/);
+    assert.match(shellCss, /grid-template-areas:\s*'brand signout'[\s\S]*'library library'/);
+  });
+
+  it('renders recipe thumbnails directly in the recipe gallery cards', () => {
+    const galleryComponent = readFileSync(resolve(__dirname, '../components/RecipeGallery.jsx'), 'utf8');
+    const galleryCss = readFileSync(resolve(__dirname, '../components/RecipeGallery.scss'), 'utf8');
+
+    assert.match(galleryComponent, /recipe\.thumbnail_url/);
+    assert.match(galleryComponent, /className="card-media"/);
+    assert.match(galleryComponent, /className="card-thumbnail"/);
+    assert.match(galleryCss, /\.recipe-card--with-media/);
+    assert.match(galleryCss, /\.card-media[\s\S]*aspect-ratio:\s*16 \/ 10/);
+    assert.match(galleryCss, /\.card-thumbnail[\s\S]*object-fit:\s*cover/);
   });
 });

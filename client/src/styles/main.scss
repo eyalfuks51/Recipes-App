@@ -185,6 +185,7 @@ small, .text-muted {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.75rem;
 }
 
 .brand {
@@ -192,6 +193,7 @@ small, .text-muted {
   align-items: center;
   gap: 0.625rem;
   color: var(--color-text);
+  flex: 0 0 auto;
 }
 
 .brand__name {
@@ -231,6 +233,37 @@ small, .text-muted {
 
 // ─── Responsive ───────────────────────────────────────────────────────────────
 @media (max-width: 640px) {
+  .site-header__inner {
+    min-height: 104px;
+    height: auto;
+    padding: 0.625rem 1rem 0.75rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 44px;
+    grid-template-areas:
+      'brand signout'
+      'library library';
+    gap: 0.5rem 0.75rem;
+    align-items: center;
+  }
+
+  .site-header__inner > .brand {
+    grid-area: brand;
+    min-width: 0;
+  }
+
+  .site-header__inner > .recipe-library-menu {
+    grid-area: library;
+  }
+
+  .site-header__inner > .btn-signout {
+    grid-area: signout;
+    justify-self: end;
+  }
+
+  .brand__name {
+    font-size: 1.25rem;
+  }
+
   .hero {
     padding: 3rem 1.25rem 3.5rem;
   }

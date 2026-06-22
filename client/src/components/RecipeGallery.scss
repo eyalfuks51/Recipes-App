@@ -54,10 +54,15 @@
 // ─── Recipe Grid ──────────────────────────────────────────────────────────────
 .recipe-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 1rem;
 
-  @media (max-width: 480px) {
+  @media (max-width: 640px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  @media (max-width: 340px) {
     grid-template-columns: 1fr;
   }
 }
@@ -93,6 +98,17 @@
   }
 }
 
+.recipe-card--with-media {
+  padding: 0;
+  overflow: hidden;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--color-surface) 88%, var(--color-bg));
+
+  &:hover .card-thumbnail {
+    transform: scale(1.025);
+  }
+}
+
 @keyframes cardEntry {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
@@ -116,6 +132,41 @@
   min-height: 22px;
 }
 
+.card-media {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--color-primary-light) 70%, var(--color-surface));
+}
+
+.card-thumbnail {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-media-top {
+  position: absolute;
+  inset: 0.625rem 0.625rem auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  pointer-events: none;
+
+  .card-category,
+  .card-delete-control {
+    pointer-events: auto;
+  }
+}
+
+.card-delete-control {
+  position: relative;
+  display: inline-flex;
+}
+
 .card-trash {
   display: flex;
   align-items: center;
@@ -124,7 +175,7 @@
   height: 28px;
   border: none;
   border-radius: var(--radius-sm);
-  background: transparent;
+  background: color-mix(in srgb, var(--color-surface) 88%, transparent);
   cursor: pointer;
   transition: background var(--transition-fast), filter var(--transition-fast);
   img {
@@ -134,7 +185,7 @@
 
   &:hover,
   &:active {
-    background: transparent;
+    background: var(--color-surface);
 
     img {
       opacity: 1;
@@ -357,4 +408,126 @@
   border: 1px solid var(--color-error-border);
   border-radius: var(--radius-md);
   padding: 0.875rem 1.125rem;
+}
+
+// Visual recipe cards with saved thumbnails
+.card-category--media {
+  box-shadow: var(--shadow-xs);
+  background: color-mix(in srgb, var(--color-surface) 90%, var(--color-primary-light));
+}
+
+.card-body {
+  padding: 0.875rem 1rem 1rem;
+}
+
+.card-meta {
+  min-height: 26px;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.card-duration {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0.2rem 0.625rem;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--color-text) 8%, var(--color-surface));
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.card-source {
+  width: 26px;
+  height: 26px;
+  margin-inline-start: auto;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 9px;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+
+  svg {
+    width: 15px;
+    height: 15px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
+.card-source--youtube {
+  background: color-mix(in srgb, var(--color-error-bg) 78%, var(--color-surface));
+  color: var(--color-error);
+
+  svg path {
+    fill: currentColor;
+    stroke: none;
+  }
+}
+
+.card-source--tiktok {
+  background: color-mix(in srgb, var(--color-text) 8%, var(--color-surface));
+  color: var(--color-text);
+
+  svg path {
+    fill: currentColor;
+    stroke: none;
+  }
+}
+
+.skeleton-media {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--color-border) 25%,
+    color-mix(in srgb, var(--color-border) 55%, var(--color-surface)) 50%,
+    var(--color-border) 75%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+@media (max-width: 640px) {
+  .recipe-card {
+    border-radius: 16px;
+  }
+
+  .recipe-card:not(.recipe-card--with-media) {
+    padding: 1rem;
+  }
+
+  .card-body {
+    padding: 0.75rem 0.75rem 0.875rem;
+  }
+
+  .card-title {
+    font-size: 0.875rem;
+    line-height: 1.35;
+    margin-bottom: 0.5rem;
+  }
+
+  .card-category {
+    padding: 0.15rem 0.5rem;
+    font-size: 0.6875rem;
+  }
+
+  .card-difficulty,
+  .card-duration {
+    font-size: 0.75rem;
+    padding-inline: 0.5rem;
+  }
+
+  .card-source {
+    width: 24px;
+    height: 24px;
+    border-radius: 8px;
+  }
 }

@@ -190,3 +190,45 @@
     background: var(--color-surface, #f9fafb);
   }
 }
+
+.btn-signout--icon {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: var(--radius-full, 999px);
+  color: var(--color-text-muted, #78716c);
+  font-size: 0;
+
+  &::before,
+  &::after {
+    content: '';
+    display: block;
+    position: absolute;
+  }
+
+  &::before {
+    width: 15px;
+    height: 14px;
+    border: 1.8px solid currentColor;
+    border-left: 0;
+    border-radius: 2px;
+    transform: translateX(1px);
+  }
+
+  &::after {
+    width: 8px;
+    height: 8px;
+    border-top: 1.8px solid currentColor;
+    border-right: 1.8px solid currentColor;
+    transform: translateX(-5px) rotate(45deg);
+  }
+
+  &:hover {
+    color: var(--color-text, #1c1917);
+    background: var(--color-surface, #f9fafb);
+  }
+}

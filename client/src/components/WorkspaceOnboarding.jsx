@@ -20,7 +20,7 @@ export function WorkspaceOnboarding({ onComplete }) {
     e.preventDefault();
     const trimmedName = name.trim();
     if (!trimmedName || trimmedName.length < 2 || trimmedName.length > 50) {
-      setError('Workspace name must be between 2 and 50 characters.');
+      setError('שם הספרייה צריך להיות בין 2 ל-50 תווים.');
       return;
     }
     setLoading(true);
@@ -40,7 +40,7 @@ export function WorkspaceOnboarding({ onComplete }) {
     e.preventDefault();
     const trimmedCode = code.trim().toUpperCase();
     if (!trimmedCode) {
-      setError('Please enter an invite code.');
+      setError('צריך להזין קוד הזמנה.');
       return;
     }
     setLoading(true);
@@ -51,7 +51,7 @@ export function WorkspaceOnboarding({ onComplete }) {
       setActiveWorkspace(ws.id);
       onComplete();
     } catch (err) {
-      setError(err.message || 'No workspace found with that code.');
+      setError(err.message || 'לא נמצאה ספרייה עם הקוד הזה.');
       setLoading(false);
     }
   }
@@ -64,8 +64,8 @@ export function WorkspaceOnboarding({ onComplete }) {
   return (
     <div className="auth-gate">
       <div className="auth-card onboarding-card">
-        <h1>Recipe Manager</h1>
-        <p>You need a workspace to get started. Create a new one or join an existing one.</p>
+        <h1>Re-smash</h1>
+        <p>כדי להתחיל, צרו ספריית מתכונים או הצטרפו לספרייה קיימת.</p>
 
         <div className="onboarding-tabs">
           <button
@@ -73,14 +73,14 @@ export function WorkspaceOnboarding({ onComplete }) {
             className={`onboarding-tab-btn${activeTab === 'create' ? ' onboarding-tab-btn--active' : ''}`}
             onClick={() => handleTabSwitch('create')}
           >
-            Create workspace
+            יצירת ספרייה
           </button>
           <button
             type="button"
             className={`onboarding-tab-btn${activeTab === 'join' ? ' onboarding-tab-btn--active' : ''}`}
             onClick={() => handleTabSwitch('join')}
           >
-            Join workspace
+            הצטרפות לספרייה
           </button>
         </div>
 
@@ -89,7 +89,7 @@ export function WorkspaceOnboarding({ onComplete }) {
             <input
               className="onboarding-input"
               type="text"
-              placeholder="Workspace name"
+              placeholder="שם הספרייה"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
@@ -99,7 +99,7 @@ export function WorkspaceOnboarding({ onComplete }) {
             />
             {error && <p className="onboarding-error">{error}</p>}
             <button type="submit" className="btn-google" disabled={loading}>
-              {loading ? 'Creating…' : 'Create Workspace'}
+              {loading ? 'יוצר...' : 'יצירת ספרייה'}
             </button>
           </form>
         )}
@@ -109,7 +109,7 @@ export function WorkspaceOnboarding({ onComplete }) {
             <input
               className="onboarding-input"
               type="text"
-              placeholder="6-character invite code"
+              placeholder="קוד הזמנה"
               value={code}
               onChange={(e) => setCode(e.target.value.toUpperCase())}
               maxLength={6}
@@ -118,7 +118,7 @@ export function WorkspaceOnboarding({ onComplete }) {
             />
             {error && <p className="onboarding-error">{error}</p>}
             <button type="submit" className="btn-google" disabled={loading}>
-              {loading ? 'Joining…' : 'Join Workspace'}
+              {loading ? 'מצטרף...' : 'הצטרפות לספרייה'}
             </button>
           </form>
         )}

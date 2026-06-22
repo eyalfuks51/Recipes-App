@@ -1,29 +1,30 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase.js';
 import { useWorkspace } from '../lib/workspace.jsx';
-import { joinWorkspaceByInvite } from '../lib/workspaceApi.js';
+import { createWorkspace } from '../lib/workspaceApi.js';
 import './RecipeLibraryMenu.scss';
 
-export function JoinWorkspaceModal({ isOpen, onClose }) {
+export function CreateLibraryModal({ isOpen, onClose }) {
   const { refreshWorkspaces, setActiveWorkspace } = useWorkspace();
-  const [code, setCode] = useState('');
+  const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   if (!isOpen) return null;
 
   const handleCancel = () => {
-    setCode('');
+    setName('');
     setError(null);
     setLoading(false);
     onClose();
   };
 
-  const handleJoin = async (e) => {
+  const handleCreate = async (e) => {
     e.preventDefault();
-    const trimmedCode = code.trim().toUpperCase();
-    if (!trimmedCode) {
-      setError('צריך להזין קוד הזמנה.');
+    const trimmedName = name.trim();
+
+    if (!trimmedName || trimmedName.length < 2 || trimmedName.length > 50) {
+      setError('שם הספרייה צריך להיות בין 2 ל-50 תווים.');
       return;
     }
 
@@ -31,14 +32,13 @@ export function JoinWorkspaceModal({ isOpen, onClose }) {
     setError(null);
 
     try {
-      const library = await joinWorkspaceByInvite(supabase, trimmedCode);
+      const library = await createWorkspace(supabase, trimmedName);
       await refreshWorkspaces();
       setActiveWorkspace(library.id);
-      setCode('');
-      setError(null);
+      setName('');
       onClose();
     } catch (err) {
-      setError(err.message || 'לא נמצאה ספרייה עם הקוד הזה.');
+      setError(err.message || 'לא הצלחנו ליצור ספרייה חדשה.');
       setLoading(false);
     }
   };
@@ -46,17 +46,18 @@ export function JoinWorkspaceModal({ isOpen, onClose }) {
   return (
     <div className="library-modal-overlay" onClick={handleCancel}>
       <div className="library-modal" onClick={(e) => e.stopPropagation()} dir="rtl">
-        <h2 className="library-modal__title">הצטרפות לספרייה</h2>
-        <p className="library-modal__copy">הזינו את קוד ההזמנה שקיבלתם כדי להצטרף לספריית מתכונים קיימת.</p>
+        <h2 className="library-modal__title">יצירת ספרייה חדשה</h2>
+        <p className="library-modal__copy">תנו שם לספרייה שבה תרצו לשמור מתכונים.</p>
 
-        <form className="library-modal__form" onSubmit={handleJoin}>
+        <form className="library-modal__form" onSubmit={handleCreate}>
           <input
-            className="library-modal__input library-modal__input--code"
+            className="library-modal__input"
             type="text"
-            placeholder="קוד הזמנה"
-            value={code}
-            onChange={(e) => setCode(e.target.value.toUpperCase())}
-            maxLength={6}
+            placeholder="למשל: מתכונים לשישי"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            minLength={2}
+            maxLength={50}
             disabled={loading}
             autoFocus
           />
@@ -65,19 +66,19 @@ export function JoinWorkspaceModal({ isOpen, onClose }) {
 
           <div className="library-modal__actions">
             <button
-              type="button"
               className="library-modal__button library-modal__button--ghost"
+              type="button"
               onClick={handleCancel}
               disabled={loading}
             >
               ביטול
             </button>
             <button
-              type="submit"
               className="library-modal__button library-modal__button--primary"
+              type="submit"
               disabled={loading}
             >
-              {loading ? 'מצטרף...' : 'הצטרפות'}
+              {loading ? 'יוצר...' : 'יצירת ספרייה'}
             </button>
           </div>
         </form>

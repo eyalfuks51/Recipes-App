@@ -25,14 +25,61 @@ function getDifficulty(value) {
   return DIFFICULTY_MAP[value?.toLowerCase()] ?? DIFFICULTY_MAP[value] ?? { label: value || '—', color: '#78716c', bg: '#f5f5f4' };
 }
 
+function getSourceType(url) {
+  if (/(?:youtube\.com\/(?:watch|shorts|embed)|youtu\.be\/)/.test(url ?? '')) return 'youtube';
+  if (/tiktok\.com/.test(url ?? '')) return 'tiktok';
+  if (/instagram\.com/.test(url ?? '')) return 'instagram';
+  return 'source';
+}
+
+function getSourceLabel(type) {
+  return {
+    instagram: 'אינסטגרם',
+    youtube: 'יוטיוב',
+    tiktok: 'טיקטוק',
+    source: 'מקור',
+  }[type] ?? 'מקור';
+}
+
+function SourceIcon({ type }) {
+  if (type === 'youtube') {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="2" y="5" width="20" height="14" rx="4" />
+        <path d="M10 9l5 3-5 3V9Z" />
+      </svg>
+    );
+  }
+
+  if (type === 'tiktok') {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M16.5 5.2c1 .9 2.1 1.4 3.5 1.5v3a7.3 7.3 0 0 1-3.4-.9v6.2a5.7 5.7 0 1 1-5.7-5.7c.3 0 .6 0 .9.1v3.1a2.7 2.7 0 1 0 1.7 2.5V3h3v2.2Z" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="3" y="3" width="18" height="18" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17" cy="7" r="1" />
+    </svg>
+  );
+}
+
 // ─── Skeleton Card ─────────────────────────────────────────────────────────────
 function SkeletonCard() {
   return (
-    <div className="recipe-card recipe-card--skeleton" aria-hidden="true">
-      <div className="skeleton-line skeleton-line--badge" />
-      <div className="skeleton-line skeleton-line--title" />
-      <div className="skeleton-line skeleton-line--title short" />
-      <div className="skeleton-line skeleton-line--meta" />
+    <div className="recipe-card recipe-card--with-media recipe-card--skeleton" aria-hidden="true">
+      <div className="card-media">
+        <div className="skeleton-media" />
+      </div>
+      <div className="card-body">
+        <div className="skeleton-line skeleton-line--title" />
+        <div className="skeleton-line skeleton-line--title short" />
+        <div className="skeleton-line skeleton-line--meta" />
+      </div>
     </div>
   );
 }
@@ -40,6 +87,10 @@ function SkeletonCard() {
 // ─── Recipe Card ──────────────────────────────────────────────────────────────
 function RecipeCard({ recipe, onClick, onDelete }) {
   const diff = getDifficulty(recipe.difficulty);
+  const hasThumbnail = Boolean(recipe.thumbnail_url);
+  const sourceType = getSourceType(recipe.instagram_url);
+  const sourceLabel = getSourceLabel(sourceType);
+  const prepTime = Number.parseInt(recipe.prep_time, 10);
   const [deleting, setDeleting] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const confirmRef = useRef(null);
@@ -86,47 +137,76 @@ function RecipeCard({ recipe, onClick, onDelete }) {
     setConfirmingDelete(false);
   }
 
+  const deleteControl = (
+    <div className="card-delete-control" ref={confirmRef}>
+      <button
+        className="card-trash"
+        onClick={handleTrashClick}
+        disabled={deleting}
+        aria-label="מחק מתכון"
+      >
+        <img src="/icons/trash.svg" width="16" height="16" alt="" aria-hidden="true" />
+      </button>
+      {confirmingDelete && (
+        <div className="card-delete-confirm">
+          <p className="card-delete-confirm__text">למחוק את המתכון?</p>
+          <div className="card-delete-confirm__actions">
+            <button className="card-delete-confirm__cancel" onClick={handleCancelDelete}>ביטול</button>
+            <button className="card-delete-confirm__confirm" onClick={handleConfirmDelete} disabled={deleting}>מחיקה</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div
-      className="recipe-card"
+      className={hasThumbnail ? 'recipe-card recipe-card--with-media' : 'recipe-card'}
       onClick={onClick}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => e.key === 'Enter' && onClick()}
       aria-label={`Open ${recipe.title}`}
     >
-      <div className="card-header">
-        {recipe.main_category && (
-          <span className="card-category">{recipe.main_category}</span>
-        )}
-        <button
-          className="card-trash"
-          onClick={handleTrashClick}
-          disabled={deleting}
-          aria-label="מחק מתכון"
-        >
-          <img src="/icons/trash.svg" width="16" height="16" alt="" aria-hidden="true" />
-        </button>
-        {confirmingDelete && (
-          <div className="card-delete-confirm" ref={confirmRef}>
-            <p className="card-delete-confirm__text">למחוק את המתכון?</p>
-            <div className="card-delete-confirm__actions">
-              <button className="card-delete-confirm__cancel" onClick={handleCancelDelete}>ביטול</button>
-              <button className="card-delete-confirm__confirm" onClick={handleConfirmDelete} disabled={deleting}>מחיקה</button>
-            </div>
+      {hasThumbnail ? (
+        <div className="card-media">
+          <img src={recipe.thumbnail_url} alt="" className="card-thumbnail" loading="lazy" />
+          <div className="card-media-top">
+            {recipe.main_category && (
+              <span className="card-category card-category--media">{recipe.main_category}</span>
+            )}
+            {deleteControl}
           </div>
-        )}
-      </div>
-      <h3 className="card-title">{recipe.title}</h3>
-      {recipe.difficulty && (
-        <p
-          className="card-difficulty"
-          style={{ '--diff-color': diff.color, '--diff-bg': diff.bg }}
-        >
-          <span className="difficulty-dot" aria-hidden="true" />
-          {diff.label}
-        </p>
+        </div>
+      ) : (
+        <div className="card-header">
+          {recipe.main_category && (
+            <span className="card-category">{recipe.main_category}</span>
+          )}
+          {deleteControl}
+        </div>
       )}
+
+      <div className="card-body">
+        <h3 className="card-title">{recipe.title}</h3>
+        <div className="card-meta">
+          {recipe.difficulty && (
+            <p
+              className="card-difficulty"
+              style={{ '--diff-color': diff.color, '--diff-bg': diff.bg }}
+            >
+              <span className="difficulty-dot" aria-hidden="true" />
+              {diff.label}
+            </p>
+          )}
+          {Number.isFinite(prepTime) && prepTime > 0 && (
+            <span className="card-duration">{prepTime} דק׳</span>
+          )}
+          <span className={`card-source card-source--${sourceType}`} aria-label={sourceLabel} title={sourceLabel}>
+            <SourceIcon type={sourceType} />
+          </span>
+        </div>
+      </div>
     </div>
   );
 }
