@@ -116,11 +116,18 @@ recipeRouter.post('/extract-recipe', async (req, res) => {
     const isAbort = err?.name === 'AbortError' || err?.name === 'TimeoutError';
     const sourceName = sourceType === 'youtube' ? 'YouTube' : sourceType === 'tiktok' ? 'TikTok' : 'Instagram';
     const isUpstreamFailure = err?.upstreamStatus != null;
-    const message = isAbort
-      ? `${sourceName} scraping timed out — please retry in a moment.`
-      : isUpstreamFailure
-        ? `${sourceName} scraping failed: the external API returned ${err.upstreamStatus}. Please try again later.`
-        : (err?.message ?? String(err));
+    // TikTok 403 = RapidAPI/proxy is blocking us. Show a Hebrew "try later" rather
+    // than the generic upstream message. Must precede isUpstreamFailure since 403
+    // also sets upstreamStatus. (Prod proxy bypasses most 403s; this covers the
+    // local-dev direct path + any 403 the proxy forwards verbatim.)
+    const isTikTok403 = sourceType === 'tiktok' && err?.upstreamStatus === 403;
+    const message = isTikTok403
+      ? 'שירות הטיקטוק אינו זמין כרגע — נסו שוב מאוחר יותר.'
+      : isAbort
+        ? `${sourceName} scraping timed out — please retry in a moment.`
+        : isUpstreamFailure
+          ? `${sourceName} scraping failed: the external API returned ${err.upstreamStatus}. Please try again later.`
+          : (err?.message ?? String(err));
     const isUserError = message.includes('No caption found') || message.includes('No content found');
     const statusCode = isUserError ? 422 : isUpstreamFailure ? 502 : 500;
 
