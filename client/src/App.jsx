@@ -206,7 +206,7 @@ function WorkspaceSwitcher({ pwa }) {
             </div>
           )}
 
-          {!pwa.isInstalled && (
+          {pwa.canInstall && (
             <div style={{ borderTop: '1px solid #e2e8f0' }}>
               <button
                 className="pwa-menu-install"

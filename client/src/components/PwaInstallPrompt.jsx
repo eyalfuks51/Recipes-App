@@ -27,6 +27,7 @@ function detectPlatform() {
 export function usePwaInstall() {
   const [platform] = useState(detectPlatform);
   const deferredPrompt = useRef(null);
+  const [canPrompt, setCanPrompt] = useState(false);
   const [showAuto, setShowAuto] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
 
@@ -38,6 +39,7 @@ export function usePwaInstall() {
     const handler = (e) => {
       e.preventDefault();
       deferredPrompt.current = e;
+      setCanPrompt(true);
     };
     window.addEventListener('beforeinstallprompt', handler);
     return () => window.removeEventListener('beforeinstallprompt', handler);
@@ -64,14 +66,28 @@ export function usePwaInstall() {
       dismiss();
     }
     deferredPrompt.current = null;
+    setCanPrompt(false);
   }, [dismiss]);
 
   const openManual = useCallback(() => setManualOpen(true), []);
   const closeManual = useCallback(() => setManualOpen(false), []);
 
+  // Native-prompt platforms fire the OS install prompt from an effect, not during render.
+  useEffect(() => {
+    if (manualOpen && (platform === 'android' || platform === 'desktop')) {
+      triggerNativeInstall();
+      closeManual();
+    }
+  }, [manualOpen, platform, triggerNativeInstall, closeManual]);
+
+  // An install path actually exists: native prompt for android/desktop, instructions for iOS.
+  const canInstall =
+    !isInstalled && (platform === 'ios-safari' || platform === 'ios-chrome' || canPrompt);
+
   return {
     platform,
     isInstalled,
+    canInstall,
     showAuto,
     manualOpen,
     dismiss,
@@ -211,12 +227,13 @@ function IosChromeModal({ onDismiss }) {
 
 // ── Main prompt component (auto-triggered) ──────────────────────────────────
 export function PwaInstallPrompt({ pwa }) {
-  const { platform, showAuto, dismiss, triggerNativeInstall } = pwa;
+  const { platform, showAuto, canInstall, dismiss, triggerNativeInstall } = pwa;
 
   if (!showAuto) return null;
 
-  if (platform === 'android') {
-    return <AndroidBanner onInstall={triggerNativeInstall} onDismiss={dismiss} />;
+  // android/desktop: only show the native banner when a prompt is actually available.
+  if (platform === 'android' || platform === 'desktop') {
+    return canInstall ? <AndroidBanner onInstall={triggerNativeInstall} onDismiss={dismiss} /> : null;
   }
   if (platform === 'ios-safari') {
     return <IosSafariModal onDismiss={dismiss} />;
@@ -225,26 +242,16 @@ export function PwaInstallPrompt({ pwa }) {
     return <IosChromeModal onDismiss={dismiss} />;
   }
 
-  // Desktop: use Android-style banner if beforeinstallprompt is available
-  if (platform === 'desktop') {
-    return <AndroidBanner onInstall={triggerNativeInstall} onDismiss={dismiss} />;
-  }
-
   return null;
 }
 
 // ── Manual prompt (triggered from menu button) ──────────────────────────────
 export function PwaInstallManual({ pwa }) {
-  const { platform, manualOpen, closeManual, triggerNativeInstall } = pwa;
+  const { platform, manualOpen, closeManual } = pwa;
 
   if (!manualOpen) return null;
 
-  if (platform === 'android' || platform === 'desktop') {
-    // Try native prompt; if not available, show as banner briefly
-    triggerNativeInstall();
-    closeManual();
-    return null;
-  }
+  // android/desktop native prompt is fired from usePwaInstall's effect — nothing to render.
   if (platform === 'ios-safari') {
     return <IosSafariModal onDismiss={closeManual} />;
   }
