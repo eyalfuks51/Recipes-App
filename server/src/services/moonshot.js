@@ -72,6 +72,11 @@ export async function extractRecipeFromCaption(caption) {
 
   const completion = await completionsCreate({
     model: 'moonshot-v1-8k',
+    // ponytail: Moonshot defaults max_tokens to 1024 — long recipes (many
+    // ingredients + steps) truncate mid-JSON and fail to parse. 4096 fits any
+    // realistic recipe inside the 8k window. Bump to moonshot-v1-32k if a
+    // caption is ever long enough that prompt+4096 exceeds 8k.
+    max_tokens: 4096,
     messages: [
       { role: 'system', content: HEBREW_SYSTEM_PROMPT },
       { role: 'user', content: caption },

@@ -70,6 +70,21 @@ describe('extractRecipeFromCaption', () => {
     );
   });
 
+  it('requests enough max_tokens to avoid truncating long recipes', async () => {
+    const mockCreate = mock.fn(async () => ({
+      choices: [{ message: { content: '{"title":"x","ingredients":[]}' } }],
+    }));
+    global.__mockOpenAICreate = mockCreate;
+
+    const mod = await import('../services/moonshot.js?t=' + Date.now());
+    await mod.extractRecipeFromCaption('some caption');
+
+    // Moonshot defaults max_tokens to 1024 — long recipes truncate mid-JSON
+    // and fail to parse (prod 500). Guard that we raise the cap.
+    const req = mockCreate.mock.calls[0].arguments[0];
+    assert.ok(req.max_tokens >= 4096, `max_tokens must be >=4096, got ${req.max_tokens}`);
+  });
+
   it('throws when JSON is missing required fields', async () => {
     const mockCreate = mock.fn(async () => ({
       choices: [
