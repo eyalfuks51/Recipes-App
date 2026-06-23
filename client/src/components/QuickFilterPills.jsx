@@ -3,7 +3,7 @@ import './QuickFilterPills.scss';
 
 export function QuickFilterPills({ activeFilter, onFilterChange, onOpenFilterSheet, hasActiveAdvancedFilters }) {
   return (
-    <div className="quick-filter-pills" role="tablist" aria-label="Quick filters">
+    <div className="quick-filter-pills" role="group" aria-label="Quick filters">
       {/* Filter button — opens advanced sheet */}
       <button
         className={`pill pill--filter${hasActiveAdvancedFilters ? ' pill--filter-active' : ''}`}
@@ -20,8 +20,7 @@ export function QuickFilterPills({ activeFilter, onFilterChange, onOpenFilterShe
       {MEAL_PILLS.map((pill) => (
         <button
           key={pill.label}
-          role="tab"
-          aria-selected={activeFilter === pill.slug}
+          aria-pressed={activeFilter === pill.slug}
           className={`pill${activeFilter === pill.slug ? ' pill--active' : ''}`}
           onClick={() => onFilterChange(pill.slug)}
         >
@@ -29,10 +28,6 @@ export function QuickFilterPills({ activeFilter, onFilterChange, onOpenFilterShe
         </button>
       ))}
 
-      {/* Favorites — placeholder, not wired yet */}
-      <button className="pill pill--disabled" disabled>
-        מועדפים
-      </button>
     </div>
   );
 }

@@ -62,7 +62,7 @@ export function FilterBottomSheet({ isOpen, onClose, currentFilters, onApply, on
         <div className="filter-sheet__body">
           {/* Nutrition tags */}
           <div className="filter-section">
-            <h3 className="filter-section__title">תזונה</h3>
+            <h3 className="filter-section__title">מאפיינים</h3>
             <div className="filter-chips">
               {UI_TAGS.map((tag) => (
                 <button

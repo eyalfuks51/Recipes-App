@@ -495,6 +495,122 @@
   animation: shimmer 1.6s ease-in-out infinite;
 }
 
+// ─── Library Search ───────────────────────────────────────────────────────────
+.library-search {
+  display: block;
+  width: 100%;
+  margin-block: 0.75rem 0;
+  padding: 0.55rem 0.875rem;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  color: var(--color-text);
+  direction: rtl;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  appearance: none;
+
+  &::placeholder {
+    color: var(--color-text-subtle);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-border-focus);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 12%, transparent);
+  }
+
+  // Hide browser's built-in ✕ on webkit
+  &::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+  }
+}
+
+// ─── Active Filter Chips ──────────────────────────────────────────────────────
+.filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin-block-start: 0.625rem;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.5rem 0.2rem 0.375rem;
+  border-radius: var(--radius-full);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.chip__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-primary) 18%, transparent);
+  color: var(--color-primary);
+  font-size: 0.9375rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  flex-shrink: 0;
+
+  &:hover {
+    background: color-mix(in srgb, var(--color-primary) 30%, transparent);
+  }
+}
+
+.chip-clear {
+  padding: 0.2rem 0.625rem;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), color var(--transition-fast);
+  white-space: nowrap;
+
+  &:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+}
+
+// ─── Filtered Empty State Clear Button ────────────────────────────────────────
+.gallery-empty__clear-btn {
+  margin-block-start: 0.25rem;
+  padding: 0.45rem 1.25rem;
+  border: 1.5px solid var(--color-primary);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-primary);
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+
+  &:hover {
+    background: var(--color-primary);
+    color: #fff;
+  }
+}
+
 @media (max-width: 640px) {
   .recipe-card {
     border-radius: 16px;

@@ -4,7 +4,7 @@ import { useWorkspace } from '../lib/workspace.jsx';
 import { RecipeModal } from './RecipeModal';
 import { RecipeReviewScreen } from './RecipeReviewScreen';
 import { QuickFilterPills } from './QuickFilterPills';
-import { normalizeRecipe, matchPrepBucket } from '../lib/taxonomy';
+import { normalizeRecipe, matchPrepBucket, matchesQuery, activeChips } from '../lib/taxonomy';
 import './RecipeGallery.scss';
 
 // ─── Difficulty config ─────────────────────────────────────────────────────────
@@ -213,7 +213,7 @@ function RecipeCard({ recipe, onClick, onDelete }) {
 }
 
 // ─── Gallery ──────────────────────────────────────────────────────────────────
-export function RecipeGallery({ refreshTrigger = 0, filters = {}, activeFilter, onFilterChange, onOpenFilterSheet, hasActiveAdvancedFilters }) {
+export function RecipeGallery({ refreshTrigger = 0, filters = {}, activeFilter, onFilterChange, onOpenFilterSheet, hasActiveAdvancedFilters, searchQuery = '', onSearchChange, onRemoveChip, onClearAll, hasAnyFilter }) {
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -278,11 +278,12 @@ export function RecipeGallery({ refreshTrigger = 0, filters = {}, activeFilter, 
         return false;
       }
 
+      // Text search: title + main_ingredient + main_category
+      if (filters.query && !matchesQuery(recipe, filters.query)) return false;
+
       return true;
     });
   }, [recipes, filters]);
-
-  const hasActiveFilters = filters.mealType || (filters.dietaryTags?.length > 0) || filters.prepTimeRange || filters.mainIngredient;
 
   async function handleCardClick(recipe) {
     // Show modal immediately with card data; load ingredients in background
@@ -344,12 +345,42 @@ export function RecipeGallery({ refreshTrigger = 0, filters = {}, activeFilter, 
             <span className="gallery-count">{filteredRecipes.length}</span>
           )}
         </div>
+        <input
+          type="search"
+          className="library-search"
+          placeholder="חיפוש מתכון…"
+          aria-label="חיפוש מתכון"
+          value={searchQuery}
+          onChange={(e) => onSearchChange?.(e.target.value)}
+          dir="rtl"
+        />
         <QuickFilterPills
           activeFilter={activeFilter}
           onFilterChange={onFilterChange}
           onOpenFilterSheet={onOpenFilterSheet}
           hasActiveAdvancedFilters={hasActiveAdvancedFilters}
         />
+        {activeChips(filters).length > 0 && (
+          <div className="filter-chips" role="list" aria-label="מסננים פעילים">
+            {activeChips(filters).map((chip) => (
+              <span key={`${chip.type}-${chip.value}`} className="chip" role="listitem">
+                {chip.label}
+                <button
+                  className="chip__remove"
+                  onClick={() => onRemoveChip?.(chip)}
+                  aria-label={`הסר ${chip.label}`}
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+            {hasAnyFilter && (
+              <button className="chip-clear" onClick={onClearAll}>
+                נקה הכל
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {loading && (
@@ -377,10 +408,12 @@ export function RecipeGallery({ refreshTrigger = 0, filters = {}, activeFilter, 
         </div>
       )}
 
-      {!loading && !error && recipes.length > 0 && filteredRecipes.length === 0 && hasActiveFilters && (
+      {!loading && !error && recipes.length > 0 && filteredRecipes.length === 0 && hasAnyFilter && (
         <div className="gallery-empty gallery-empty--filtered">
-          <p className="gallery-empty__title">לא נמצאו מתכונים</p>
-          <p className="gallery-empty__sub">נסו לשנות את הסינון</p>
+          <p className="gallery-empty__title">לא נמצאו מתכונים שמתאימים לסינון</p>
+          <button className="gallery-empty__clear-btn" onClick={onClearAll}>
+            נקה סינון
+          </button>
         </div>
       )}
 

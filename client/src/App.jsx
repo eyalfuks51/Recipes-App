@@ -23,9 +23,10 @@ function AppContent() {
 
   const filters = {
     mealType: searchParams.get('meal') || null,
-    dietaryTags: searchParams.get('tags') ? searchParams.get('tags').split(',') : [],
+    dietaryTags: searchParams.get('tags') ? [...new Set(searchParams.get('tags').split(',').filter(Boolean))] : [],
     prepTimeRange: searchParams.get('prep') || null,
     mainIngredient: searchParams.get('ingredient') || null,
+    query: searchParams.get('q') || '',
   };
 
   const hasActiveAdvancedFilters =
@@ -33,12 +34,15 @@ function AppContent() {
     filters.prepTimeRange !== null ||
     filters.mainIngredient !== null;
 
+  const hasAnyFilter = !!(filters.mealType || filters.dietaryTags.length || filters.prepTimeRange || filters.mainIngredient || filters.query.trim());
+
   const buildParams = (next) => {
-    const p = {};
-    if (next.mealType) p.meal = next.mealType;
-    if (next.dietaryTags?.length) p.tags = next.dietaryTags.join(',');
-    if (next.prepTimeRange) p.prep = next.prepTimeRange;
-    if (next.mainIngredient) p.ingredient = next.mainIngredient;
+    const p = new URLSearchParams(searchParams);
+    p.delete('meal'); if (next.mealType) p.set('meal', next.mealType);
+    p.delete('tags'); if (next.dietaryTags?.length) p.set('tags', next.dietaryTags.join(','));
+    p.delete('prep'); if (next.prepTimeRange) p.set('prep', next.prepTimeRange);
+    p.delete('ingredient'); if (next.mainIngredient) p.set('ingredient', next.mainIngredient);
+    p.delete('q'); if (next.query) p.set('q', next.query);
     return p;
   };
 
@@ -51,8 +55,24 @@ function AppContent() {
     setFilterSheetOpen(false);
   };
 
+  const handleSearch = (query) => {
+    setSearchParams(buildParams({ ...filters, query }), { replace: true });
+  };
+
+  const handleRemoveChip = (chip) => {
+    const next = { ...filters };
+    if (chip.type === 'meal') next.mealType = null;
+    else if (chip.type === 'tag') next.dietaryTags = filters.dietaryTags.filter((t) => t !== chip.value);
+    else if (chip.type === 'prep') next.prepTimeRange = null;
+    else if (chip.type === 'ingredient') next.mainIngredient = null;
+    else if (chip.type === 'query') next.query = '';
+    setSearchParams(buildParams(next));
+  };
+
   const handleClearAllFilters = () => {
-    setSearchParams({});
+    const p = new URLSearchParams(searchParams);
+    ['meal', 'tags', 'prep', 'ingredient', 'q'].forEach((k) => p.delete(k));
+    setSearchParams(p);
     setFilterSheetOpen(false);
   };
 
@@ -97,6 +117,11 @@ function AppContent() {
             onFilterChange={handleQuickFilter}
             onOpenFilterSheet={() => setFilterSheetOpen(true)}
             hasActiveAdvancedFilters={hasActiveAdvancedFilters}
+            searchQuery={filters.query}
+            onSearchChange={handleSearch}
+            onRemoveChip={handleRemoveChip}
+            onClearAll={handleClearAllFilters}
+            hasAnyFilter={hasAnyFilter}
           />
         </div>
       </main>

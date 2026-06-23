@@ -21,7 +21,7 @@ export const MEAL_TYPES = [
 export const MEAL_PILLS = [
   { slug: null, label: 'הכל' },
   { slug: 'breakfast', label: 'בוקר' },
-  { slug: 'main', label: 'ערב' },
+  { slug: 'main', label: 'צהריים/ערב' },
 ];
 
 // Prep-time buckets. Upper bounds are CUMULATIVE so nothing falls through the
@@ -153,4 +153,41 @@ export function normalizeRecipe(recipe) {
     _ingredientGroup: ingredientGroupSlug(recipe),
     _tags: tagSlugs(recipe),
   };
+}
+
+// ── UI helpers ───────────────────────────────────────────────────────────────
+
+// Internal lookup so chips/labels resolve Hebrew text from a slug.
+const LABEL_LISTS = {
+  meal: MEAL_TYPES,
+  ingredient: INGREDIENT_GROUPS,
+  prep: PREP_BUCKETS,
+  tag: ALL_TAGS,
+};
+
+export function labelFor(kind, slug) {
+  const list = LABEL_LISTS[kind] ?? [];
+  return list.find((x) => x.slug === slug)?.label ?? slug;
+}
+
+// v1 search: title + main_ingredient + main_category, case-insensitive substring.
+// ponytail: no ingredients-table join in v1.
+export function matchesQuery(recipe, q) {
+  const needle = String(q ?? '').trim().toLowerCase();
+  if (!needle) return true;
+  const hay = [recipe?.title, recipe?.main_ingredient, recipe?.main_category]
+    .filter(Boolean).join(' ').toLowerCase();
+  return hay.includes(needle);
+}
+
+// Active filter chips, in display order. type drives removal in App.jsx.
+export function activeChips(filters) {
+  const chips = [];
+  if (filters.mealType) chips.push({ type: 'meal', value: filters.mealType, label: labelFor('meal', filters.mealType) });
+  (filters.dietaryTags ?? []).forEach((t) => chips.push({ type: 'tag', value: t, label: labelFor('tag', t) }));
+  if (filters.prepTimeRange) chips.push({ type: 'prep', value: filters.prepTimeRange, label: labelFor('prep', filters.prepTimeRange) });
+  if (filters.mainIngredient) chips.push({ type: 'ingredient', value: filters.mainIngredient, label: labelFor('ingredient', filters.mainIngredient) });
+  // Whitespace-only query matches everything (matchesQuery trims) — no chip for it.
+  if (filters.query?.trim()) chips.push({ type: 'query', value: filters.query, label: `"${filters.query.trim()}"` });
+  return chips;
 }
