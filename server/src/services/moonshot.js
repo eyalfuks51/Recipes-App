@@ -51,6 +51,9 @@ export function createClient() {
   return new OpenAI({
     apiKey: process.env.MOONSHOT_API_KEY,
     baseURL: 'https://api.moonshot.ai/v1',
+    // ponytail: SDK default is 2 retries w/ backoff. Moonshot 429s
+    // ("engine overloaded") are transient — a couple more retries clears most.
+    maxRetries: 4,
   });
 }
 

@@ -121,15 +121,20 @@ recipeRouter.post('/extract-recipe', async (req, res) => {
     // also sets upstreamStatus. (Prod proxy bypasses most 403s; this covers the
     // local-dev direct path + any 403 the proxy forwards verbatim.)
     const isTikTok403 = sourceType === 'tiktok' && err?.upstreamStatus === 403;
+    // Moonshot 429 = AI overloaded (not the scraper). Surface a Hebrew "try
+    // later" instead of leaking the raw English 500 to users.
+    const isAiOverloaded = err?.status === 429;
     const message = isTikTok403
       ? 'שירות הטיקטוק אינו זמין כרגע — נסו שוב מאוחר יותר.'
-      : isAbort
-        ? `${sourceName} scraping timed out — please retry in a moment.`
-        : isUpstreamFailure
-          ? `${sourceName} scraping failed: the external API returned ${err.upstreamStatus}. Please try again later.`
-          : (err?.message ?? String(err));
+      : isAiOverloaded
+        ? 'מנוע ה-AI עמוס כרגע — נסו שוב בעוד רגע.'
+        : isAbort
+          ? `${sourceName} scraping timed out — please retry in a moment.`
+          : isUpstreamFailure
+            ? `${sourceName} scraping failed: the external API returned ${err.upstreamStatus}. Please try again later.`
+            : (err?.message ?? String(err));
     const isUserError = message.includes('No caption found') || message.includes('No content found');
-    const statusCode = isUserError ? 422 : isUpstreamFailure ? 502 : 500;
+    const statusCode = isUserError ? 422 : isAiOverloaded ? 503 : isUpstreamFailure ? 502 : 500;
 
     console.error('[extract-recipe] Error:', err?.message ?? String(err));
     return res.status(statusCode).json({ success: false, error: message });
