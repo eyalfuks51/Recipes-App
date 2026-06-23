@@ -1,11 +1,5 @@
+import { MEAL_PILLS } from '../lib/taxonomy';
 import './QuickFilterPills.scss';
-
-const MEAL_PILLS = [
-  { value: null, label: 'הכל' },
-  { value: 'ארוחת בוקר', label: 'בוקר' },
-  { value: 'ארוחת ערב', label: 'ערב' },
-  { value: 'מועדפים', label: 'מועדפים', disabled: true },
-];
 
 export function QuickFilterPills({ activeFilter, onFilterChange, onOpenFilterSheet, hasActiveAdvancedFilters }) {
   return (
@@ -27,14 +21,18 @@ export function QuickFilterPills({ activeFilter, onFilterChange, onOpenFilterShe
         <button
           key={pill.label}
           role="tab"
-          aria-selected={activeFilter === pill.value}
-          className={`pill${activeFilter === pill.value ? ' pill--active' : ''}${pill.disabled ? ' pill--disabled' : ''}`}
-          onClick={() => !pill.disabled && onFilterChange(pill.value)}
-          disabled={pill.disabled}
+          aria-selected={activeFilter === pill.slug}
+          className={`pill${activeFilter === pill.slug ? ' pill--active' : ''}`}
+          onClick={() => onFilterChange(pill.slug)}
         >
           {pill.label}
         </button>
       ))}
+
+      {/* Favorites — placeholder, not wired yet */}
+      <button className="pill pill--disabled" disabled>
+        מועדפים
+      </button>
     </div>
   );
 }

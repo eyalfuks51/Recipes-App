@@ -4,6 +4,7 @@ import { useWorkspace } from '../lib/workspace.jsx';
 import { RecipeModal } from './RecipeModal';
 import { RecipeReviewScreen } from './RecipeReviewScreen';
 import { QuickFilterPills } from './QuickFilterPills';
+import { normalizeRecipe, matchPrepBucket } from '../lib/taxonomy';
 import './RecipeGallery.scss';
 
 // ─── Difficulty config ─────────────────────────────────────────────────────────
@@ -254,29 +255,27 @@ export function RecipeGallery({ refreshTrigger = 0, filters = {}, activeFilter, 
   }, [refreshTrigger, activeWorkspaceId]);
 
   // ── Client-side filtering ─────────────────────────────────────────────────
+  // Filters compare canonical slugs (see lib/taxonomy). normalizeRecipe maps each
+  // stored recipe's Hebrew/free-text fields onto slugs at read time — additive, so
+  // cards still render every original field. URL params already carry slugs.
   const filteredRecipes = useMemo(() => {
-    return recipes.filter((recipe) => {
-      // Meal type filter
-      if (filters.mealType && recipe.meal_type !== filters.mealType) return false;
+    return recipes.map(normalizeRecipe).filter((recipe) => {
+      // Meal type
+      if (filters.mealType && recipe._mealType !== filters.mealType) return false;
 
-      // Dietary tags — recipe must have ALL selected tags
+      // Tags — recipe must have ALL selected tag slugs
       if (filters.dietaryTags?.length > 0) {
-        const recipeTags = recipe.dietary_tags || [];
-        if (!filters.dietaryTags.every((tag) => recipeTags.includes(tag))) return false;
+        if (!filters.dietaryTags.every((slug) => recipe._tags.includes(slug))) return false;
       }
 
-      // Prep time range
-      if (filters.prepTimeRange) {
-        const prep = parseInt(recipe.prep_time, 10);
-        if (isNaN(prep)) return false;
-        if (filters.prepTimeRange === '15' && prep > 15) return false;
-        if (filters.prepTimeRange === '30' && prep > 30) return false;
-        if (filters.prepTimeRange === '60+' && prep <= 60) return false;
+      // Prep time bucket (cumulative ≤15/≤30/≤60, plus >60)
+      if (filters.prepTimeRange && !matchPrepBucket(recipe.prep_time, filters.prepTimeRange)) {
+        return false;
       }
 
-      // Main ingredient — substring match
-      if (filters.mainIngredient) {
-        if (!recipe.main_ingredient?.includes(filters.mainIngredient)) return false;
+      // Main ingredient group
+      if (filters.mainIngredient && recipe._ingredientGroup !== filters.mainIngredient) {
+        return false;
       }
 
       return true;
