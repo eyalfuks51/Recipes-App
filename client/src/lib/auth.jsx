@@ -22,7 +22,12 @@ export function AuthProvider({ children }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+      // ponytail: Supabase re-fires SIGNED_IN/TOKEN_REFRESHED on every tab
+      // focus & token refresh. Keep the same user object ref when the id is
+      // unchanged — a new ref cascades through WorkspaceProvider and remounts
+      // AppContent, wiping any in-progress recipe preview. Compare by id.
+      const next = session?.user ?? null;
+      setUser((prev) => (prev?.id === next?.id ? prev : next));
     });
 
     return () => {
