@@ -140,7 +140,11 @@ function WorkspaceGate() {
     autoJoin();
   }, [user, loading, refreshWorkspaces, setActiveWorkspace]);
 
-  if (loading) {
+  // Only show the full-screen spinner on the FIRST load. A background refetch
+  // (token refresh, tab refocus, screenshot blur) flips loading=true while
+  // workspaces are still populated — unmounting AppContent here would wipe any
+  // in-progress recipe preview. Keep the app mounted once we have workspaces.
+  if (loading && workspaces.length === 0) {
     return <div className="auth-loading"><span className="spinner" /></div>;
   }
 
