@@ -1,14 +1,7 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { INGREDIENT_GROUPS, PREP_BUCKETS, UI_TAGS } from '../lib/taxonomy';
 import './FilterBottomSheet.scss';
-
-const DIETARY_OPTIONS = ['טבעוני', 'צמחוני', 'ללא גלוטן', 'כשר', 'דל קלוריות', 'פרווה'];
-const PREP_TIME_OPTIONS = [
-  { value: '15', label: 'עד 15 דק\'' },
-  { value: '30', label: 'חצי שעה' },
-  { value: '60+', label: 'מעל שעה' },
-];
-const INGREDIENT_OPTIONS = ['עוף', 'בקר', 'דגים', 'פסטה', 'אורז', 'קינואה', 'ירקות', 'קטניות'];
 
 export function FilterBottomSheet({ isOpen, onClose, currentFilters, onApply, onClearAll }) {
   const [dietaryTags, setDietaryTags] = useState(currentFilters.dietaryTags || []);
@@ -67,17 +60,17 @@ export function FilterBottomSheet({ isOpen, onClose, currentFilters, onApply, on
 
         {/* Sections */}
         <div className="filter-sheet__body">
-          {/* Dietary Style */}
+          {/* Nutrition tags */}
           <div className="filter-section">
-            <h3 className="filter-section__title">סגנון</h3>
+            <h3 className="filter-section__title">מאפיינים</h3>
             <div className="filter-chips">
-              {DIETARY_OPTIONS.map((tag) => (
+              {UI_TAGS.map((tag) => (
                 <button
-                  key={tag}
-                  className={`filter-chip${dietaryTags.includes(tag) ? ' filter-chip--selected' : ''}`}
-                  onClick={() => toggleDietaryTag(tag)}
+                  key={tag.slug}
+                  className={`filter-chip${dietaryTags.includes(tag.slug) ? ' filter-chip--selected' : ''}`}
+                  onClick={() => toggleDietaryTag(tag.slug)}
                 >
-                  {tag}
+                  {tag.label}
                 </button>
               ))}
             </div>
@@ -87,11 +80,11 @@ export function FilterBottomSheet({ isOpen, onClose, currentFilters, onApply, on
           <div className="filter-section">
             <h3 className="filter-section__title">זמן הכנה</h3>
             <div className="filter-chips">
-              {PREP_TIME_OPTIONS.map((opt) => (
+              {PREP_BUCKETS.map((opt) => (
                 <button
-                  key={opt.value}
-                  className={`filter-chip${prepTimeRange === opt.value ? ' filter-chip--selected' : ''}`}
-                  onClick={() => setPrepTimeRange(prepTimeRange === opt.value ? null : opt.value)}
+                  key={opt.slug}
+                  className={`filter-chip${prepTimeRange === opt.slug ? ' filter-chip--selected' : ''}`}
+                  onClick={() => setPrepTimeRange(prepTimeRange === opt.slug ? null : opt.slug)}
                 >
                   {opt.label}
                 </button>
@@ -103,13 +96,13 @@ export function FilterBottomSheet({ isOpen, onClose, currentFilters, onApply, on
           <div className="filter-section">
             <h3 className="filter-section__title">מרכיב עיקרי</h3>
             <div className="filter-chips">
-              {INGREDIENT_OPTIONS.map((ing) => (
+              {INGREDIENT_GROUPS.map((ing) => (
                 <button
-                  key={ing}
-                  className={`filter-chip${mainIngredient === ing ? ' filter-chip--selected' : ''}`}
-                  onClick={() => setMainIngredient(mainIngredient === ing ? null : ing)}
+                  key={ing.slug}
+                  className={`filter-chip${mainIngredient === ing.slug ? ' filter-chip--selected' : ''}`}
+                  onClick={() => setMainIngredient(mainIngredient === ing.slug ? null : ing.slug)}
                 >
-                  {ing}
+                  {ing.label}
                 </button>
               ))}
             </div>

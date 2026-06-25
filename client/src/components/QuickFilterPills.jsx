@@ -1,15 +1,9 @@
+import { MEAL_PILLS } from '../lib/taxonomy';
 import './QuickFilterPills.scss';
-
-const MEAL_PILLS = [
-  { value: null, label: 'הכל' },
-  { value: 'ארוחת בוקר', label: 'בוקר' },
-  { value: 'ארוחת ערב', label: 'ערב' },
-  { value: 'מועדפים', label: 'מועדפים', disabled: true },
-];
 
 export function QuickFilterPills({ activeFilter, onFilterChange, onOpenFilterSheet, hasActiveAdvancedFilters }) {
   return (
-    <div className="quick-filter-pills" role="tablist" aria-label="Quick filters">
+    <div className="quick-filter-pills" role="group" aria-label="Quick filters">
       {/* Filter button — opens advanced sheet */}
       <button
         className={`pill pill--filter${hasActiveAdvancedFilters ? ' pill--filter-active' : ''}`}
@@ -26,15 +20,14 @@ export function QuickFilterPills({ activeFilter, onFilterChange, onOpenFilterShe
       {MEAL_PILLS.map((pill) => (
         <button
           key={pill.label}
-          role="tab"
-          aria-selected={activeFilter === pill.value}
-          className={`pill${activeFilter === pill.value ? ' pill--active' : ''}${pill.disabled ? ' pill--disabled' : ''}`}
-          onClick={() => !pill.disabled && onFilterChange(pill.value)}
-          disabled={pill.disabled}
+          aria-pressed={activeFilter === pill.slug}
+          className={`pill${activeFilter === pill.slug ? ' pill--active' : ''}`}
+          onClick={() => onFilterChange(pill.slug)}
         >
           {pill.label}
         </button>
       ))}
+
     </div>
   );
 }
