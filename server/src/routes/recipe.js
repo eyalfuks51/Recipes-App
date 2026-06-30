@@ -4,6 +4,7 @@ import { scrapeYouTubeContent } from '../services/youtube.js';
 import { scrapeTikTokContent } from '../services/tiktok.js';
 import { extractRecipeFromCaption } from '../services/moonshot.js';
 import { saveRecipe, deleteRecipe, updateRecipe } from '../services/supabase.js';
+import { stabilizeThumbnail } from '../services/thumbnailPipeline.js';
 
 /**
  * Detects whether a URL is from YouTube, TikTok, or Instagram.
@@ -92,6 +93,10 @@ recipeRouter.post('/extract-recipe', async (req, res) => {
       text = result.caption;
       thumbnailUrl = result.thumbnailUrl;
     }
+
+    // Social CDN URLs are signed and expire. Copy the image into application-
+    // owned storage before returning anything the client can persist.
+    thumbnailUrl = await stabilizeThumbnail({ sourceUrl, thumbnailUrl });
 
     // Extract structured recipe from raw text via Moonshot AI
     const recipe = await extractRecipeFromCaption(text);
